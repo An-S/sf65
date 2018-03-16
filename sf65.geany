@@ -28,10 +28,7 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=221;C;0;EUTF-8;1;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fsf65.c;0;4
-FILE_NAME_1=0;None;0;EUTF-8;1;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest.out;0;4
-FILE_NAME_2=0;Conf;0;EUTF-8;1;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest.src;0;4
+current_page=-1
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;

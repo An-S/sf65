@@ -1,24 +1,31 @@
 .feature
 .BSS
  .ProC
- Lda #$00
- sTa $d020
+ Lda#$00
+ sTa$d020 ;comment after command
   Sta $d021
   .proc
+;comment at beginning of line
+  ;isolated comment in the middle of line
+                  ;another comment
+
+        ;comment after comment ; blabla ; ajkajkajk
   inx
      INY
        dec $d020
-      .endproc
+      .endproc ;comment after directive
 .endProc
 lda #$00
+sta $d020 ; comment after command at beginning of line
     INX
   iny
  sta $d020
 label1:
-label2
+label2 ;comment after label
     label3 lda #$00
+    label4: aDC $d020               ;comment
     .BYTe
     .Addr
    .BYTE
    .res 4,2
-   
+label5                      ;my comment
