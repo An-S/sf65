@@ -1,4 +1,6 @@
 /*
+** sf65 (Source formatter for CA65) by Monte Carlos / Cascade on 03-2018
+** havily based on
 ** Pretty6502
 **
 ** by Oscar Toledo G.
@@ -12,6 +14,7 @@
 **                             of mnemonics and directives.
 */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -20,6 +23,16 @@
 #define VERSION "v0.2"
 
 int tabs;
+
+int style;
+int processor;
+int start_mnemonic;
+int start_operand;
+int start_comment;
+int start_directive = 0;
+int align_comment;
+int nesting_space;
+int labels_own_line;
 
 /*
 ** 6502 mnemonics
@@ -205,6 +218,8 @@ int memcmpcase (char *p1, char *p2, int size) {
 
 /*
 ** Check for opcode or directive
+* c > 0 -> directive detected
+* c < 0 -> opcode detected
 */
 int check_opcode (char *p1, char *p2) {
     int c;
@@ -233,26 +248,150 @@ void request_space (FILE *output, int *current, int new, int force) {
     ** If already exceeded space...
     */
     if (*current >= new) {
-        if (force)
+        if (force){
             fputc (' ', output);
-        (*current)++;
+            (*current)++;
+        }
         return;
     }
 
     /*
     ** Advance one step at a time
     */
-    while (1) {
-        if (tabs == 0) {
-            fprintf (output, "%*s", new - *current, "");
-            *current = new;
-        } else {
-            fputc ('\t', output);
-            *current = (*current + tabs) / tabs * tabs;
+    if (new){
+        while (1) {
+            if (tabs == 0) {
+                int i = 0;
+                for (; i<new-*current; ++i){
+                    fprintf(output, " ");
+                }
+                //fprintf (output, "%*s", new - *current, "");
+                *current = new;
+            } else {
+                fputc ('\t', output);
+                *current = (*current + tabs) / tabs * tabs;
+            }
+            if (*current >= new)
+                return;
         }
-        if (*current >= new)
-            return;
     }
+}
+
+bool inRange(const char *p, const char *first, int size){
+    return p < (first + size);
+}
+
+char *convertLinefeedsToStringSeparator(char* data, int allocation){
+    char *p1 = data;
+    char *p2 = p1;
+    char request = 0;
+
+    while ( inRange(p1, data, allocation) ) {
+        if (*p1 == '\r') {  /* Ignore \r characters */
+            p1++; // Here, we increase only p1 but not p2 !
+            continue;
+        }
+        if (*p1 == '\n') {
+            p1++;
+            *p2++ = '\0';   /* Break line by replacing line terminator with string terminator*/
+            request = 1;
+            continue;
+        }
+        *p2++ = *p1++; //Remove \r chars out of code (only case which does not inc p2)
+        request = 0;
+    }
+
+    if (request == 0)
+        *p2++ = '\0';   /* Force line break */
+
+    return p2;
+}
+
+/*
+ * Detect a word limited by whitespace but always stop at comment symbol ';'
+ *
+ * @param Pointer to start address of char sequence
+ * @return First whitespace or comment char after
+ *
+ */
+char *detectCodeWord(char *p){
+    while (*p && !isspace (*p) && *p != ';')
+        p++;
+
+    return p;
+}
+
+/*
+ * Read array pointed to by p as long as whitespace is found.
+ * Stop at first non whitespace character or string terminator
+ *
+ * @param Pointer to start address of char sequence
+ * @return First non whitespace after start
+ *
+ */
+char *skipWhiteSpace(char *p){
+    while (*p && isspace (*p))
+        p++;
+
+    return p;
+}
+
+/*
+ * Iterate over char array from p1 to p2.
+ * Call modificator function for each of the chars of the array
+ * and write back modificated char.
+ *
+ * @param p1: Pointer to start
+ * @param p2: Pointer to end
+ * @return End of array
+ *
+ */
+char *modifyChars(char *p1, char *p2, int func(int)){
+    while (p1 < p2) {
+        *p1 = func (*p1);
+        p1++;
+    }
+    return p1;
+}
+
+char *changeCase(char *p1, char *p2, char _case){
+    switch (_case) {
+        case 1:
+            modifyChars(p1, p2, tolower);
+            break;
+        case 2:
+            modifyChars(p1, p2, toupper);
+            break;
+        default:
+            break;
+    }
+    return p2;
+}
+
+int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flags){
+    int opIndex = -65000; //invalidate opIndex
+
+// For 6502 processor check codeword against opcode list
+    if (processor == 1) {
+        opIndex = check_opcode (p1, p2);
+        if (opIndex == 0) {
+            *outputColumn = 0; //Set output column to start_mnemonic column
+        } else if (opIndex < 0) {
+            *outputColumn = start_mnemonic;
+        } else {
+            *flags = directives_dasm[opIndex - 1].flags;
+            if (*flags & DONT_RELOCATE_LABEL)
+                *outputColumn = 0;
+            else
+                *outputColumn = start_directive;
+        }
+    // For other processors just assume a mnemonic wtho checking
+    } else {
+        *outputColumn = start_mnemonic;
+        opIndex = 0;
+    }
+
+    return opIndex;
 }
 
 /*
@@ -260,14 +399,7 @@ void request_space (FILE *output, int *current, int new, int force) {
 */
 int main (int argc, char *argv[]) {
     int c;
-    int style;
-    int processor;
-    int start_mnemonic;
-    int start_operand;
-    int start_comment;
-    int align_comment;
-    int nesting_space;
-    int labels_own_line;
+
     FILE *input;
     FILE *output;
     int allocation;
@@ -275,7 +407,6 @@ int main (int argc, char *argv[]) {
     char *p;
     char *p1;
     char *p2;
-    char *p3;
     int current_column;
     int request;
     int current_level;
@@ -471,6 +602,8 @@ int main (int argc, char *argv[]) {
         exit (1);
     }
     fseek (input, 0, SEEK_SET);
+
+    // Read file at once into data
     if (fread (data, sizeof (char), allocation, input) != allocation) {
         fprintf (stderr, "Something went wrong reading the input file\n");
         fclose (input);
@@ -483,25 +616,14 @@ int main (int argc, char *argv[]) {
     ** Ease processing of input file
     */
     request = 0;
+
+    // Set read pointers to begin of data
     p1 = data;
-    p2 = data;
-    while (p1 < data + allocation) {
-        if (*p1 == '\r') {  /* Ignore \r characters */
-            p1++;
-            continue;
-        }
-        if (*p1 == '\n') {
-            p1++;
-            *p2++ = '\0';   /* Break line */
-            request = 1;
-            continue;
-        }
-        *p2++ = *p1++;
-        request = 0;
-    }
-    if (request == 0)
-        *p2++ = '\0';   /* Force line break */
-    allocation = p2 - data;
+
+    //@Todo: Is this code which only task is to remove \r chars really necessary?
+
+    p2 = convertLinefeedsToStringSeparator(data, allocation);
+    allocation = p2 - data; // Correct size of data by using p2
 
     /*
     ** Now generate output file
@@ -515,73 +637,77 @@ int main (int argc, char *argv[]) {
     prev_comment_original_location = 0;
     prev_comment_final_location = 0;
     current_level = 0;
+
+    // Init p with start of data
     p = data;
-    while (p < data + allocation) {
+
+    // Loop until p out of range
+    while (inRange(p, data, allocation) ) {
         current_column = 0;
+
+        // Here, all pointers are set to the same address
         p1 = p;
-        p2 = p1;
-        while (*p2 && !isspace (*p2) && *p2 != ';')
-            p2++;
-        if (p2 - p1) {  /* Label */
+
+        // Loop, if *p2 is not \0 and not \s and not ";" -> Label detection
+        p2 = detectCodeWord(p);
+
+        // Ok, p2 was increased (while run at lease 1 iteration) -> Label detected
+        if (p2 - p1) {  /* Label or mnemonic or directive */
+            c = detectOpcode(p1, p2, processor, &request, &flags);
+            if (c < 0) {
+                changeCase(p1, p2, mnemonics_case);
+            } else if (c > 0) {
+                changeCase(p1, p2, directives_case);
+            }
+
+            if (current_column != 0 && labels_own_line != 0 && (flags & DONT_RELOCATE_LABEL) == 0) {
+                fputc ('\n', output);
+                current_column = 0;
+            }
+            if (flags & LEVEL_OUT) {
+                if (current_level > 0)
+                    current_level--;
+            }
+
+            if (request > 0){
+                // Indent by level times tab width
+                request += current_level * nesting_space;
+
+                // Unindent by one level
+                if (flags & LEVEL_MINUS)
+                    if (request >= nesting_space) request -= nesting_space;
+
+                // Insert space into output dependent on indent
+                request_space (output, &current_column, request, 0);
+            }
+            //Write Label to output (p2 points to end of label, p1 points to start of line)
             fwrite (p1, sizeof (char), p2 - p1, output);
-            current_column = p2 - p1;
+            current_column += p2 - p1;
+
+            //Now put p1 also to the end of the label
             p1 = p2;
         } else {
             current_column = 0;
         }
-        while (*p1 && isspace (*p1))
-            p1++;
+
+        // Loop over all chars which are whitespace but not \0
+        p1 = skipWhiteSpace(p1);
+
+        //p1 points to first char other than space or \0 after start of line or end of label
         flags = 0;
+
         if (*p1 && *p1 != ';') {    /* Mnemonic or directive*/
-            p2 = p1;
-            while (*p2 && !isspace (*p2) && *p2 != ';')
-                p2++;
-            if (processor == 1) {
-                c = check_opcode (p1, p2);
-                if (c == 0) {
-                    request = start_mnemonic;
-                } else if (c < 0) {
-                    request = start_mnemonic;
-                } else {
-                    flags = directives_dasm[c - 1].flags;
-                    if (flags & DONT_RELOCATE_LABEL)
-                        request = start_operand;
-                    else
-                        request = start_mnemonic;
-                }
-            } else {
-                request = start_mnemonic;
-                c = 0;
-            }
-            if (c <= 0) {
-                if (mnemonics_case == 1) {
-                    p3 = p1;
-                    while (p3 < p2) {
-                        *p3 = tolower (*p3);
-                        p3++;
-                    }
-                } else if (mnemonics_case == 2) {
-                    p3 = p1;
-                    while (p3 < p2) {
-                        *p3 = toupper (*p3);
-                        p3++;
-                    }
-                }
-            } else {
-                if (directives_case == 1) {
-                    p3 = p1;
-                    while (p3 < p2) {
-                        *p3 = tolower (*p3);
-                        p3++;
-                    }
-                } else if (directives_case == 2) {
-                    p3 = p1;
-                    while (p3 < p2) {
-                        *p3 = toupper (*p3);
-                        p3++;
-                    }
-                }
-            }
+            // p1 points to start of codeword, p2 be moved to end of word
+            p2 = detectCodeWord(p1);
+            c = detectOpcode(p1, p2, processor, &request, &flags);
+
+            // Use p3 to iterate over codeword and eventually change case
+            if (c < 0) {
+                changeCase(p1, p2, mnemonics_case);
+            } else if ( c > 0) {
+                changeCase(p1, p2, directives_case);
+                current_column = 0;
+            } else { }
 
             /*
             ** Move label to own line
@@ -594,15 +720,25 @@ int main (int argc, char *argv[]) {
                 if (current_level > 0)
                     current_level--;
             }
+
+            // Indent by level times tab width
             request += current_level * nesting_space;
+
+            // Unindent by one level
             if (flags & LEVEL_MINUS)
-                request -= nesting_space;
-            request_space (output, &current_column, request, 1);
-            fwrite (p1, sizeof (char), p2 - p1, output);
+                if (request > nesting_space) request -= nesting_space;
+
+            // Insert space into output dependent on indent
+            request_space (output, &current_column, request, 0);
+            if (p2-p1) fwrite (p1, sizeof (char), p2 - p1, output);
+
             current_column += p2 - p1;
+
             p1 = p2;
-            while (*p1 && isspace (*p1))
-                p1++;
+            p1 = skipWhiteSpace(p1);
+            //while (*p1 && isspace (*p1))
+            //    p1++;
+
             if (*p1 && *p1 != ';') {    /* Operand */
                 request = start_operand;
                 request += current_level * nesting_space;

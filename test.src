@@ -1,17 +1,17 @@
 .feature
 .BSS
  .ProC
- lda #$00
- sta $d020
-  sta $d021
+ Lda #$00
+ sTa $d020
+  Sta $d021
   .proc
   inx
-     iny
+     INY
        dec $d020
       .endproc
 .endProc
 lda #$00
-    inx
+    INX
   iny
  sta $d020
 label1:
