@@ -1,0 +1,24 @@
+.feature
+.BSS
+ .ProC
+ lda #$00
+ sta $d020
+  sta $d021
+  .proc
+  inx
+     iny
+       dec $d020
+      .endproc
+.endProc
+lda #$00
+    inx
+  iny
+ sta $d020
+label1:
+label2
+    label3 lda #$00
+    .BYTe
+    .Addr
+   .BYTE
+   .res 4,2
+   
