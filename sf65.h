@@ -23,5 +23,8 @@ extern int directives_case;
 
 
 int processCMDArgs(int argc, char** argv);
+char *skipWhiteSpace(char *p);
+char *modifyChars(char *p1, char *p2, int func(int));
+char *changeCase(char *p1, char *p2, char _case);
 
 #endif
