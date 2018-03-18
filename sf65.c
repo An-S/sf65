@@ -20,9 +20,11 @@
  * Comments at line start are not aligned with commands when requested
  *      -> Seems fixed, now (16.03.2018)
  * Mnemonics having args not separated by space are not recognized
+ *      -> Is fixed for mnemonics which comes first in line
  * Alignment of .proc/.scope/.endproc/.endscope is not satisfying
- * Mnemonics after labels are recognized but the args are not correctly aligned
- *
+ * Mnemonics/directives after labels are recognized as operands
+ * (However, comments are correctly recignized and aligned with mnemonics)
+ * Labels are indented with section(.proc, .scope ...) directives
  */
 
 /* MISSING FEATURES
@@ -45,7 +47,7 @@ int processor;
 int start_mnemonic;
 int start_operand;
 int start_comment;
-int start_directive = 0;
+int start_directive;
 int align_comment;
 int nesting_space;
 int labels_own_line;
@@ -55,174 +57,8 @@ int mnemonics_case;
 int directives_case;
 
 
-/*
-** 6502 mnemonics
-*/
-char *mnemonics_6502[] = {
-    "adc", "anc", "and", "ane", "arr", "asl", "asr", "bcc",
-    "bcs", "beq", "bit", "bmi", "bne", "bpl", "brk", "bvc",
-    "bvs", "clc", "cld", "cli", "clv", "cmp", "cpx", "cpy",
-    "dcp", "dec", "dex", "dey", "eor", "inc", "inx", "iny",
-    "isb", "jmp", "jsr", "las", "lax", "lda", "ldx", "ldy",
-    "lsr", "lxa", "nop", "ora", "pha", "php", "pla", "plp",
-    "rla", "rol", "ror", "rra", "rti", "rts", "sax", "sbc",
-    "sbx", "sec", "sed", "sei", "sha", "shs", "shx", "shy",
-    "slo", "sre", "sta", "stx", "sty", "tax", "tay", "tsx",
-    "txa", "txs", "tya", NULL,
-};
 
-#define DONT_RELOCATE_LABEL 0x01
-#define LEVEL_IN        0x02
-#define LEVEL_OUT       0x04
-#define LEVEL_MINUS     0x08
 
-/*
-** DASM directives
-*/
-struct {
-    char *directive;
-    int flags;
-} directives_dasm[] = {
-    {"=",         DONT_RELOCATE_LABEL},
-    {"a16",  0},
-    {"a8",  0},
-    {"addr",  0},
-    {"align",  0},
-    {"asciiz",  0},
-    {"assert",  0},
-    {"autoimport",  0},
-    {"bankbyte",  0},
-    {"bankbytes",  0},
-    {"blank",  0},
-    {"bss",  0},
-    {"byt",  0},
-    {"byte",  0},
-    {"case",  0},
-    {"charmap",  0},
-    {"code",  0},
-    {"concat",  0},
-    {"condes",  0},
-    {"const",  0},
-    {"constructor",  0},
-    {"cpu",  0},
-    {"data",  0},
-    {"dbyt",  0},
-    {"debuginfo",  0},
-    {"def",  0},
-    {"define",  0},
-    {"defined",  0},
-    {"delmac",  0},
-    {"delmacro",  0},
-    {"definedmacro",  0},
-    {"destructor",  0},
-    {"dword",  0},
-    {"else",  LEVEL_MINUS},
-    {"elseif",  LEVEL_OUT},
-    {"end",  0},
-    {"endenum",  0},
-    {"endif",  LEVEL_OUT},
-    {"endmac",  LEVEL_OUT},
-    {"endmacro",  LEVEL_OUT},
-    {"endproc",  LEVEL_OUT},
-    {"endrep",  LEVEL_OUT},
-    {"endrepeat",  LEVEL_OUT},
-    {"endscope",  LEVEL_OUT},
-    {"endstruct",  LEVEL_OUT},
-    {"enum",  LEVEL_IN},
-    {"error",  0},
-    {"exitmac",  0},
-    {"exitmacro",  0},
-    {"export",  0},
-    {"exportzp",  0},
-    {"faraddr",  0},
-    {"fatal",  0},
-    {"feature",  0},
-    {"fileopt",  0},
-    {"fopt",  0},
-    {"forceimport",  0},
-    {"global",  0},
-    {"globalzp",  0},
-    {"hibyte",  0},
-    {"hibytes",  0},
-    {"hiword",  0},
-    {"i16",  0},
-    {"i8",  0},
-    {"ident",  0},
-    {"if",  LEVEL_IN},
-    {"ifblank",  LEVEL_IN},
-    {"ifconst",  LEVEL_IN},
-    {"ifdef",  LEVEL_IN},
-    {"ifnblank",  LEVEL_IN},
-    {"ifndef",  LEVEL_IN},
-    {"ifnref",  LEVEL_IN},
-    {"ifp02",  LEVEL_IN},
-    {"ifp816",  LEVEL_IN},
-    {"ifpc02",  LEVEL_IN},
-    {"ifpsc02",  LEVEL_IN},
-    {"ifref",  LEVEL_IN},
-    {"import",  0},
-    {"importzp",  0},
-    {"incbin",  0},
-    {"include",  0},
-    {"interruptor",  0},
-    {"left",  0},
-    {"linecont",  0},
-    {"list",  0},
-    {"listbytes",  0},
-    {"lobyte",  0},
-    {"lobytes",  0},
-    {"local",  0},
-    {"localchar",  0},
-    {"loword",  0},
-    {"mac",  LEVEL_IN},
-    {"macpack",  0},
-    {"macro",  LEVEL_IN},
-    {"match",  0},
-    {"mid",  0},
-    {"org",  0},
-    {"out",  0},
-    {"p02",  0},
-    {"p816",  0},
-    {"pagelen",  0},
-    {"pagelength",  0},
-    {"paramcount",  0},
-    {"pc02",  0},
-    {"popseg",  0},
-    {"proc",  LEVEL_IN},
-    {"psc02",  0},
-    {"pushseg",  0},
-    {"ref",  0},
-    {"referenced",  0},
-    {"reloc",  0},
-    {"repeat",  LEVEL_IN},
-    {"res",  0},
-    {"right",  0},
-    {"rodata",  0},
-    {"scope",  LEVEL_IN},
-    {"segment",  0},
-    {"setcpu",  0},
-    {"sizeof",  0},
-    {"smart",  0},
-    {"sprintf",  0},
-    {"strat",  0},
-    {"string",  0},
-    {"strlen",  0},
-    {"struct",  LEVEL_IN},
-    {"sunplus",  0},
-    {"tag",  0},
-    {"tcount",  0},
-    {"time",  0},
-    {"undef",  0},
-    {"undefine",  0},
-    {"union",  0},
-    {"version",  0},
-    {"warning",  0},
-    {"word",  0},
-    {"xmatch",  0},
-    {"zeropage",  0},
-
-    {NULL,       0}
-};
 
 /*
 ** Comparison without case
@@ -328,66 +164,10 @@ char *convertLinefeedsToStringSeparator(char* data, int allocation){
     return p2;
 }
 
-/*
- * Detect a word limited by whitespace but always stop at comment symbol ';'
- *
- * @param Pointer to start address of char sequence
- * @return First whitespace or comment char after
- *
- */
-char *detectCodeWord(char *p){
-    while (*p && !isspace (*p) && *p != ';')
-        p++;
 
-    return p;
-}
 
-/*
- * Read array pointed to by p as long as whitespace is found.
- * Stop at first non whitespace character or string terminator
- *
- * @param Pointer to start address of char sequence
- * @return First non whitespace after start
- *
- */
-char *skipWhiteSpace(char *p){
-    while (*p && isspace (*p))
-        p++;
 
-    return p;
-}
 
-/*
- * Iterate over char array from p1 to p2.
- * Call modificator function for each of the chars of the array
- * and write back modificated char.
- *
- * @param p1: Pointer to start
- * @param p2: Pointer to end
- * @return End of array
- *
- */
-char *modifyChars(char *p1, char *p2, int func(int)){
-    while (p1 < p2) {
-        *p1 = func (*p1);
-        p1++;
-    }
-    return p1;
-}
-
-char *changeCase(char *p1, char *p2, char _case){
-    switch (_case) {
-        case 1:
-            modifyChars(p1, p2, tolower);
-            break;
-        case 2:
-            modifyChars(p1, p2, toupper);
-            break;
-        default:
-            break;
-    }
-    return p2;
-}
 
 int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flags){
     int opIndex = -65000; //invalidate opIndex
@@ -491,6 +271,17 @@ int main (int argc, char *argv[]) {
     prev_comment_final_location = 0;
     current_level = 0;
 
+    /*
+     * Labels always at first in line but must not be at first character
+     * Labels always have '_' or 'a-zA-Z' as first char
+     * First term after linestart may also be mnemonic or directive or comment
+     * Mnemonics are recognized by their name
+     * Operands can come after mnemonic, only
+     * Operands include special chars like '"', '\'', '$', '%', '#', '<', '>'...
+     * Operands may be calculated
+     * Directives may have parameters which also needs to be aligned
+     *
+     */
     // Init p with start of data
     p = data;
 
@@ -505,7 +296,7 @@ int main (int argc, char *argv[]) {
         //p1 points to first char other than space or \0 after start of line or end of label
         flags = 0;
 
-        if (*p1 && *p1 != ';') {    /* Mnemonic or directive*/
+        while (*p1 && *p1 != ';') {    /* Mnemonic or directive*/
             // p1 points to start of codeword, p2 be moved to end of word
             p2 = detectCodeWord(p1);
             c = detectOpcode(p1, p2, processor, &request, &flags);
@@ -515,6 +306,13 @@ int main (int argc, char *argv[]) {
                 changeCase(p1, p2, mnemonics_case);
             } else if ( c > 0) {
                 changeCase(p1, p2, directives_case);
+            } else{
+                //Label or arg
+                if ( isalpha(*p1) || *p1 == '_'){
+                    request = 0;
+                }else{
+                    request = start_operand;
+                }
             }
 
             /*
@@ -530,7 +328,7 @@ int main (int argc, char *argv[]) {
             }
 
             // Indent by level times tab width
-            request += current_level * nesting_space;
+            if ( c != 0 ) request += current_level * nesting_space;
 
             // Unindent by one level
             if (flags & LEVEL_MINUS)
@@ -544,9 +342,8 @@ int main (int argc, char *argv[]) {
 
             p1 = p2;
             p1 = skipWhiteSpace(p1);
-            //while (*p1 && isspace (*p1))
-            //    p1++;
 
+            // It is wrong to assume operand, here. Could aswell be mnemonic or directive
             if (*p1 && *p1 != ';') {    /* Operand */
                 request = start_operand;
                 request += current_level * nesting_space;
@@ -699,6 +496,7 @@ int processCMDArgs(int argc, char** argv){
     start_mnemonic = 8;
     start_operand = 16;
     start_comment = 32;
+    start_directive = 0;//7;
     tabs = 0;
     align_comment = 1;
     nesting_space = 4;

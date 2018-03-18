@@ -15,3 +15,7 @@ sf65
 *.a
 *.lib
 *~
+.codelite/
+Debug/
+sf65.mk
+sf65.txt

@@ -1,31 +1,39 @@
-.feature
+.feature labels_without_colons
 .BSS
- .ProC
+ .ProC abcd
  Lda#$00
  sTa$d020 ;comment after command
   Sta $d021
-  .proc
+  .proc efgh
 ;comment at beginning of line
   ;isolated comment in the middle of line
                   ;another comment
 
         ;comment after comment ; blabla ; ajkajkajk
   inx
+    label0: ;fdjkfjdkfjdk
      INY
        dec $d020
+
+       .byte 123
       .endproc ;comment after directive
+       .asciiz "cdfd"
+
 .endProc
 lda #$00
 sta $d020 ; comment after command at beginning of line
     INX
   iny
  sta $d020
-label1:
+   label1:
+label8
 label2 ;comment after label
-    label3 lda #$00
+    label3: lda #$00
     label4: aDC $d020               ;comment
-    .BYTe
-    .Addr
-   .BYTE
+    .BYTe 65
+    .Addr $1234
+   .BYTE 33
    .res 4,2
-label5                      ;my comment
+label5 .byte 123
+label6 .byte "Directive after label"
+label7                      ;my comment
