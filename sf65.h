@@ -94,6 +94,8 @@ char *changeCase(char *p1, char *p2, char _case);
  */
 char *detectCodeWord(char *p);
 
+char *detectOperand(char *p);
+
 /*
  * Comparison without case
  */
@@ -102,7 +104,7 @@ int memcmpcase (char *p1, char *p2, int size);
 /*
 ** Request space in line
 */
-void request_space (FILE *output, int *current, int new, int force, int tabs);
+int request_space (FILE *output, int *current, int new, int force, int tabs);
 
 /* Tests, if a pointer is in range between a start pointer and and end pointer
  * defined by the size of the range
@@ -115,4 +117,8 @@ bool inRange(const char *p, const char *first, int size);
  * Carriage return characters are dismissed from the output.
  */
 char *convertLinefeedsToStringSeparator(char* data, int allocation);
+
+
+int getCommentSpacing(char* linestart, char *commentstart, int current_column);
+
 #endif

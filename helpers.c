@@ -46,16 +46,32 @@ char *changeCase(char *p1, char *p2, char _case){
 
 
 char *detectCodeWord(char *p){
-    // && *p != '\'' && *p != '"' && *p != '#' && *p != '$'
+    // 
     char ch;
     
-    while (ch = *p, ch && !isspace (ch) /*&& *p != ';' */){
+    while (ch = *p, ch && !isspace (ch) && ch != ';' && 
+                ch != '\'' && ch != '"' && ch != '#' && ch != '$'){
         echoChar(ch);
         ++p;
     }
     
     //Rewind pointer to last non delimiting char
-    --p;
+    //--p;
+    return p;
+}
+
+char *detectOperand(char *p){
+    // 
+    char ch;
+    
+    while (ch = *p, ch && (isalnum(ch) || ch == ';' || 
+                ch == '\'' || ch == '"' || ch == '#' || ch == '$') ){
+        echoChar(ch);
+        ++p;
+    }
+    
+    //Rewind pointer to last non delimiting char
+    //--p;
     return p;
 }
 
@@ -76,40 +92,62 @@ int memcmpcase (char *p1, char *p2, int size) {
 
 /*
 ** Request space in line
+*  Return number of spaces actually written
 */
-void request_space (FILE *output, int *current, int new, int force, int tabs) {
+int request_space (FILE *output, int *current, int new, int force, int tabs) {
 
     /*
     ** If already exceeded space...
     */
     if (*current >= new) {
+        
+        // If force is true, a single space is always written to output
         if (force){
             fputc (' ', output);
             (*current)++;
+            
+            return 1;
         }
-        return;
+        return 0;
     }
 
+    // From here on, *current < new
+    
     /*
     ** Advance one step at a time
     */
     if (new){
-        while (1) {
+        // Write spaces to output, only if new != 0
+        // Assume, new is non negative
+        
+        while ( *current < new ) {
             if (tabs == 0) {
+                // Use spaces instead of tabs
+                
                 int i = 0;
-                for (; i<new-*current; ++i){
-                    fprintf(output, " ");
+                
+                // Write number of spaces calculated from the 
+                // difference between *current and new
+                for (; i < new-*current; ++i){
+                    fputc(' ', output);
                 }
-                //fprintf (output, "%*s", new - *current, "");
+                
+                // Update the current_column variable to the new x position 
                 *current = new;
+                return i;
             } else {
+                // Use tabs, not spaces. Assume tab has a width of <<tabs>>
                 fputc ('\t', output);
+                
+                // Quantize current output column to value of <<tabs>>
                 *current = (*current + tabs) / tabs * tabs;
             }
-            if (*current >= new)
-                return;
         }
+        
+        return 0;
     }
+    
+    return 0;
 }
 
 /* Tests, if a pointer is in range between a start pointer and and end pointer
@@ -148,4 +186,34 @@ char *convertLinefeedsToStringSeparator(char* data, int allocation){
         *p2++ = '\0';   /* Force line break */
 
     return p2;
+}
+
+int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int current_column){
+    /*
+    ** Try to keep comments horizontally aligned (only works
+    ** if spaces were used in source file)
+    */
+    //p2 = p1;
+    //while (p2 - 1 >= p && isspace (* (p2 - 1)))
+    //    p2--;
+    int request = 0;
+    
+    
+    if (p1 - p == prev_comment_original_location) {
+        request = prev_comment_final_location;
+    } else {
+        prev_comment_original_location = p1 - p;
+    
+        if (current_column == 0)
+            request = 0;
+        else if (current_column < start_mnemonic)
+            request = start_mnemonic;
+        else
+            request = start_comment;
+        if (current_column == 0 && align_comment == 1)
+            request = start_mnemonic;
+        prev_comment_final_location = request;
+    }
+    
+    return request;
 }

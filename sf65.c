@@ -166,53 +166,35 @@ int main (int argc, char *argv[]) {
     // p points to line start
     
     while ( fgets(linebuf, sizeof(linebuf), input ), !feof(input) ) {
-        // Set pointer p1 to start of line, which p points to
-        p1 = linebuf;
+        // Output linebuf so we see if there's a line which causes parser to lockup
+        fprintf(stdout, "%04d:__", line);
+        fprintf(stdout, "%s\n", linebuf);
         
+        // Set pointer p1 to start of line
+        p1 = p = linebuf;
+        
+        // Get length of current line, just read
+        allocation = strlen(linebuf);
+        
+        // If linebuf contains not more than a newline and a termination character, process next line
+        if (allocation < 2) continue;
+        
+        if (linebuf[allocation-1] != '\n'){
+            fprintf(stdout, "Line too long");
+            exit(1);
+        }
+        
+        directive_detected = 0;
+        mnemonic_detected = 0;
+        current_column = 0;
         // Loop over all chars in a line
-        while(true){
+        while( *p1 != 0 && (p1 - linebuf) < allocation ){
             p1 = skipWhiteSpace(p1);
-            if ( '\0' == *p1 ) {
-                ++line;
-                fputc ('\n', output);
-                
-                fputc ('\n', stdout);
-                fprintf(stdout, "%04d:____", line);
-    
-                break;
-            }
-            
-            p2 = detectCodeWord(p1);
             
             if (*p1 == ';') {   /* Comment */
-                while (*p2++); // Increase expr end ptr to end of line
-                --p2;
+                // Get x position for output of comment
+                request = getCommentSpacing(p, p1, current_column);
                 
-                /*
-                ** Try to keep comments horizontally aligned (only works
-                ** if spaces were used in source file)
-                */
-                //p2 = p1;
-                //while (p2 - 1 >= p && isspace (* (p2 - 1)))
-                //    p2--;
-                
-                
-                if (p1 - p == prev_comment_original_location) {
-                    request = prev_comment_final_location;
-                } else {
-                    prev_comment_original_location = p1 - p;
-                
-                    if (current_column == 0)
-                        request = 0;
-                    else if (current_column < start_mnemonic)
-                        request = start_mnemonic;
-                    else
-                        request = start_comment;
-                    if (current_column == 0 && align_comment == 1)
-                        request = start_mnemonic;
-                    prev_comment_final_location = request;
-                }
-
                 // Indent by level times tab width
                 request += current_level * nesting_space;
 
@@ -225,14 +207,90 @@ int main (int argc, char *argv[]) {
                 
 
                 
-                fwrite (p1, sizeof (char), p2 - p1, output);
-                fputc ('\n', output);
+                fwrite (p1, sizeof (char), allocation-(p1-p), output);
                 //current_column += p2 - p1;
+            
+                //When comment if found, rest of line is also comment. So proceed to next line
+                break;
             }
-            p1 = p2+1;
+      
+            p2 = detectCodeWord(p1);
+            if (p2 == p1){
+                p2 = detectOperand(p1);
+            }
+            
+            flags = 0;
+            
+            if (*p1 =='_' || *p1 == '.' || isalpha(*p1)){
+                if (directive_detected){
+                    fputc(' ', output);
+                    ++current_column;
+                }else{
+                    // p1 points to start of codeword, p2 be moved to end of word
+                    c = detectOpcode(p1, p2, processor, &request, &flags);
+
+                    // Use p3 to iterate over codeword and eventually change case
+                    if (c < 0) {
+                        changeCase(p1, p2, mnemonics_case);
+                        request = start_mnemonic;
+                        mnemonic_detected = 1;
+                    } else if ( c > 0) {
+                        changeCase(p1, p2, directives_case);
+                        request = start_directive;
+                        directive_detected = 1;
+                    } else{
+                        //Label
+                        request = 0;
+                        label_detected = 1;
+                    } 
+                }
+            }else{
+                if (mnemonic_detected){
+                    request = start_operand;
+                    mnemonic_detected = 0;
+                }else{
+                    request = 0;
+                }
+                
+            }
+            
+            if (current_column != 0 && labels_own_line != 0 && (flags & DONT_RELOCATE_LABEL) == 0) {
+                fputc ('\n', output);
+                current_column = 0;
+            }
+            
+            if (flags & LEVEL_IN) {
+                current_level++;
+                request = start_mnemonic-4;
+            }
+            
+            if (flags & LEVEL_OUT) {
+                if (current_level > 0)
+                    current_level--;
+                request = start_mnemonic+4;
+            }
+
+            // Indent by level times tab width
+            if ( c != 0 ) request += current_level * nesting_space;
+
+            // Unindent by one level
+            if (flags & LEVEL_MINUS)
+                if (request > nesting_space) request -= nesting_space;
+            
+            // Indent by level times tab width
+            request += current_level * nesting_space;
+
+            request_space (output, &current_column, request, 0, tabs);
+                
+            fwrite (p1, sizeof (char), p2-p1, output);
+            current_column += p2-p1;
+            p1 = p2;
         }
-        p = p1;
-        ++p; //Always inc to avoid dead locking on reading chars again and again
+//        p = p1;
+//        ++p; //Always inc to avoid dead locking on reading chars again and again
+    
+        ++line;
+        fputc ('\n', output);
     }
 //        
     //exit(0);
@@ -321,28 +379,7 @@ int main (int argc, char *argv[]) {
 //        /*
 //        ** Move label to own line
 //        */
-//        if (current_column != 0 && labels_own_line != 0 && (flags & DONT_RELOCATE_LABEL) == 0) {
-//            fputc ('\n', output);
-//            current_column = 0;
-//        }
-//        
-//        if (flags & LEVEL_IN) {
-//            current_level++;
-//            request = start_mnemonic-4;
-//        }
-//        
-//        if (flags & LEVEL_OUT) {
-//            if (current_level > 0)
-//                current_level--;
-//            request = start_mnemonic;
-//        }
-//
-//        // Indent by level times tab width
-//        if ( c != 0 ) request += current_level * nesting_space;
-//
-//        // Unindent by one level
-//        if (flags & LEVEL_MINUS)
-//            if (request > nesting_space) request -= nesting_space;
+
 //        
 //        // Insert space into output dependent on indent
 //        request_space (output, &current_column, request, 0, tabs);
