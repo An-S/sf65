@@ -31,9 +31,21 @@
  * Mnemonics having args not separated by space are not recognized
  *      -> Is fixed for mnemonics which comes first in line
  * Alignment of .proc/.scope/.endproc/.endscope is not satisfying
+ *      -> Tried to solve that issue by placing scope directives 4 chars left of menemonics
  * Mnemonics/directives after labels are recognized as operands
+ *      -> Progress: The mnemonics are recognized as seen by the changed case. However, they are not in the correct column
  * (However, comments are correctly recignized and aligned with mnemonics)
  * Labels are indented with section(.proc, .scope ...) directives
+ * 
+ * Missing spaces after directives
+ * 
+ * Missing spaces after labels
+ * 
+ * Data directives are not correctly placed with mnemonics
+ * 
+ * Extra linefeeds after comments
+ * 
+ * Removed linefeeds on empty lines
  */
 
 /* MISSING FEATURES
@@ -188,7 +200,12 @@ int main (int argc, char *argv[]) {
         mnemonic_detected = 0;
         current_column = 0;
         // Loop over all chars in a line
-        while( *p1 != 0 && (p1 - linebuf) < allocation ){
+        while( true ){
+            if (*p1 == 0 || (p1 - linebuf) >= allocation){
+                fputc('\n', output);
+                break;
+            }
+            
             p1 = skipWhiteSpace(p1);
             
             if (*p1 == ';') {   /* Comment */
@@ -267,30 +284,27 @@ int main (int argc, char *argv[]) {
             if (flags & LEVEL_OUT) {
                 if (current_level > 0)
                     current_level--;
-                request = start_mnemonic+4;
+                request = start_mnemonic;
             }
-
+            
             // Indent by level times tab width
             if ( c != 0 ) request += current_level * nesting_space;
 
             // Unindent by one level
             if (flags & LEVEL_MINUS)
                 if (request > nesting_space) request -= nesting_space;
-            
-            // Indent by level times tab width
-            request += current_level * nesting_space;
 
             request_space (output, &current_column, request, 0, tabs);
                 
             fwrite (p1, sizeof (char), p2-p1, output);
             current_column += p2-p1;
             p1 = p2;
+    
         }
 //        p = p1;
 //        ++p; //Always inc to avoid dead locking on reading chars again and again
     
         ++line;
-        fputc ('\n', output);
     }
 //        
     //exit(0);

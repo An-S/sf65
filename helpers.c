@@ -199,19 +199,22 @@ int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int curr
     int request = 0;
     
     
-    if (p1 - p == prev_comment_original_location) {
+    if (p1-p == prev_comment_original_location) {
         request = prev_comment_final_location;
     } else {
         prev_comment_original_location = p1 - p;
     
-        if (current_column == 0)
-            request = 0;
-        else if (current_column < start_mnemonic)
+        //if (current_column == 0)
+        //    request = 0;
+        //else 
+        if (current_column <= start_mnemonic)
             request = start_mnemonic;
         else
             request = start_comment;
-        if (current_column == 0 && align_comment == 1)
-            request = start_mnemonic;
+            
+        //if (current_column == 0 && align_comment == 1)
+        //    request = start_mnemonic;
+            
         prev_comment_final_location = request;
     }
     
