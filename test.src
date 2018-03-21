@@ -26,14 +26,24 @@ sta $d020 ; comment after command at beginning of line
   iny
  sta $d020
    label1:
+   
+   
+   
+   
+   
 label8
 label2 ;comment after label
+.proc dfkdjkfd
     label3: lda #$00
-    label4: aDC $d020               ;comment
+    .endproc
+    label4: aDC $d020               ;comment after label and command
+    
     .BYTe 65
     .Addr $1234
+    .endproc 
    .BYTE 33
    .res 4,2
 label5 .byte 123
 label6 .byte "Directive after label"
-label7                      ;my comment
+label7                      ;my 2nd comment after label
+alengthyLabelWithMnemonicBehind lSR $d019

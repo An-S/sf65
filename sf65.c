@@ -30,22 +30,28 @@
  *      -> Seems fixed, now (16.03.2018)
  * Mnemonics having args not separated by space are not recognized
  *      -> Is fixed for mnemonics which comes first in line
+ *      -> 17./18.03.2018
  * Alignment of .proc/.scope/.endproc/.endscope is not satisfying
  *      -> Tried to solve that issue by placing scope directives 4 chars left of menemonics
+ *      -> 17./18.03.2018
  * Mnemonics/directives after labels are recognized as operands
  *      -> Progress: The mnemonics are recognized as seen by the changed case. However, they are not in the correct column
  * (However, comments are correctly recignized and aligned with mnemonics)
+ *         -> 19./20.03.2018
  * Labels are indented with section(.proc, .scope ...) directives
- * 
+ *      -> Fixed in the way that labels or only indented with section when they are aligned with mnemonics 
+ *          -> 21.03.2018
  * Missing spaces after directives
- * 
+ *      -> Fixed by remembering a found directive and issuing a space before processing the next term
+ *          -> 21.03.2018
  * Missing spaces after labels
- * 
+ *      -> Fixed for most cases but one: length of label is very large -> Fixed 21.03.2018
  * Data directives are not correctly placed with mnemonics
- * 
+ *      -> Fixed by introducing ALIGN_MNEMONIC flag 19.03.2018 
  * Extra linefeeds after comments
- * 
+ *      -> Fixed, 20.03.2018
  * Removed linefeeds on empty lines
+ *      -> Problem persists after directives in prev line -> Fixed 21.03.2018
  */
 
 /* MISSING FEATURES
@@ -61,8 +67,22 @@
 
 #include "sf65.h"
 
-int tabs;
+typedef struct{
+    int tabs;
+    int style;
+    int processor;
+    int start_mnemonic;
+    int start_operand;
+    int start_comment;
+    int start_directive;
+    int align_comment;
+    int nesting_space;
+    int labels_own_line;
+    int mnemonics_case;
+    int directives_case;
+} sf65Options_t;
 
+int tabs;
 int style;
 int processor;
 int start_mnemonic;
@@ -72,10 +92,27 @@ int start_directive;
 int align_comment;
 int nesting_space;
 int labels_own_line;
-int prev_comment_original_location;
-int prev_comment_final_location;
 int mnemonics_case;
 int directives_case;
+
+typedef struct{
+    int prev_comment_original_location;
+    int prev_comment_final_location;
+    
+    bool label_detected;
+    bool mnemonic_detected;
+    bool comment_detected;
+    bool directive_detected;
+    
+    int current_column;
+    int request;
+    int current_level;
+    
+    int flags;
+} sf65ParsingData_t;
+
+int prev_comment_original_location;
+int prev_comment_final_location;
 
 
 
@@ -189,7 +226,10 @@ int main (int argc, char *argv[]) {
         allocation = strlen(linebuf);
         
         // If linebuf contains not more than a newline and a termination character, process next line
-        if (allocation < 2) continue;
+        if (allocation < 2) {
+            fputc('\n', output); 
+            continue;
+        }
         
         if (linebuf[allocation-1] != '\n'){
             fprintf(stdout, "Line too long");
@@ -199,6 +239,8 @@ int main (int argc, char *argv[]) {
         directive_detected = 0;
         mnemonic_detected = 0;
         current_column = 0;
+        label_detected = 0;
+        
         // Loop over all chars in a line
         while( true ){
             if (*p1 == 0 || (p1 - linebuf) >= allocation){
@@ -208,24 +250,23 @@ int main (int argc, char *argv[]) {
             
             p1 = skipWhiteSpace(p1);
             
+            if (directive_detected){
+                fputc(' ', output);
+                ++current_column;
+            }
+            
             if (*p1 == ';') {   /* Comment */
                 // Get x position for output of comment
                 request = getCommentSpacing(p, p1, current_column);
                 
                 // Indent by level times tab width
-                request += current_level * nesting_space;
-
-                request_space (output, &current_column, request, 0, tabs);
-                //p2 = p1;
-                //while (*p2)
-                 //   p2++;
-                //while (p2 > p1 && isspace (* (p2 - 1)))
-                 //   p2--;
+                if (request == start_mnemonic){
+                    request += current_level * nesting_space;
+                }
                 
-
+                request_space (output, &current_column, request, 1, tabs);
                 
                 fwrite (p1, sizeof (char), allocation-(p1-p), output);
-                //current_column += p2 - p1;
             
                 //When comment if found, rest of line is also comment. So proceed to next line
                 break;
@@ -237,30 +278,33 @@ int main (int argc, char *argv[]) {
             }
             
             flags = 0;
-            
-            if (*p1 =='_' || *p1 == '.' || isalpha(*p1)){
-                if (directive_detected){
-                    fputc(' ', output);
-                    ++current_column;
-                }else{
-                    // p1 points to start of codeword, p2 be moved to end of word
-                    c = detectOpcode(p1, p2, processor, &request, &flags);
+                            
+            if (*p1 =='_' || *p1 == '.' || isalnum(*p1)){
+                // p1 points to start of codeword, p2 be moved to end of word
+                c = detectOpcode(p1, p2, processor, &request, &flags);
 
-                    // Use p3 to iterate over codeword and eventually change case
-                    if (c < 0) {
-                        changeCase(p1, p2, mnemonics_case);
-                        request = start_mnemonic;
-                        mnemonic_detected = 1;
-                    } else if ( c > 0) {
-                        changeCase(p1, p2, directives_case);
-                        request = start_directive;
-                        directive_detected = 1;
-                    } else{
-                        //Label
+                // Use p3 to iterate over codeword and eventually change case
+                if (c < 0) {
+                    changeCase(p1, p2, mnemonics_case);
+                    request = start_mnemonic;
+                    mnemonic_detected = 1;
+                } else if ( c > 0) {
+                    changeCase(p1, p2, directives_case);
+                    request = start_directive;
+                    directive_detected = 1;
+                } else{
+                    //Label
+                    if ( ( *p1 == '_' || isalpha(*p1) ) && label_detected == 0 ){
                         request = 0;
                         label_detected = 1;
-                    } 
-                }
+                    }else{
+                        if (mnemonic_detected){
+                            request = start_operand;
+                        }else{
+                            request = 0;
+                        }
+                    }
+                } 
             }else{
                 if (mnemonic_detected){
                     request = start_operand;
@@ -287,19 +331,28 @@ int main (int argc, char *argv[]) {
                 request = start_mnemonic;
             }
             
+            if (flags & ALIGN_MNEMONIC){
+                request = start_mnemonic;
+            }
+            
             // Indent by level times tab width
             if ( c != 0 ) request += current_level * nesting_space;
 
             // Unindent by one level
             if (flags & LEVEL_MINUS)
                 if (request > nesting_space) request -= nesting_space;
-
-            request_space (output, &current_column, request, 0, tabs);
+ 
+            // Add filling spaces for alignment
+            request_space (output, &current_column, request, 1, tabs);
                 
+            // Write current term to output file
             fwrite (p1, sizeof (char), p2-p1, output);
+            
+            // Increase current_column by length of current term
             current_column += p2-p1;
+            
+            // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
-    
         }
 //        p = p1;
 //        ++p; //Always inc to avoid dead locking on reading chars again and again

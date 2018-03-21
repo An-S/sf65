@@ -12,7 +12,7 @@
 #define LEVEL_IN        0x02
 #define LEVEL_OUT       0x04
 #define LEVEL_MINUS     0x08
-
+#define ALIGN_MNEMONIC  0x10
 
 extern int tabs;
 
