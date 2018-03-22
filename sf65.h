@@ -7,6 +7,9 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
+
+#include "sf65_types.h"
 
 #define DONT_RELOCATE_LABEL 0x01
 #define LEVEL_IN        0x02
@@ -14,64 +17,8 @@
 #define LEVEL_MINUS     0x08
 #define ALIGN_MNEMONIC  0x10
 
-typedef struct{
-    int tabs;
-    int style;
-    int processor;
-    int start_mnemonic;
-    int start_operand;
-    int start_comment;
-    int start_directive;
-    int align_comment;
-    int nesting_space;
-    int labels_own_line;
-    int mnemonics_case;
-    int directives_case;
-} sf65Options_t;
-
-typedef struct{
-    int prev_comment_original_location;
-    int prev_comment_final_location;
-
-    bool label_detected;
-    bool mnemonic_detected;
-    bool comment_detected;
-    bool directive_detected;
-
-    int current_column;
-    int request;
-    int current_level;
-
-    int flags;
-} sf65ParsingData_t;
-
-
-extern sf65Options_t *sf65Options;
-
-extern int tabs;
-
-extern int style;
-extern int processor;
-extern int start_mnemonic;
-extern int start_operand;
-extern int start_comment;
-extern int start_directive;
-extern int align_comment;
-extern int nesting_space;
-extern int labels_own_line;
 extern int prev_comment_original_location;
 extern int prev_comment_final_location;
-extern int mnemonics_case;
-extern int directives_case;
-
-/*
- * Struct to hold the names of the assembler directives
- * as well as the flags which define how to deal with the former
- */
-typedef struct {
-    char *directive;
-    int flags;
-} directives_t;
 
 /*
  * Array which holds the names of the mnemonics of the 6502 processor
@@ -82,10 +29,39 @@ extern char *mnemonics_6502[];
 /// Instance holding a list of directives for ca65
 extern directives_t directives_dasm[];
 
+
+/* ************************************************************
+ * Prototypes for functions dealing with input and output files
+ * ************************************************************
+ */
+
+/*
+ * Open input file (unformatted source), check error
+ */
+FILE *sf65_openInputFile(char *filename);
+
+/*
+ * Open output file (formatted source), check error
+ */
+FILE *sf65_openOutputFile(char *filename);
+
+
+/* ************************************************************
+ * Prototypes for functions dealing with command line args
+ * ************************************************************
+ */
+int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options);
+
+/* ************************************************************
+ * Prototypes for parsing functions
+ * ************************************************************
+ */
+
 /*
  * Procedure to process command line arguments given to sf65
+ * Fills given struct with values of command line options and/or default values
  */
-int processCMDArgs(int argc, char** argv);
+int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options);
 
 
 // **************************************************************************************

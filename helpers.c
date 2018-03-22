@@ -2,6 +2,8 @@
 #include "stdlib.h"
 #include "ctype.h"
 
+extern sf65Options_t *sf65Options;
+
 char echoChar(char ch) {
     fputc(ch, stdout);
     return ch;
@@ -155,37 +157,6 @@ int request_space (FILE *output, int *current, int new, int force, int tabs) {
  */
 bool inRange(const char *p, const char *first, int size) {
     return p < (first + size);
-}
-
-/*
- * Starts of the memory location pointed to by *data
- * Processes allocation bytes. If newline is found, replace by \0.
- * Carriage return characters are dismissed from the output.
- */
-char *convertLinefeedsToStringSeparator(char* data, int allocation) {
-    char *p1 = data;
-    char *p2 = p1;
-    char request = 0;
-
-    while ( inRange(p1, data, allocation) ) {
-        if (*p1 == '\r') {  /* Ignore \r characters */
-            p1++; // Here, we increase only p1 but not p2 !
-            continue;
-        }
-        if (*p1 == '\n') {
-            p1++;
-            *p2++ = '\0';   /* Break line by replacing line terminator with string terminator*/
-            request = 1;
-            continue;
-        }
-        *p2++ = *p1++; //Remove \r chars out of code (only case which does not inc p2)
-        request = 0;
-    }
-
-    if (request == 0)
-        *p2++ = '\0';   /* Force line break */
-
-    return p2;
 }
 
 int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int current_column) {

@@ -1,5 +1,7 @@
 #include "sf65.h"
 
+extern sf65Options_t *sf65Options;
+
 /*
 ** Check for opcode or directive
 * c > 0 -> directive detected
