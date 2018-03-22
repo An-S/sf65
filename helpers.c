@@ -211,10 +211,10 @@ int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int curr
         //if (current_column == 0)
         //    request = 0;
         //else
-        if (current_column <= start_mnemonic)
-            request = start_mnemonic;
+        if (current_column <= sf65Options -> start_mnemonic)
+            request = sf65Options -> start_mnemonic;
         else
-            request = start_comment;
+            request = sf65Options -> start_comment;
 
         //if (current_column == 0 && align_comment == 1)
         //    request = start_mnemonic;

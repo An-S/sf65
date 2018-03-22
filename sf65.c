@@ -12,14 +12,14 @@
 **                             Tries to preserve vertical structure of comments.
 **                             Allows label in its own line. Allows to change case
 **                             of mnemonics and directives.
-** 
+**
 ** Changes introduced further:
 ** - Major code refactoring to increase maintainability and extensibility
 **      In Detail:
 **      - Added header file containing all important definitions and prototypes
 **      - Sepearated repeated code into own procedures and put into a helper.c file
 **      - Rewrote main loop using calls to these procedures instead of the former inline placement of the code
-** 
+**
 ** - Replaced DASM directives list with the CA65 directives
 */
 
@@ -39,7 +39,7 @@
  * (However, comments are correctly recignized and aligned with mnemonics)
  *         -> 19./20.03.2018
  * Labels are indented with section(.proc, .scope ...) directives
- *      -> Fixed in the way that labels or only indented with section when they are aligned with mnemonics 
+ *      -> Fixed in the way that labels or only indented with section when they are aligned with mnemonics
  *          -> 21.03.2018
  * Missing spaces after directives
  *      -> Fixed by remembering a found directive and issuing a space before processing the next term
@@ -47,7 +47,7 @@
  * Missing spaces after labels
  *      -> Fixed for most cases but one: length of label is very large -> Fixed 21.03.2018
  * Data directives are not correctly placed with mnemonics
- *      -> Fixed by introducing ALIGN_MNEMONIC flag 19.03.2018 
+ *      -> Fixed by introducing ALIGN_MNEMONIC flag 19.03.2018
  * Extra linefeeds after comments
  *      -> Fixed, 20.03.2018
  * Removed linefeeds on empty lines
@@ -67,54 +67,15 @@
 
 #include "sf65.h"
 
-typedef struct{
-    int tabs;
-    int style;
-    int processor;
-    int start_mnemonic;
-    int start_operand;
-    int start_comment;
-    int start_directive;
-    int align_comment;
-    int nesting_space;
-    int labels_own_line;
-    int mnemonics_case;
-    int directives_case;
-} sf65Options_t;
+//Create instance of sf65Options_t, but do not use directly 
+//(Avoid replacement of -> by . or -> by .)
+sf65Options_t _sf65Options;
 
-int tabs;
-int style;
-int processor;
-int start_mnemonic;
-int start_operand;
-int start_comment;
-int start_directive;
-int align_comment;
-int nesting_space;
-int labels_own_line;
-int mnemonics_case;
-int directives_case;
-
-typedef struct{
-    int prev_comment_original_location;
-    int prev_comment_final_location;
-    
-    bool label_detected;
-    bool mnemonic_detected;
-    bool comment_detected;
-    bool directive_detected;
-    
-    int current_column;
-    int request;
-    int current_level;
-    
-    int flags;
-} sf65ParsingData_t;
+//Create pointer to instance of sf65Options_t, so we can use -> throughout
+sf65Options_t *sf65Options = &_sf65Options;
 
 int prev_comment_original_location;
 int prev_comment_final_location;
-
-
 
 /*
 ** Main program
@@ -126,7 +87,7 @@ int main (int argc, char *argv[]) {
     FILE *output;
     char *data;
     char linebuf[200];
-    
+
     char *p;
     char *p1;
     char *p2;
@@ -136,12 +97,12 @@ int main (int argc, char *argv[]) {
     int current_level;
 
     int flags;
-    
+
     bool label_detected;
     bool mnemonic_detected;
     bool comment_detected;
     bool directive_detected;
-    
+
     c = processCMDArgs(argc, argv);
 
 
@@ -193,7 +154,7 @@ int main (int argc, char *argv[]) {
         exit (1);
     }
     prev_comment_original_location = 0;
-    prev_comment_final_location = start_mnemonic;
+    prev_comment_final_location = sf65Options -> start_mnemonic;
     current_level = 0;
 
     /*
@@ -210,87 +171,87 @@ int main (int argc, char *argv[]) {
     // Init p with start of data
     p = data;
     fprintf(stdout, "%4d:", line);
-    
+
     // Loop until p out of range
     // p points to line start
-    
+
     while ( fgets(linebuf, sizeof(linebuf), input ), !feof(input) ) {
         // Output linebuf so we see if there's a line which causes parser to lockup
         fprintf(stdout, "%04d:__", line);
         fprintf(stdout, "%s\n", linebuf);
-        
+
         // Set pointer p1 to start of line
         p1 = p = linebuf;
-        
+
         // Get length of current line, just read
         allocation = strlen(linebuf);
-        
+
         // If linebuf contains not more than a newline and a termination character, process next line
         if (allocation < 2) {
-            fputc('\n', output); 
+            fputc('\n', output);
             continue;
         }
-        
+
         if (linebuf[allocation-1] != '\n'){
             fprintf(stdout, "Line too long");
             exit(1);
         }
-        
+
         directive_detected = 0;
         mnemonic_detected = 0;
         current_column = 0;
         label_detected = 0;
-        
+
         // Loop over all chars in a line
         while( true ){
             if (*p1 == 0 || (p1 - linebuf) >= allocation){
                 fputc('\n', output);
                 break;
             }
-            
+
             p1 = skipWhiteSpace(p1);
-            
+
             if (directive_detected){
                 fputc(' ', output);
                 ++current_column;
             }
-            
+
             if (*p1 == ';') {   /* Comment */
                 // Get x position for output of comment
                 request = getCommentSpacing(p, p1, current_column);
-                
+
                 // Indent by level times tab width
-                if (request == start_mnemonic){
-                    request += current_level * nesting_space;
+                if (request == sf65Options -> start_mnemonic){
+                    request += current_level * sf65Options -> nesting_space;
                 }
-                
-                request_space (output, &current_column, request, 1, tabs);
-                
+
+                request_space (output, &current_column, request, 1, sf65Options -> tabs);
+
                 fwrite (p1, sizeof (char), allocation-(p1-p), output);
-            
+
                 //When comment if found, rest of line is also comment. So proceed to next line
                 break;
             }
-      
+
             p2 = detectCodeWord(p1);
             if (p2 == p1){
                 p2 = detectOperand(p1);
             }
-            
+
             flags = 0;
-                            
+
             if (*p1 =='_' || *p1 == '.' || isalnum(*p1)){
                 // p1 points to start of codeword, p2 be moved to end of word
-                c = detectOpcode(p1, p2, processor, &request, &flags);
+                c = detectOpcode(p1, p2, sf65Options -> processor, &request, &flags);
 
                 // Use p3 to iterate over codeword and eventually change case
                 if (c < 0) {
-                    changeCase(p1, p2, mnemonics_case);
-                    request = start_mnemonic;
+                    changeCase(p1, p2, sf65Options -> mnemonics_case);
+                    request = sf65Options -> start_mnemonic;
                     mnemonic_detected = 1;
                 } else if ( c > 0) {
-                    changeCase(p1, p2, directives_case);
-                    request = start_directive;
+                    changeCase(p1, p2, sf65Options -> directives_case);
+                    request = sf65Options -> start_directive;
                     directive_detected = 1;
                 } else{
                     //Label
@@ -299,69 +260,69 @@ int main (int argc, char *argv[]) {
                         label_detected = 1;
                     }else{
                         if (mnemonic_detected){
-                            request = start_operand;
+                            request = sf65Options -> start_operand;
                         }else{
                             request = 0;
                         }
                     }
-                } 
+                }
             }else{
                 if (mnemonic_detected){
-                    request = start_operand;
+                    request = sf65Options -> start_operand;
                     mnemonic_detected = 0;
                 }else{
                     request = 0;
                 }
-                
+
             }
-            
-            if (current_column != 0 && labels_own_line != 0 && (flags & DONT_RELOCATE_LABEL) == 0) {
+
+            if (current_column != 0 && sf65Options -> labels_own_line != 0 && (flags & DONT_RELOCATE_LABEL) == 0) {
                 fputc ('\n', output);
                 current_column = 0;
             }
-            
+
             if (flags & LEVEL_IN) {
                 current_level++;
-                request = start_mnemonic-4;
+                request = sf65Options -> start_mnemonic-4;
             }
-            
+
             if (flags & LEVEL_OUT) {
                 if (current_level > 0)
                     current_level--;
-                request = start_mnemonic;
+                request = sf65Options -> start_mnemonic;
             }
-            
+
             if (flags & ALIGN_MNEMONIC){
-                request = start_mnemonic;
+                request = sf65Options -> start_mnemonic;
             }
-            
+
             // Indent by level times tab width
-            if ( c != 0 ) request += current_level * nesting_space;
+            if ( c != 0 ) request += current_level * sf65Options -> nesting_space;
 
             // Unindent by one level
             if (flags & LEVEL_MINUS)
-                if (request > nesting_space) request -= nesting_space;
- 
+                if (request > sf65Options -> nesting_space) request -= sf65Options -> nesting_space;
+
             // Add filling spaces for alignment
-            request_space (output, &current_column, request, 1, tabs);
-                
+            request_space (output, &current_column, request, 1, sf65Options -> tabs);
+
             // Write current term to output file
             fwrite (p1, sizeof (char), p2-p1, output);
-            
+
             // Increase current_column by length of current term
             current_column += p2-p1;
-            
+
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
         }
 //        p = p1;
 //        ++p; //Always inc to avoid dead locking on reading chars again and again
-    
+
         ++line;
     }
-//        
+//
     //exit(0);
-//    
+//
 //        current_column = 0;
 //
 //        // Loop over all chars which are whitespace but not \0
@@ -371,16 +332,16 @@ int main (int argc, char *argv[]) {
 //            fputc ('\n', output);
 //            continue;
 //        }
-//        
+//
 //        p2 = detectCodeWord(p1);
-//        
+//
 //        //p1 points to first char other than space or \0 after start of line or end of label
 //        //p2 point to end of word
 //        flags = 0;
-//        
+//
 //        if (*p1 == ';') {   /* Comment */
 //            while (*p2++) // Increase expr end ptr to end of line
-//            
+//
 //            /*
 //            ** Try to keep comments horizontally aligned (only works
 //            ** if spaces were used in source file)
@@ -388,13 +349,13 @@ int main (int argc, char *argv[]) {
 //            //p2 = p1;
 //            //while (p2 - 1 >= p && isspace (* (p2 - 1)))
 //            //    p2--;
-//            
-//            
+//
+//
 //            if (p2 == p && p1 - p == prev_comment_original_location) {
 //                request = prev_comment_final_location;
 //            } else {
 //                prev_comment_original_location = p1 - p;
-//            
+//
 //                if (current_column == 0)
 //                    request = 0;
 //                else if (current_column < start_mnemonic)
@@ -416,8 +377,8 @@ int main (int argc, char *argv[]) {
 //            //while (p2 > p1 && isspace (* (p2 - 1)))
 //             //   p2--;
 //
-//            
-//            
+//
+//
 //            fwrite (p1, sizeof (char), p2 - p1, output);
 //            fputc ('\n', output);
 //            //current_column += p2 - p1;
@@ -442,19 +403,19 @@ int main (int argc, char *argv[]) {
 //        }else{
 //            request = start_operand;
 //        }
-//        
+//
 //        /*
 //        ** Move label to own line
 //        */
 
-//        
+//
 //        // Insert space into output dependent on indent
 //        request_space (output, &current_column, request, 0, tabs);
 //        if (p2-p1) fwrite (p1, sizeof (char), p2 - p1, output);
 //
 //        current_column += p2 - p1;
 //
-//            
+//
 //            //p1 = skipWhiteSpace(p1);
 //
 //            // It is wrong to assume operand, here. Could aswell be mnemonic or directive
@@ -503,7 +464,7 @@ int main (int argc, char *argv[]) {
 //            }
 
         //}
-        
+
         //while (*p++) ;
     //}
     fclose (output);
@@ -562,20 +523,20 @@ int processCMDArgs(int argc, char** argv){
     /*
     ** Default settings
     */
-    style = 0;
-    processor = 1;
-    start_mnemonic = 8;
-    start_operand = 16;
-    start_comment = 32;
-    start_directive = 0;//7;
-    tabs = 0;
-    align_comment = 1;
-    nesting_space = 4;
-    labels_own_line = 0;
-    mnemonics_case = 0;
-    directives_case = 0;
+    sf65Options -> style = 0;
+    sf65Options -> processor = 1;
+    sf65Options -> start_mnemonic = 8;
+    sf65Options -> start_operand = 16;
+    sf65Options -> start_comment = 32;
+    sf65Options -> start_directive = 0;//7;
+    sf65Options -> tabs = 0;
+    sf65Options -> align_comment = 1;
+    sf65Options -> nesting_space = 4;
+    sf65Options -> labels_own_line = 0;
+    sf65Options -> mnemonics_case = 0;
+    sf65Options -> directives_case = 0;
     prev_comment_final_location = 4;
-    
+
     /*
     ** Process arguments
     */
@@ -586,56 +547,56 @@ int processCMDArgs(int argc, char** argv){
             exit (1);
         }
         switch (tolower (argv[c][1])) {
-            case 's':   /* Style */
-                style = atoi (&argv[c][2]);
-                if (style != 0 && style != 1) {
-                    fprintf (stderr, "Bad style code: %d\n", style);
+            case 's':   /* sf65Options -> Style */
+                sf65Options -> style = atoi (&argv[c][2]);
+                if (sf65Options -> style != 0 && sf65Options -> style != 1) {
+                    fprintf (stderr, "Bad sf65Options -> style code: %d\n", sf65Options -> style);
                     exit (1);
                 }
                 break;
             case 'p':   /* Processor */
-                processor = atoi (&argv[c][2]);
-                if (processor < 0 || processor > 1) {
-                    fprintf (stderr, "Bad processor code: %d\n", processor);
+                sf65Options -> processor = atoi (&argv[c][2]);
+                if (sf65Options -> processor < 0 || sf65Options -> processor > 1) {
+                    fprintf (stderr, "Bad sf65Options -> processor code: %d\n", sf65Options -> processor);
                     exit (1);
                 }
                 break;
             case 'm':   /* Mnemonic start */
                 if (tolower (argv[c][2]) == 'l') {
-                    mnemonics_case = 1;
+                    sf65Options -> mnemonics_case = 1;
                 } else if (tolower (argv[c][2]) == 'u') {
-                    mnemonics_case = 2;
+                    sf65Options -> mnemonics_case = 2;
                 } else {
-                    start_mnemonic = atoi (&argv[c][2]);
+                    sf65Options -> start_mnemonic = atoi (&argv[c][2]);
                 }
                 break;
             case 'o':   /* Operand start */
-                start_operand = atoi (&argv[c][2]);
+                sf65Options -> start_operand = atoi (&argv[c][2]);
                 break;
             case 'c':   /* Comment start */
-                start_comment = atoi (&argv[c][2]);
+                sf65Options -> start_comment = atoi (&argv[c][2]);
                 break;
             case 't':   /* Tab size */
-                tabs = atoi (&argv[c][2]);
+                sf65Options -> tabs = atoi (&argv[c][2]);
                 break;
             case 'a':   /* Comment alignment */
-                align_comment = atoi (&argv[c][2]);
-                if (align_comment != 0 && align_comment != 1) {
-                    fprintf (stderr, "Bad comment alignment: %d\n", align_comment);
+                sf65Options -> align_comment = atoi (&argv[c][2]);
+                if (sf65Options -> align_comment != 0 && sf65Options -> align_comment != 1) {
+                    fprintf (stderr, "Bad comment alignment: %d\n", sf65Options -> align_comment);
                     exit (1);
                 }
                 break;
             case 'n':   /* Nesting space */
-                nesting_space = atoi (&argv[c][2]);
+                sf65Options -> nesting_space = atoi (&argv[c][2]);
                 break;
             case 'l':   /* Labels in own line */
-                labels_own_line = 1;
+                sf65Options -> labels_own_line = 1;
                 break;
             case 'd':   /* Directives */
                 if (tolower (argv[c][2]) == 'l') {
-                    directives_case = 1;
+                    sf65Options -> directives_case = 1;
                 } else if (tolower (argv[c][2]) == 'u') {
-                    directives_case = 2;
+                    sf65Options -> directives_case = 2;
                 } else {
                     fprintf (stderr, "Unknown argument: %c%c\n", argv[c][1], argv[c][2]);
                 }
@@ -650,37 +611,37 @@ int processCMDArgs(int argc, char** argv){
     /*
     ** Validate constraints
     */
-    if (style == 1) {
-        if (start_mnemonic > start_comment) {
-            fprintf (stderr, "Operand error: -m%d > -c%d\n", start_mnemonic, start_comment);
+    if (sf65Options -> style == 1) {
+        if (sf65Options -> start_mnemonic > sf65Options -> start_comment) {
+            fprintf (stderr, "Operand error: -m%d > -c%d\n", sf65Options -> start_mnemonic, sf65Options -> start_comment);
             exit (1);
         }
-        start_operand = start_mnemonic;
-    } else if (style == 0) {
-        if (start_mnemonic > start_operand) {
-            fprintf (stderr, "Operand error: -m%d > -o%d\n", start_mnemonic, start_operand);
+        sf65Options -> start_operand = sf65Options -> start_mnemonic;
+    } else if (sf65Options -> style == 0) {
+        if (sf65Options -> start_mnemonic > sf65Options -> start_operand) {
+            fprintf (stderr, "Operand error: -m%d > -o%d\n", sf65Options -> start_mnemonic, sf65Options -> start_operand);
             exit (1);
         }
-        if (start_operand > start_comment) {
-            fprintf (stderr, "Operand error: -o%d > -c%d\n", start_operand, start_comment);
+        if (sf65Options -> start_operand > sf65Options -> start_comment) {
+            fprintf (stderr, "Operand error: -o%d > -c%d\n", sf65Options -> start_operand, sf65Options -> start_comment);
             exit (1);
         }
     }
-    if (tabs > 0) {
-        if (start_mnemonic % tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", start_mnemonic, tabs);
+    if (sf65Options -> tabs > 0) {
+        if (sf65Options -> start_mnemonic % sf65Options -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_mnemonic, sf65Options -> tabs);
             exit (1);
         }
-        if (start_operand % tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", start_operand, tabs);
+        if (sf65Options -> start_operand % sf65Options -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_operand, sf65Options -> tabs);
             exit (1);
         }
-        if (start_comment % tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", start_comment, tabs);
+        if (sf65Options -> start_comment % sf65Options -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_comment, sf65Options -> tabs);
             exit (1);
         }
-        if (nesting_space % tabs) {
-            fprintf (stderr, "Operand error: -n%d isn't a multiple of %d\n", nesting_space, tabs);
+        if (sf65Options -> nesting_space % sf65Options -> tabs) {
+            fprintf (stderr, "Operand error: -n%d isn't a multiple of %d\n", sf65Options -> nesting_space, sf65Options -> tabs);
             exit (1);
         }
     }

@@ -14,6 +14,40 @@
 #define LEVEL_MINUS     0x08
 #define ALIGN_MNEMONIC  0x10
 
+typedef struct{
+    int tabs;
+    int style;
+    int processor;
+    int start_mnemonic;
+    int start_operand;
+    int start_comment;
+    int start_directive;
+    int align_comment;
+    int nesting_space;
+    int labels_own_line;
+    int mnemonics_case;
+    int directives_case;
+} sf65Options_t;
+
+typedef struct{
+    int prev_comment_original_location;
+    int prev_comment_final_location;
+
+    bool label_detected;
+    bool mnemonic_detected;
+    bool comment_detected;
+    bool directive_detected;
+
+    int current_column;
+    int request;
+    int current_level;
+
+    int flags;
+} sf65ParsingData_t;
+
+
+extern sf65Options_t *sf65Options;
+
 extern int tabs;
 
 extern int style;

@@ -11,19 +11,19 @@ int check_opcode (char *p1, char *p2) {
 
     for (c = 0; directives_dasm[c].directive != NULL; c++) {
         length = strlen (directives_dasm[c].directive);
-        if ( (*p1 == '.' && 
-               length == p2 - p1 - 1 && 
+        if ( (*p1 == '.' &&
+               length == p2 - p1 - 1 &&
                memcmpcase (p1 + 1, directives_dasm[c].directive, p2 - p1 - 1) == 0
-             ) || 
-             ( length == p2 - p1     && 
+             ) ||
+             ( length == p2 - p1     &&
                memcmpcase (p1,     directives_dasm[c].directive, p2 - p1)     == 0
              )
            ) {
-            
+
                return c + 1;
         }
     }
-    
+
     //Maybe this would be a good point to check for mnemonics which have operands not separated by space
     for (c = 0; mnemonics_6502[c] != NULL; c++) {
         length = strlen (mnemonics_6502[c]);
@@ -34,7 +34,7 @@ int check_opcode (char *p1, char *p2) {
 }
 
 /* Detects mnemonic or directive and returns corresponding index, in found.
- * Returns output column by ref. 
+ * Returns output column by ref.
  * Takes account of the processor flag and the directive flags
  */
 int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flags){
@@ -46,17 +46,17 @@ int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flag
         if (opIndex == 0) {
             *outputColumn = 0; //Set output column to start_mnemonic column
         } else if (opIndex < 0) {
-            *outputColumn = start_mnemonic;
+            *outputColumn = sf65Options -> start_mnemonic;
         } else {
             *flags = directives_dasm[opIndex - 1].flags;
             if (*flags & DONT_RELOCATE_LABEL)
                 *outputColumn = 0;
             else
-                *outputColumn = start_directive;
+                *outputColumn = sf65Options -> start_directive;
         }
     // For other processors just assume a mnemonic wtho checking
     } else {
-        *outputColumn = start_mnemonic;
+        *outputColumn = sf65Options -> start_mnemonic;
         opIndex = 0;
     }
 
