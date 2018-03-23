@@ -4,6 +4,12 @@
 
 extern sf65Options_t *sf65Options;
 
+int sgn(int x){
+    if (x){
+        return x/abs(x);
+    }
+    return 0;
+}
 char echoChar (char ch) {
     fputc (ch, stdout);
     return ch;
@@ -179,9 +185,12 @@ int getCommentSpacing (char *p /*linestart*/, char *p1 /*commentstart*/, sf65Par
         // Remember the x position of the current comment in unformatted src
         pData -> prev_comment_original_location = p1 - p;
 
-        //if (current_column == 0)
-        //    request = 0;
-        //else
+        if ( !sf65Options -> align_comment){
+            request = pData -> prev_comment_original_location / sf65Options -> nesting_space *
+                      sf65Options -> nesting_space;
+            return request;
+        }
+
         if (pData -> current_column <= sf65Options -> start_mnemonic)
             request = sf65Options -> start_mnemonic;
         else

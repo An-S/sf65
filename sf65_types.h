@@ -27,7 +27,6 @@ typedef struct{
 typedef struct{
     bool label_detected;
     bool mnemonic_detected;
-    bool comment_detected;
     bool directive_detected;
 
     int current_column;

@@ -52,11 +52,16 @@
  *      -> Fixed, 20.03.2018
  * Removed linefeeds on empty lines
  *      -> Problem persists after directives in prev line -> Fixed 21.03.2018
+ * If unformatted source contains mnemonics which reference to variables 
+ * then operands are separated by space instead of using start_operand column
+ *      -> 
  * 
  * Missing command line options
  * 
  * Reintegrated possibility to choose between extra operand column and 
  * operand separated by single space -> 23.03.2018
+ * 
+ * The flag that specifies alignment of comments to nearest column is ignored
  */
 
 /* MISSING FEATURES
@@ -90,7 +95,7 @@ sf65ParsingData_t *sf65ParsingData = &_sf65ParsingData;
 int main (int argc, char *argv[]) {
     int c, line = 0;
 
-    char linebuf[200];
+    char linebuf[1000];
 
     char *p;
     char *p1;
@@ -98,8 +103,7 @@ int main (int argc, char *argv[]) {
     int allocation;
 
     processCMDArgs (argc, argv, sf65Options);
-    sf65ParsingData -> prev_comment_final_location = 4;
-
+    
     // Try to open input file. Procedure exits in case of error.
     // No further err checking necessary
     input = sf65_openInputFile (sf65Options -> infilename);
@@ -120,7 +124,7 @@ int main (int argc, char *argv[]) {
 
     sf65ParsingData -> request = 0;
     sf65ParsingData -> prev_comment_original_location = 0;
-    sf65ParsingData -> prev_comment_final_location = sf65Options -> start_mnemonic;
+    sf65ParsingData -> prev_comment_final_location = 0;
     sf65ParsingData -> current_level = 0;
 
     // Read lines from input until EOF
@@ -213,36 +217,36 @@ int main (int argc, char *argv[]) {
                 c = detectOpcode (p1, p2, sf65Options -> processor, &sf65ParsingData -> request, &sf65ParsingData -> flags);
 
                 // Use p3 to iterate over codeword and eventually change case
-                if (c < 0) {
-                    changeCase (p1, p2, sf65Options -> mnemonics_case);
-                    sf65ParsingData -> request = sf65Options -> start_mnemonic;
-                    sf65ParsingData -> mnemonic_detected = 1;
-                } else if (c > 0) {
-                    changeCase (p1, p2, sf65Options -> directives_case);
-                    sf65ParsingData -> request = sf65Options -> start_directive;
-                    sf65ParsingData -> directive_detected = 1;
-                } else {
-                    //Label
-                    if ( (*p1 == '_' || isalpha (*p1)) && sf65ParsingData -> label_detected == 0) {
-                        sf65ParsingData -> request = 0;
-                        sf65ParsingData -> label_detected = 1;
-                    } else {
-                        if (sf65ParsingData -> mnemonic_detected) {
-                            if (sf65Options -> style){
-                                sf65ParsingData -> request = 0;
-                            }else{
-                                sf65ParsingData -> request = sf65Options -> start_operand;
-                            }
-                        } else {
-                            }
+                
+                switch (sgn(c)){
+                case -1:
+                    sf65_PlaceMnemonicInLine(p1, p2, sf65Options, sf65ParsingData);
+                    break;
+                case 1:
+                    sf65_PlaceDirectiveInLine(p1, p2, sf65Options, sf65ParsingData);
+                    break;
+                default:
+                    if (sf65ParsingData -> mnemonic_detected) {
+                        sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                    }else if (sf65ParsingData -> label_detected == 0){
+                        if ( (*p1 == '_' || isalpha (*p1)) ) {
                             sf65ParsingData -> request = 0;
+                            sf65ParsingData -> label_detected = 1;
                         }
-                    }
+                    } else{
+                        sf65ParsingData -> request = 0;
+                    }   
+                    
+                    sf65ParsingData -> directive_detected = 
+                    sf65ParsingData -> mnemonic_detected = 0;
+                    
+                    break;
                 }
             } else {
+                // Neither label, nor directive, nor mnemonic
+                // Catch terms starting with non alnum characters 
                 if (sf65ParsingData -> mnemonic_detected) {
-                    sf65ParsingData -> request = sf65Options -> start_operand;
-                    sf65ParsingData -> mnemonic_detected = 0;
+                    sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                 } else {
                     sf65ParsingData -> request = 0;
                 }

@@ -92,3 +92,42 @@ void sf65_correctOutputColumnForFlags(sf65ParsingData_t *sf65ParsingData, const 
         if (sf65ParsingData -> request > sf65Options -> nesting_space) 
             sf65ParsingData -> request -= sf65Options -> nesting_space;
 }
+
+/*
+ * This function sets correct case for mnemonic and sets requested x position to start_mnemonic
+ * It also indicates that a mnemonic was found and clears the directive found flag
+ */
+void sf65_PlaceMnemonicInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData){
+    changeCase (p1, p2, sf65Options -> mnemonics_case);
+    sf65ParsingData -> request = sf65Options -> start_mnemonic;
+    sf65ParsingData -> mnemonic_detected = 1;
+    sf65ParsingData -> directive_detected = 0;
+}
+
+/*
+ * This function sets correct case for directive and sets requested x position to start_directive
+ * It also indicates that a directive was found and clears the mnemonic found flag
+ */
+void sf65_PlaceDirectiveInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData){
+    changeCase (p1, p2, sf65Options -> directives_case);
+    sf65ParsingData -> request = sf65Options -> start_directive;
+    sf65ParsingData -> directive_detected = 1;
+    sf65ParsingData -> mnemonic_detected = 0;
+}
+
+/*
+ * This function sets correct case for directive and sets requested x position to start_directive
+ * It also indicates that a directive was found and clears the mnemonic found flag
+ */
+void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData){
+    if ( sf65Options -> style != 0){
+        sf65ParsingData -> request = 0;
+    }else{
+        sf65ParsingData -> request = sf65Options -> start_operand;
+    }
+    sf65ParsingData -> mnemonic_detected = 
+    sf65ParsingData -> directive_detected = 0;
+}
