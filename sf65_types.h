@@ -25,9 +25,6 @@ typedef struct{
  * Struct to hold variables needed for parsing of unformatted source
  */
 typedef struct{
-    int prev_comment_original_location;
-    int prev_comment_final_location;
-
     bool label_detected;
     bool mnemonic_detected;
     bool comment_detected;
@@ -38,6 +35,9 @@ typedef struct{
     int current_level;
 
     int flags;
+    
+    int prev_comment_original_location;
+    int prev_comment_final_location;
 } sf65ParsingData_t;
 
 /*

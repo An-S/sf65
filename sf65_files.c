@@ -9,6 +9,8 @@ FILE *sf65_openInputFile(char *filename){
         fprintf (stderr, "Unable to open input file: %s\n", filename);
         exit (1);
     }
+    
+    return input;
 }
 
 /*

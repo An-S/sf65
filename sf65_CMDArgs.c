@@ -68,11 +68,9 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
     // Default to stdout
     sf65Options -> outfilename = "-";
     
-    prev_comment_final_location = 4;
-
     /*
-    ** Process arguments
-    */
+     * Process arguments
+     */
     c = 1;
     while (c < argc - 2) {
         if (argv[c][0] != '-') {

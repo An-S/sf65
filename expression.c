@@ -14,15 +14,15 @@ int check_opcode (char *p1, char *p2) {
     for (c = 0; directives_dasm[c].directive != NULL; c++) {
         length = strlen (directives_dasm[c].directive);
         if ( (*p1 == '.' &&
-               length == p2 - p1 - 1 &&
-               memcmpcase (p1 + 1, directives_dasm[c].directive, p2 - p1 - 1) == 0
+                length == p2 - p1 - 1 &&
+                memcmpcase (p1 + 1, directives_dasm[c].directive, p2 - p1 - 1) == 0
              ) ||
-             ( length == p2 - p1     &&
-               memcmpcase (p1,     directives_dasm[c].directive, p2 - p1)     == 0
-             )
+                (length == p2 - p1     &&
+                 memcmpcase (p1,     directives_dasm[c].directive, p2 - p1)     == 0
+                )
            ) {
 
-               return c + 1;
+            return c + 1;
         }
     }
 
@@ -39,10 +39,10 @@ int check_opcode (char *p1, char *p2) {
  * Returns output column by ref.
  * Takes account of the processor flag and the directive flags
  */
-int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flags){
+int detectOpcode (char *p1, char *p2, int processor, int *outputColumn, int *flags) {
     int opIndex = -65000; //invalidate opIndex
 
-// For 6502 processor check codeword against opcode list
+    // For 6502 processor check codeword against opcode list
     if (processor == 1) {
         opIndex = check_opcode (p1, p2);
         if (opIndex == 0) {
@@ -56,11 +56,39 @@ int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flag
             else
                 *outputColumn = sf65Options -> start_directive;
         }
-    // For other processors just assume a mnemonic wtho checking
+        // For other processors just assume a mnemonic wtho checking
     } else {
         *outputColumn = sf65Options -> start_mnemonic;
         opIndex = 0;
     }
 
     return opIndex;
+}
+
+
+void sf65_correctOutputColumnForFlags(sf65ParsingData_t *sf65ParsingData, const sf65Options_t *sf65Options){
+    if (sf65ParsingData -> current_column != 0 && sf65Options -> labels_own_line != 0 && (sf65ParsingData -> flags & DONT_RELOCATE_LABEL) == 0) {
+        fputc ('\n', output);
+        sf65ParsingData -> current_column = 0;
+    }
+
+    if (sf65ParsingData -> flags & LEVEL_IN) {
+        sf65ParsingData -> current_level++;
+        sf65ParsingData -> request = sf65Options -> start_mnemonic - 4;
+    }
+
+    if (sf65ParsingData -> flags & LEVEL_OUT) {
+        if (sf65ParsingData -> current_level > 0)
+            sf65ParsingData -> current_level--;
+        sf65ParsingData -> request = sf65Options -> start_mnemonic;
+    }
+
+    if (sf65ParsingData -> flags & ALIGN_MNEMONIC) {
+        sf65ParsingData -> request = sf65Options -> start_mnemonic;
+    }
+    
+    // Unindent by one level
+    if (sf65ParsingData -> flags & LEVEL_MINUS)
+        if (sf65ParsingData -> request > sf65Options -> nesting_space) 
+            sf65ParsingData -> request -= sf65Options -> nesting_space;
 }
