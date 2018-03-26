@@ -17,8 +17,8 @@ label11 dec         $d021
     label0: ;fdjkfjdkfjdk
      INY
        dec $d020
-        lda label0
-label12:    lda label10
+        lDA label0
+label12:    LDa label10
        .byte 123
       .endproc ;comment after directive
        .asciiz "cdfd"

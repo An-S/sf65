@@ -101,8 +101,8 @@ void sf65_PlaceMnemonicInLine(char *p1, char *p2, sf65Options_t *sf65Options,
                               sf65ParsingData_t *sf65ParsingData){
     changeCase (p1, p2, sf65Options -> mnemonics_case);
     sf65ParsingData -> request = sf65Options -> start_mnemonic;
-    sf65ParsingData -> mnemonic_detected = 1;
     sf65ParsingData -> directive_detected = 0;
+    sf65ParsingData -> mnemonic_detected = 1;
 }
 
 /*
@@ -128,6 +128,5 @@ void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *sf65Options,
     }else{
         sf65ParsingData -> request = sf65Options -> start_operand;
     }
-    sf65ParsingData -> mnemonic_detected = 
-    sf65ParsingData -> directive_detected = 0;
+    sf65ParsingData -> mnemonic_detected = 0;
 }

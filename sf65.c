@@ -227,19 +227,26 @@ int main (int argc, char *argv[]) {
                     break;
                 default:
                     if (sf65ParsingData -> mnemonic_detected) {
+                        //Previous term was mnemonic -> assume operand, here
                         sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                        c = -1;
+                    }else if (sf65ParsingData -> directive_detected){
+                        sf65ParsingData -> directive_detected = 0;
+                        c = 1;
                     }else if (sf65ParsingData -> label_detected == 0){
+                        // If label has not been detected in line, it may still be possible
+                        // that current term is a label
                         if ( (*p1 == '_' || isalpha (*p1)) ) {
+                            // If term starts with valid label characters, then assume label
                             sf65ParsingData -> request = 0;
                             sf65ParsingData -> label_detected = 1;
+                        }else{
+                            //sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                            sf65ParsingData -> request = 0;
                         }
                     } else{
                         sf65ParsingData -> request = 0;
                     }   
-                    
-                    sf65ParsingData -> directive_detected = 
-                    sf65ParsingData -> mnemonic_detected = 0;
-                    
                     break;
                 }
             } else {
@@ -247,6 +254,7 @@ int main (int argc, char *argv[]) {
                 // Catch terms starting with non alnum characters 
                 if (sf65ParsingData -> mnemonic_detected) {
                     sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                    c = -1;
                 } else {
                     sf65ParsingData -> request = 0;
                 }
