@@ -8,7 +8,6 @@
   <Description/>
   <Dependencies/>
   <VirtualDirectory Name="pretty6502">
-    <File Name="processCMDArgs.c"/>
     <File Name="sf65.h"/>
     <File Name="sf65.c"/>
     <File Name="pretty6502.c" ExcludeProjConfig="Debug"/>
@@ -18,6 +17,9 @@
     <File Name="expression.c"/>
     <File Name="test.out" ExcludeProjConfig="Debug"/>
     <File Name="test.src" ExcludeProjConfig="Debug"/>
+    <File Name="sf65_types.h"/>
+    <File Name="sf65_files.c"/>
+    <File Name="sf65_CMDArgs.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

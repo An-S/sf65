@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ctype.h>
+#include "sf65_types.h"
 
 #define DONT_RELOCATE_LABEL 0x01
 #define LEVEL_IN        0x02
@@ -14,30 +16,12 @@
 #define LEVEL_MINUS     0x08
 #define ALIGN_MNEMONIC  0x10
 
-extern int tabs;
-
-extern int style;
-extern int processor;
-extern int start_mnemonic;
-extern int start_operand;
-extern int start_comment;
-extern int start_directive;
-extern int align_comment;
-extern int nesting_space;
-extern int labels_own_line;
-extern int prev_comment_original_location;
-extern int prev_comment_final_location;
-extern int mnemonics_case;
-extern int directives_case;
 
 /*
- * Struct to hold the names of the assembler directives
- * as well as the flags which define how to deal with the former
+ * Globals
  */
-typedef struct {
-    char *directive;
-    int flags;
-} directives_t;
+extern FILE *input;
+extern FILE *output;
 
 /*
  * Array which holds the names of the mnemonics of the 6502 processor
@@ -48,10 +32,68 @@ extern char *mnemonics_6502[];
 /// Instance holding a list of directives for ca65
 extern directives_t directives_dasm[];
 
+
+/* ************************************************************
+ * Prototypes for functions dealing with input and output files
+ * ************************************************************
+ */
+
+/*
+ * Open input file (unformatted source), check error
+ */
+FILE *sf65_openInputFile (char *filename);
+
+/*
+ * Open output file (formatted source), check error
+ */
+FILE *sf65_openOutputFile (char *filename);
+
+
+/* ************************************************************
+ * Prototypes for functions dealing with command line args
+ * ************************************************************
+ */
+int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
+
+/* ************************************************************
+ * Prototypes for parsing functions
+ * ************************************************************
+ */
+
+
+/*
+ * Evaluate flag belonging to certain assembler directive
+ * Depend on flag, increase/decrease indent or dismiss indent
+ */
+void sf65_correctOutputColumnForFlags(sf65ParsingData_t *pData, const sf65Options_t *options);
+
+/*
+ * This function sets correct case for mnemonic and sets requested x position to start_mnemonic
+ * It also indicates that a mnemonic was found and clears the directive found flag
+ */
+void sf65_PlaceMnemonicInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData);
+
+/*
+ * This function sets correct case for directive and sets requested x position to start_directive
+ * It also indicates that a directive was found and clears the mnemonic found flag
+ */
+void sf65_PlaceDirectiveInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData);
+           
+/*
+ * This function sets x position for operand. It evaluates the 3/4 column style flag.
+ * If 4 columns then operand is placed at start_operand, else it is placed directly behind mnemonic
+ */
+void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
+                              sf65ParsingData_t *sf65ParsingData);
+
+
 /*
  * Procedure to process command line arguments given to sf65
+ * Fills given struct with values of command line options and/or default values
  */
-int processCMDArgs(int argc, char** argv);
+int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
 
 
 // **************************************************************************************
@@ -64,37 +106,37 @@ int processCMDArgs(int argc, char** argv);
 int check_opcode (char *p1, char *p2);
 
 /* Detects mnemonic or directive and returns corresponding index, in found.
- * Returns output column by ref. 
+ * Returns output column by ref.
  * Takes account of the processor flag and the directive flags
  */
-int detectOpcode(char *p1, char *p2, int processor, int *outputColumn, int *flags);
- 
+int detectOpcode (char *p1, char *p2, int processor, int *outputColumn, int *flags);
+
 /*
  * Read array pointed to by p as long as whitespace is found.
  * Stop at first non whitespace character or string terminator
  */
-char *skipWhiteSpace(char *p);
+char *skipWhiteSpace (char *p);
 
 /*
  * Iterate over char array from p1 to p2.
  * Call modificator function for each of the chars of the array
  * and write back modificated char.
  */
-char *modifyChars(char *p1, char *p2, int func(int));
+char *modifyChars (char *p1, char *p2, int func (int));
 
 /*
  * Iterate over char array from p1 to p2.
  * Dependent on the value of the _case parameter
  * leave array as is(0), change to uppercase(2), change to lowercase(1)
  */
-char *changeCase(char *p1, char *p2, char _case);
+char *changeCase (char *p1, char *p2, char _case);
 
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
  */
-char *detectCodeWord(char *p);
+char *detectCodeWord (char *p);
 
-char *detectOperand(char *p);
+char *detectOperand (char *p);
 
 /*
  * Comparison without case
@@ -109,16 +151,17 @@ int request_space (FILE *output, int *current, int new, int force, int tabs);
 /* Tests, if a pointer is in range between a start pointer and and end pointer
  * defined by the size of the range
  */
-bool inRange(const char *p, const char *first, int size);
+bool inRange (const char *p, const char *first, int size);
 
 /*
  * Starts of the memory location pointed to by *data
  * Processes allocation bytes. If newline is found, replace by \0.
  * Carriage return characters are dismissed from the output.
  */
-char *convertLinefeedsToStringSeparator(char* data, int allocation);
+char *convertLinefeedsToStringSeparator (char *data, int allocation);
 
 
-int getCommentSpacing(char* linestart, char *commentstart, int current_column);
+int getCommentSpacing (char *p /*linestart*/, char *p1 /*commentstart*/, sf65ParsingData_t *pData);
 
+int sgn(int x);
 #endif

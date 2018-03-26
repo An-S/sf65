@@ -4,7 +4,7 @@
 ** 6502 mnemonics
 */
 char *mnemonics_6502[] = {
-    "adc", "anc", "and", "ane", "arr", "asl", "asr", "bcc",
+    "adc", "anc", "and", "ane", "arr", "asl", "asr", "axs", "bcc",
     "bcs", "beq", "bit", "bmi", "bne", "bpl", "brk", "bvc",
     "bvs", "clc", "cld", "cli", "clv", "cmp", "cpx", "cpy",
     "dcp", "dec", "dex", "dey", "eor", "inc", "inx", "iny",

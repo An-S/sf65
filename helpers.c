@@ -2,15 +2,23 @@
 #include "stdlib.h"
 #include "ctype.h"
 
-char echoChar(char ch) {
-    fputc(ch, stdout);
+extern sf65Options_t *sf65Options;
+
+int sgn(int x){
+    if (x){
+        return x/abs(x);
+    }
+    return 0;
+}
+char echoChar (char ch) {
+    fputc (ch, stdout);
     return ch;
 }
 
-char *skipWhiteSpace(char *p) {
+char *skipWhiteSpace (char *p) {
     char ch;
     while (ch = *p, ch && isspace (ch)) {
-        echoChar(ch);
+        echoChar (ch);
         ++p;
     }
 
@@ -18,40 +26,40 @@ char *skipWhiteSpace(char *p) {
     return p;
 }
 
-char *modifyChars(char *p1, char *p2, int func(int)) {
+char *modifyChars (char *p1, char *p2, int func (int)) {
     char ch;
 
     while (p1 < p2) {
         ch = *p1;
-        echoChar(ch);
+        echoChar (ch);
         *p1 = func (ch);
         p1++;
     }
     return p1;
 }
 
-char *changeCase(char *p1, char *p2, char _case) {
+char *changeCase (char *p1, char *p2, char _case) {
     switch (_case) {
-    case 1:
-        modifyChars(p1, p2, tolower);
-        break;
-    case 2:
-        modifyChars(p1, p2, toupper);
-        break;
-    default:
-        break;
+        case 1:
+            modifyChars (p1, p2, tolower);
+            break;
+        case 2:
+            modifyChars (p1, p2, toupper);
+            break;
+        default:
+            break;
     }
     return p2;
 }
 
 
-char *detectCodeWord(char *p) {
+char *detectCodeWord (char *p) {
     //
     char ch;
 
     while (ch = *p, ch && !isspace (ch) && ch != ';' &&
             ch != '\'' && ch != '"' && ch != '#' && ch != '$') {
-        echoChar(ch);
+        echoChar (ch);
         ++p;
     }
 
@@ -60,13 +68,13 @@ char *detectCodeWord(char *p) {
     return p;
 }
 
-char *detectOperand(char *p) {
+char *detectOperand (char *p) {
     //
     char ch;
 
-    while (ch = *p, ch && (isalnum(ch) || ch == ';' ||
-                           ch == '\'' || ch == '"' || ch == '#' || ch == '$') ) {
-        echoChar(ch);
+    while (ch = *p, ch && (isalnum (ch) || ch == ';' ||
+                           ch == '\'' || ch == '"' || ch == '#' || ch == '$')) {
+        echoChar (ch);
         ++p;
     }
 
@@ -79,7 +87,7 @@ char *detectOperand(char *p) {
 ** Comparison without case
 */
 int memcmpcase (char *p1, char *p2, int size) {
-//    char ch;
+    //    char ch;
 
     while (size--) {
         if (tolower (*p1) != tolower (*p2))
@@ -120,7 +128,7 @@ int request_space (FILE *output, int *current, int new, int force, int tabs) {
         // Write spaces to output, only if new != 0
         // Assume, new is non negative
 
-        while ( *current < new ) {
+        while (*current < new) {
             if (tabs == 0) {
                 // Use spaces instead of tabs
 
@@ -128,8 +136,8 @@ int request_space (FILE *output, int *current, int new, int force, int tabs) {
 
                 // Write number of spaces calculated from the
                 // difference between *current and new
-                for (; i < new-*current; ++i) {
-                    fputc(' ', output);
+                for (; i < new - *current; ++i) {
+                    fputc (' ', output);
                 }
 
                 // Update the current_column variable to the new x position
@@ -153,42 +161,11 @@ int request_space (FILE *output, int *current, int new, int force, int tabs) {
 /* Tests, if a pointer is in range between a start pointer and and end pointer
  * defined by the size of the range
  */
-bool inRange(const char *p, const char *first, int size) {
+bool inRange (const char *p, const char *first, int size) {
     return p < (first + size);
 }
 
-/*
- * Starts of the memory location pointed to by *data
- * Processes allocation bytes. If newline is found, replace by \0.
- * Carriage return characters are dismissed from the output.
- */
-char *convertLinefeedsToStringSeparator(char* data, int allocation) {
-    char *p1 = data;
-    char *p2 = p1;
-    char request = 0;
-
-    while ( inRange(p1, data, allocation) ) {
-        if (*p1 == '\r') {  /* Ignore \r characters */
-            p1++; // Here, we increase only p1 but not p2 !
-            continue;
-        }
-        if (*p1 == '\n') {
-            p1++;
-            *p2++ = '\0';   /* Break line by replacing line terminator with string terminator*/
-            request = 1;
-            continue;
-        }
-        *p2++ = *p1++; //Remove \r chars out of code (only case which does not inc p2)
-        request = 0;
-    }
-
-    if (request == 0)
-        *p2++ = '\0';   /* Force line break */
-
-    return p2;
-}
-
-int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int current_column) {
+int getCommentSpacing (char *p /*linestart*/, char *p1 /*commentstart*/, sf65ParsingData_t *pData) {
     /*
     ** Try to keep comments horizontally aligned (only works
     ** if spaces were used in source file)
@@ -201,26 +178,29 @@ int getCommentSpacing(char* p /*linestart*/, char *p1 /*commentstart*/, int curr
 
     // If original comment x position in unformatted src is the same as that of the
     // previous comment, then request the same final location as of the previous comment
-    if ( p1 - p == prev_comment_original_location ) {
-        request = prev_comment_final_location;
+    if (p1 - p == pData -> prev_comment_original_location) {
+        request = pData -> prev_comment_final_location;
     } else {
         // Here, we have found another x postion of current comment vs previous comment
         // Remember the x position of the current comment in unformatted src
-        prev_comment_original_location = p1 - p;
+        pData -> prev_comment_original_location = p1 - p;
 
-        //if (current_column == 0)
-        //    request = 0;
-        //else
-        if (current_column <= start_mnemonic)
-            request = start_mnemonic;
+        if ( !sf65Options -> align_comment){
+            request = pData -> prev_comment_original_location / sf65Options -> nesting_space *
+                      sf65Options -> nesting_space;
+            return request;
+        }
+
+        if (pData -> current_column <= sf65Options -> start_mnemonic)
+            request = sf65Options -> start_mnemonic;
         else
-            request = start_comment;
+            request = sf65Options -> start_comment;
 
         //if (current_column == 0 && align_comment == 1)
         //    request = start_mnemonic;
 
         // Remember the final location of currently processed comment
-        prev_comment_final_location = request;
+        pData -> prev_comment_final_location = request;
     }
 
     return request;

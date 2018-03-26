@@ -1,5 +1,8 @@
 .feature labels_without_colons
 .BSS
+
+label10     inc $d020
+label11 dec         $d021
  .ProC abcd
  Lda#$00
  sTa$d020 ;comment after command
@@ -14,11 +17,12 @@
     label0: ;fdjkfjdkfjdk
      INY
        dec $d020
-
+        lDA label0
+label12:    LDa label10
        .byte 123
       .endproc ;comment after directive
        .asciiz "cdfd"
-
+                    lda label1
 .endProc
 lda #$00
 sta $d020 ; comment after command at beginning of line
@@ -34,7 +38,7 @@ sta $d020 ; comment after command at beginning of line
 label8
 label2 ;comment after label
 .proc dfkdjkfd
-    label3: lda #$00
+    label3: lda#$00
     .endproc
     label4: aDC $d020               ;comment after label and command
     
