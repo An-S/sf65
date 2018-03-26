@@ -205,3 +205,15 @@ int getCommentSpacing (char *p /*linestart*/, char *p1 /*commentstart*/, sf65Par
 
     return request;
 }
+
+void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData){
+    if (sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_IN) {
+        fputc('\n', output);
+    }
+}
+
+void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData){
+    if (sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_OUT) {
+        fputc('\n', output);
+    }
+}

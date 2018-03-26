@@ -45,7 +45,6 @@ label2 ;comment after label
     
     .BYTe 65
     .Addr $1234
-    .endproc 
    .BYTE 33
    .res 4,2
 label5 .byte 123

@@ -106,7 +106,7 @@ sf65ParsingData_t *sf65ParsingData = &_sf65ParsingData;
 ** Main program
 */
 int main (int argc, char *argv[]) {
-    int c, line = 0;
+    int line = 0;
 
     char linebuf[1000];
 
@@ -261,7 +261,7 @@ int main (int argc, char *argv[]) {
                 }
             }
             
-
+            conditionallyAddPaddingLineBeforeSection(sf65Options, sf65ParsingData);
             sf65_correctOutputColumnForFlags(sf65ParsingData, sf65Options);
             
             // Indent by level times tab width
@@ -272,7 +272,8 @@ int main (int argc, char *argv[]) {
 
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
-
+            conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
+            
             // Increase current_column by length of current term
             sf65ParsingData -> current_column += p2 - p1;
 

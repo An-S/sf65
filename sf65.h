@@ -61,6 +61,9 @@ int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
  */
 sf65Expression_t sf65DetermineExpression(char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt);
 
+void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
+void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
+
 /*
  * Evaluate flag belonging to certain assembler directive
  * Depend on flag, increase/decrease indent or dismiss indent

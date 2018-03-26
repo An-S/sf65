@@ -17,6 +17,7 @@ typedef struct{
     int labels_own_line;    // flag, if labels should be moved to own line in output file
     int mnemonics_case;     // flag, if mnemonics should be output lower/uppercase or leave unmodified
     int directives_case;    // flag, if directives should be output lower/uppercase or leave unmodified
+    int pad_directives;     // determine whether certain directives should be padded with empty lines
     char *infilename;       // filename of the unformatted source
     char *outfilename;      // filename of the formatted source
 } sf65Options_t;

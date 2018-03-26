@@ -62,6 +62,7 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
     sf65Options -> labels_own_line = 0;
     sf65Options -> mnemonics_case = 0;
     sf65Options -> directives_case = 0;
+    sf65Options -> pad_directives = 1;
     
     // Default to stdin
     sf65Options -> infilename = "-";
