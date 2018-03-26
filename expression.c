@@ -46,12 +46,13 @@ int detectOpcode (char *p1, char *p2, int processor, int *outputColumn, int *fla
     if (processor == 1) {
         opIndex = check_opcode (p1, p2);
         if (opIndex == 0) {
-            *outputColumn = 0; //Set output column to start_mnemonic column
+            *outputColumn = 0;  // Did not find mnemonic nor directive. -> Request output at line start
         } else if (opIndex < 0) {
             *outputColumn = sf65Options -> start_mnemonic;
+            *flags = ALIGN_MNEMONIC;
         } else {
             *flags = directives_dasm[opIndex - 1].flags;
-            if (*flags & DONT_RELOCATE_LABEL)
+            if (*flags & DONT_RELOCATE)
                 *outputColumn = 0;
             else
                 *outputColumn = sf65Options -> start_directive;
@@ -60,6 +61,7 @@ int detectOpcode (char *p1, char *p2, int processor, int *outputColumn, int *fla
     } else {
         *outputColumn = sf65Options -> start_mnemonic;
         opIndex = 0;
+        *flags = ALIGN_MNEMONIC;
     }
 
     return opIndex;
@@ -67,7 +69,7 @@ int detectOpcode (char *p1, char *p2, int processor, int *outputColumn, int *fla
 
 
 void sf65_correctOutputColumnForFlags(sf65ParsingData_t *sf65ParsingData, const sf65Options_t *sf65Options){
-    if (sf65ParsingData -> current_column != 0 && sf65Options -> labels_own_line != 0 && (sf65ParsingData -> flags & DONT_RELOCATE_LABEL) == 0) {
+    if (sf65ParsingData -> current_column != 0 && sf65Options -> labels_own_line != 0 && (sf65ParsingData -> flags & DONT_RELOCATE) == 0) {
         fputc ('\n', output);
         sf65ParsingData -> current_column = 0;
     }
@@ -129,4 +131,42 @@ void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *sf65Options,
         sf65ParsingData -> request = sf65Options -> start_operand;
     }
     sf65ParsingData -> mnemonic_detected = 0;
+}
+
+sf65Expression_t sf65DetermineExpression(char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt){
+    sf65Expression_t expr;
+    int c = 0;
+    
+    expr.exprType = SF65_INVALIDEXPR;
+    
+    expr.index = 0;
+    
+    // Comments always start with ';' and proceed until rest of line
+    if (*p1 == ';') {
+        expr.exprType = SF65_COMMENT;
+        return expr;
+    }
+    
+    // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z
+    if (*p1 == '_' || *p1 == '.' || isalnum (*p1)) {
+        // p1 points to start of codeword, p2 be moved to end of word
+        c = detectOpcode (p1, p2, sf65Options -> processor, &pData -> request, &pData -> flags);
+
+        // Use p3 to iterate over codeword and eventually change case
+        
+        switch (sgn(c)){
+        case -1:
+            expr.exprType = SF65_MNEMONIC;
+            expr.index = c;
+            break;
+        case 1:
+            expr.exprType = SF65_DIRECTIVE;
+            expr.index = c;
+            break;
+        default:
+            expr.exprType = SF65_OTHEREXPR;
+            break;
+        }
+    }
+    return expr;
 }

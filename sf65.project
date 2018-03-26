@@ -20,6 +20,8 @@
     <File Name="sf65_types.h"/>
     <File Name="sf65_files.c"/>
     <File Name="sf65_CMDArgs.c"/>
+    <File Name="circcycv1.out" ExcludeProjConfig="Debug"/>
+    <File Name="circcycv1.s" ExcludeProjConfig="Debug"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

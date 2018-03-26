@@ -19,7 +19,8 @@ label11 dec         $d021
        dec $d020
         lDA label0
 label12:    LDa label10
-       .byte 123
+       .byte 123,128,3,4,5   ,6,    7 , 8,  10,    20
+       .byte 1, 4, 5,78,10,2,3,4
       .endproc ;comment after directive
        .asciiz "cdfd"
                     lda label1

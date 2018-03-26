@@ -48,4 +48,40 @@ typedef struct {
     int flags;
 } directives_t;
 
+typedef enum {
+    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, SF65_COMMENT, SF65_OTHEREXPR, SF65_INVALIDEXPR
+} sf65ExpressionEnum_t;
+
+
+/* Use XMacro trick to generate appropriate bitmasks for Alignment types
+ */
+#define ALGNMTYPES A(ALIGN_LOWLIMIT), A(DONT_RELOCATE),\
+                  A(LEVEL_IN),\
+                  A(LEVEL_OUT),\
+                  A(LEVEL_MINUS),\
+                  A(ALIGN_MNEMONIC),\
+                  A(ALIGN_HIGHLIMIT)
+
+/* First assign bit positions to alignment constants
+ */
+#define A(x) x##_BITNO
+enum{
+    ALGNMTYPES
+};
+#undef A
+
+/* Now generate bitmasks by shifting a 1 bit by the amount of bits defined by the bit position
+ * constants
+ */
+#define A(x) x = 1<<x##_BITNO
+typedef enum{ 
+    ALGNMTYPES
+} sf65Alignment_t;
+#undef A
+
+typedef struct{
+    sf65ExpressionEnum_t exprType;
+    int index;
+} sf65Expression_t;
+
 #endif

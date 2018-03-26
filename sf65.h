@@ -10,11 +10,6 @@
 #include <ctype.h>
 #include "sf65_types.h"
 
-#define DONT_RELOCATE_LABEL 0x01
-#define LEVEL_IN        0x02
-#define LEVEL_OUT       0x04
-#define LEVEL_MINUS     0x08
-#define ALIGN_MNEMONIC  0x10
 
 
 /*
@@ -60,6 +55,11 @@ int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
  * ************************************************************
  */
 
+/*
+ * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
+ * directive list where appropriate. Else index will be set to 0
+ */
+sf65Expression_t sf65DetermineExpression(char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt);
 
 /*
  * Evaluate flag belonging to certain assembler directive

@@ -19,6 +19,8 @@
 **      - Added header file containing all important definitions and prototypes
 **      - Sepearated repeated code into own procedures and put into a helper.c file
 **      - Rewrote main loop using calls to these procedures instead of the former inline placement of the code
+**      - Added header for datatype definitions, globbered global variables into structs
+**      - Provided more named constants for alignment and expression types
 **
 ** - Replaced DASM directives list with the CA65 directives
 */
@@ -67,8 +69,19 @@
 /* MISSING FEATURES
  *
  * Colons cannot be added/removed from labels
+ * Put overlengthy labels into own line
+ * Format comma separated data tables to nearest tab stop
+ * After directives like .byte, align first data entry to mnemonics
+ * Add one space after each comma in data tables, remove spaces before commas
+ * Format arguments of directives so they are aligned with opcodes
  */
 
+/* UNSUPPORTED FEATURES
+ * 
+ * cheap locals are not detected as such (they have @ as first char instead of 'a-zA-Z' or '_'
+ * .LOCALCHAR, .features at_in_identifiers, dollar_in_identifiers, 
+ * leading_dot_in_identifiers may break things
+ */
 #include "sf65.h"
 
 
@@ -101,7 +114,8 @@ int main (int argc, char *argv[]) {
     char *p1;
     char *p2;
     int allocation;
-
+    sf65Expression_t currentExpr;
+    
     processCMDArgs (argc, argv, sf65Options);
     
     // Try to open input file. Procedure exits in case of error.
@@ -183,8 +197,16 @@ int main (int argc, char *argv[]) {
                 fputc (' ', output);
                 ++sf65ParsingData -> current_column;
             }
+            
+            p2 = detectCodeWord (p1);
+            if (p2 == p1) {
+                p2 = detectOperand (p1);
+            }
 
-            if (*p1 == ';') {   /* Comment */
+            sf65ParsingData -> flags = 0;
+            currentExpr  = sf65DetermineExpression(p1, p2, sf65ParsingData, sf65Options);
+            
+            if ( currentExpr.exprType == SF65_COMMENT) {   /* Comment */
                 // Get x position for output of comment
                 sf65ParsingData -> request = 
                     getCommentSpacing (p, p1, sf65ParsingData);
@@ -205,34 +227,21 @@ int main (int argc, char *argv[]) {
                 break;
             }
 
-            p2 = detectCodeWord (p1);
-            if (p2 == p1) {
-                p2 = detectOperand (p1);
-            }
-
-            sf65ParsingData -> flags = 0;
-
-            if (*p1 == '_' || *p1 == '.' || isalnum (*p1)) {
-                // p1 points to start of codeword, p2 be moved to end of word
-                c = detectOpcode (p1, p2, sf65Options -> processor, &sf65ParsingData -> request, &sf65ParsingData -> flags);
-
-                // Use p3 to iterate over codeword and eventually change case
-                
-                switch (sgn(c)){
-                case -1:
+            switch (currentExpr.exprType){
+                case SF65_MNEMONIC: {
                     sf65_PlaceMnemonicInLine(p1, p2, sf65Options, sf65ParsingData);
                     break;
-                case 1:
+                }
+                case SF65_DIRECTIVE: {
                     sf65_PlaceDirectiveInLine(p1, p2, sf65Options, sf65ParsingData);
                     break;
-                default:
+                }
+                default: {
                     if (sf65ParsingData -> mnemonic_detected) {
                         //Previous term was mnemonic -> assume operand, here
                         sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
-                        c = -1;
                     }else if (sf65ParsingData -> directive_detected){
                         sf65ParsingData -> directive_detected = 0;
-                        c = 1;
                     }else if (sf65ParsingData -> label_detected == 0){
                         // If label has not been detected in line, it may still be possible
                         // that current term is a label
@@ -240,6 +249,7 @@ int main (int argc, char *argv[]) {
                             // If term starts with valid label characters, then assume label
                             sf65ParsingData -> request = 0;
                             sf65ParsingData -> label_detected = 1;
+                            sf65ParsingData -> flags = DONT_RELOCATE;
                         }else{
                             //sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                             sf65ParsingData -> request = 0;
@@ -249,22 +259,13 @@ int main (int argc, char *argv[]) {
                     }   
                     break;
                 }
-            } else {
-                // Neither label, nor directive, nor mnemonic
-                // Catch terms starting with non alnum characters 
-                if (sf65ParsingData -> mnemonic_detected) {
-                    sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
-                    c = -1;
-                } else {
-                    sf65ParsingData -> request = 0;
-                }
-
             }
+            
 
             sf65_correctOutputColumnForFlags(sf65ParsingData, sf65Options);
             
             // Indent by level times tab width
-            if (c != 0) sf65ParsingData -> request += sf65ParsingData -> current_level * sf65Options -> nesting_space;
+            if (sf65ParsingData -> flags != DONT_RELOCATE) sf65ParsingData -> request += sf65ParsingData -> current_level * sf65Options -> nesting_space;
 
             // Add filling spaces for alignment
             request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
