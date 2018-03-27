@@ -52,13 +52,18 @@ char *changeCase (char *p1, char *p2, char _case) {
     return p2;
 }
 
+bool isExpressionCharacter(char ch){
+    return  ch != ';' &&
+            //ch != '\'' && ch != '"' && ch != '#' && 
+            //ch != '$' && ch != '%' &&
+            ch != ',';
+}
 
 char *detectCodeWord (char *p) {
     //
     char ch;
 
-    while (ch = *p, ch && !isspace (ch) && ch != ';' &&
-            ch != '\'' && ch != '"' && ch != '#' && ch != '$') {
+    while (ch = *p, ch && !isspace(ch) && isExpressionCharacter(ch)) {
         echoChar (ch);
         ++p;
     }
@@ -72,8 +77,7 @@ char *detectOperand (char *p) {
     //
     char ch;
 
-    while (ch = *p, ch && (isalnum (ch) || ch == ';' ||
-                           ch == '\'' || ch == '"' || ch == '#' || ch == '$')) {
+    while (ch = *p, ch && !isspace(ch) && !isExpressionCharacter(ch)) {
         echoChar (ch);
         ++p;
     }
@@ -221,5 +225,9 @@ void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65Par
 }
 
 void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *sf65ParsingData){
-    if ( sf65ParsingData -> additional_linefeed ) fputc ('\n', output);
+    if ( sf65ParsingData -> additional_linefeed && 
+         sf65ParsingData -> prev_expr.exprType != SF65_EMPTYLINE) {
+             
+         fputc ('\n', output);
+    }
 }

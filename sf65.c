@@ -199,11 +199,6 @@ int main (int argc, char *argv[]) {
 
             p1 = skipWhiteSpace (p1);
 
-            if (sf65ParsingData -> directive_detected) {
-                fputc (' ', output);
-                ++sf65ParsingData -> current_column;
-            }
-            
             p2 = detectCodeWord (p1);
             if (p2 == p1) {
                 p2 = detectOperand (p1);
@@ -254,6 +249,7 @@ int main (int argc, char *argv[]) {
                         sf65ParsingData -> operand_detected = 1;
                     }else if (sf65ParsingData -> directive_detected){
                         sf65ParsingData -> directive_detected = 0;
+                        sf65ParsingData -> request = sf65Options -> start_operand;
                     }else if (sf65ParsingData -> operand_detected){
                         //placeholder for doing something here
                         sf65ParsingData -> operand_detected = 0;
@@ -280,7 +276,15 @@ int main (int argc, char *argv[]) {
                             }
                         }else{
                             //sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
-                            sf65ParsingData -> request = 0;
+                             if (*(p2+1) == ','){
+                                 sf65ParsingData -> request = 
+                                    (sf65ParsingData -> current_column + 
+                                     1)
+                                    / sf65Options -> nesting_space *
+                                    sf65Options -> nesting_space;
+                             }else{
+                                sf65ParsingData -> request = 0;
+                             }
                         }
                     } else{
                         sf65ParsingData -> request = 0;
@@ -296,14 +300,14 @@ int main (int argc, char *argv[]) {
             if (sf65ParsingData -> flags != DONT_RELOCATE) sf65ParsingData -> request += sf65ParsingData -> current_level * sf65Options -> nesting_space;
 
             // Add filling spaces for alignment
-            request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
+            if (*p1 != ',') request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
 
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
             //conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
             if (sf65ParsingData -> instant_additional_linefeed){
                 fputc('\n', output);
-                sf65ParsingData -> current_column = 0;
+                //sf65ParsingData -> current_column = 0;
             }
             // Increase current_column by length of current term
             sf65ParsingData -> current_column += p2 - p1;
