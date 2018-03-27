@@ -1,6 +1,8 @@
 .feature labels_without_colons
 .BSS
 
+var = 100
+    var2 = 1000
 label10     inc $d020
 label11 dec         $d021
  .ProC abcd

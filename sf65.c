@@ -144,8 +144,6 @@ int main (int argc, char *argv[]) {
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     while (fgets (linebuf, sizeof (linebuf), input), !feof (input)) {
-        
-
         // Set pointer p1 to start of line
         p1 = p = linebuf;
 
@@ -174,8 +172,8 @@ int main (int argc, char *argv[]) {
         sf65ParsingData -> current_column = 0;
         sf65ParsingData -> label_detected = 0;
 
-        sf65ParsingData -> additional_linefeed = false;
-            
+        sf65ParsingData -> additional_linefeed = 0;
+        sf65ParsingData -> first_expression = 1;
         /*
          * PARSING NOTES
          *
@@ -242,54 +240,39 @@ int main (int argc, char *argv[]) {
             
                     break;
                 }
-                default: {
-                    if (sf65ParsingData -> mnemonic_detected) {
-                        //Previous term was mnemonic -> assume operand, here
-                        sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
-                        sf65ParsingData -> operand_detected = 1;
-                    }else if (sf65ParsingData -> directive_detected){
-                        sf65ParsingData -> directive_detected = 0;
-                        sf65ParsingData -> request = sf65Options -> start_operand;
-                    }else if (sf65ParsingData -> operand_detected){
-                        //placeholder for doing something here
-                        sf65ParsingData -> operand_detected = 0;
-                    }else if (sf65ParsingData -> label_detected == 0){
-                        // If label has not been detected in line, it may still be possible
-                        // that current term is a label
-                        if ( (*p1 == '_' || isalpha (*p1)) ) {
-                            // If term starts with valid label characters, then assume label
-                            sf65ParsingData -> request = 0;
-                            sf65ParsingData -> label_detected = 1;
-                            sf65ParsingData -> flags = DONT_RELOCATE;
-                            
-                            //Check, if p2 already at end of line
-                            //Then additional cr is not needed
-                            if (allocation > p2-p){
-                                if (sf65Options -> oversized_labels_own_line){
-                                    if ( p2-p1 >= sf65Options -> start_mnemonic){
-                                        sf65ParsingData -> instant_additional_linefeed = true;
-                                    }
-                                }
-                                if (sf65Options -> labels_own_line){
-                                    sf65ParsingData -> instant_additional_linefeed = true;
-                                }
-                            }
-                        }else{
-                            //sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
-                             if (*(p2+1) == ','){
-                                 sf65ParsingData -> request = 
-                                    (sf65ParsingData -> current_column + 
-                                     1)
-                                    / sf65Options -> nesting_space *
-                                    sf65Options -> nesting_space;
-                             }else{
-                                sf65ParsingData -> request = 0;
-                             }
-                        }
-                    } else{
-                        sf65ParsingData -> request = 0;
-                    }   
+                case SF65_OPERAND: {
+                    sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                    sf65ParsingData -> operand_detected = 1;
                     break;
+                }
+                case SF65_LABEL: {
+                    sf65ParsingData -> request = 0;
+                    sf65ParsingData -> flags = DONT_RELOCATE;
+                    
+                    //Check, if p2 already at end of line
+                    //Then additional cr is not needed
+                    if (allocation > p2-p){
+                        if (sf65Options -> oversized_labels_own_line){
+                            if ( p2-p1 >= sf65Options -> start_mnemonic){
+                                sf65ParsingData -> instant_additional_linefeed = true;
+                            }
+                        }
+                        if (sf65Options -> labels_own_line){
+                            sf65ParsingData -> instant_additional_linefeed = true;
+                        }
+                    }
+                    break;
+                }
+                default: {
+                    if (*p1 == ','){
+                        sf65ParsingData -> request = 
+                            (sf65ParsingData -> current_column + 
+                             1)
+                            / sf65Options -> nesting_space *
+                            sf65Options -> nesting_space;
+                    }else{
+                        sf65ParsingData -> request = 0;
+                    }
                 }
             }
             
@@ -300,7 +283,8 @@ int main (int argc, char *argv[]) {
             if (sf65ParsingData -> flags != DONT_RELOCATE) sf65ParsingData -> request += sf65ParsingData -> current_level * sf65Options -> nesting_space;
 
             // Add filling spaces for alignment
-            if (*p1 != ',') request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
+            if (*p1 != ',') 
+                request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
 
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
@@ -314,6 +298,8 @@ int main (int argc, char *argv[]) {
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
+            
+            sf65ParsingData -> first_expression = false;
         }
         ++line;
         conditionallyInsertAdditionalLinefeed(sf65ParsingData);

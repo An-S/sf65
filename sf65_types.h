@@ -74,10 +74,15 @@ typedef struct{
  * Struct to hold variables needed for parsing of unformatted source
  */
 typedef struct{
-    bool label_detected;
-    bool mnemonic_detected;
-    bool directive_detected;
-    bool operand_detected;
+
+    int label_detected:1;
+    int mnemonic_detected:1;
+    int directive_detected:1;
+    int operand_detected:1;
+    int first_expression:1;
+    int additional_linefeed:1;
+    int instant_additional_linefeed:1;
+    
     
     int current_column;
     int request;
@@ -88,8 +93,6 @@ typedef struct{
     int prev_comment_original_location;
     int prev_comment_final_location;
     
-    bool additional_linefeed;
-    bool instant_additional_linefeed;
     
     sf65Expression_t prev_expr;
 } sf65ParsingData_t;

@@ -53,10 +53,19 @@ char *changeCase (char *p1, char *p2, char _case) {
 }
 
 bool isExpressionCharacter(char ch){
-    return  ch != ';' &&
-            //ch != '\'' && ch != '"' && ch != '#' && 
-            //ch != '$' && ch != '%' &&
-            ch != ',';
+    bool flag;
+    
+    if ( ch == '.' || ch == '_'){
+        flag = true;
+    }else{
+        flag = (ch != ';' &&
+            ch != '\'' && ch != '"' && 
+            ch != '#' && 
+            ch != '$' && 
+            ch != '%' &&
+            ch != ',') ;
+    }
+    return flag;
 }
 
 char *detectCodeWord (char *p) {
