@@ -38,6 +38,7 @@ sta $d020 ; comment after command at beginning of line
    
 label8
 label2 ;comment after label
+
 .proc dfkdjkfd
     label3: lda#$00
     .endproc

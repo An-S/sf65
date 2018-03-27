@@ -208,7 +208,9 @@ int getCommentSpacing (char *p /*linestart*/, char *p1 /*commentstart*/, sf65Par
 
 void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData){
     if (sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_IN) {
-        fputc('\n', output);
+        if ( sf65ParsingData -> prev_expr.exprType != SF65_EMPTYLINE ) {
+            fputc('\n', output);
+        }
     }
 }
 

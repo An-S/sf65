@@ -22,23 +22,7 @@ typedef struct{
     char *outfilename;      // filename of the formatted source
 } sf65Options_t;
 
-/*
- * Struct to hold variables needed for parsing of unformatted source
- */
-typedef struct{
-    bool label_detected;
-    bool mnemonic_detected;
-    bool directive_detected;
 
-    int current_column;
-    int request;
-    int current_level;
-
-    int flags;
-    
-    int prev_comment_original_location;
-    int prev_comment_final_location;
-} sf65ParsingData_t;
 
 /*
  * Struct to hold the names of the assembler directives
@@ -50,7 +34,7 @@ typedef struct {
 } directives_t;
 
 typedef enum {
-    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, SF65_COMMENT, SF65_OTHEREXPR, SF65_INVALIDEXPR
+    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, SF65_COMMENT, SF65_EMPTYLINE, SF65_OTHEREXPR, SF65_INVALIDEXPR
 } sf65ExpressionEnum_t;
 
 
@@ -85,4 +69,24 @@ typedef struct{
     int index;
 } sf65Expression_t;
 
+/*
+ * Struct to hold variables needed for parsing of unformatted source
+ */
+typedef struct{
+    bool label_detected;
+    bool mnemonic_detected;
+    bool directive_detected;
+
+    int current_column;
+    int request;
+    int current_level;
+
+    int flags;
+    
+    int prev_comment_original_location;
+    int prev_comment_final_location;
+    
+    bool additional_linefeed;
+    sf65Expression_t prev_expr;
+} sf65ParsingData_t;
 #endif

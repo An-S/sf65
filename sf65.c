@@ -114,7 +114,7 @@ int main (int argc, char *argv[]) {
     char *p1;
     char *p2;
     int allocation;
-    sf65Expression_t currentExpr;
+    sf65Expression_t currentExpr = {};
     
     processCMDArgs (argc, argv, sf65Options);
     
@@ -157,6 +157,8 @@ int main (int argc, char *argv[]) {
         // If linebuf contains not more than a newline and a termination character, process next line
         if (allocation < 2) {
             fputc ('\n', output);
+            currentExpr.exprType = SF65_EMPTYLINE;
+            
             continue;
         }
 
@@ -170,6 +172,8 @@ int main (int argc, char *argv[]) {
         sf65ParsingData -> current_column = 0;
         sf65ParsingData -> label_detected = 0;
 
+        sf65ParsingData -> additional_linefeed = false;
+            
         /*
          * PARSING NOTES
          *
@@ -202,8 +206,9 @@ int main (int argc, char *argv[]) {
             if (p2 == p1) {
                 p2 = detectOperand (p1);
             }
-
+            
             sf65ParsingData -> flags = 0;
+            sf65ParsingData -> prev_expr = currentExpr;
             currentExpr  = sf65DetermineExpression(p1, p2, sf65ParsingData, sf65Options);
             
             if ( currentExpr.exprType == SF65_COMMENT) {   /* Comment */
@@ -234,6 +239,10 @@ int main (int argc, char *argv[]) {
                 }
                 case SF65_DIRECTIVE: {
                     sf65_PlaceDirectiveInLine(p1, p2, sf65Options, sf65ParsingData);
+                    if ( sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_OUT ){
+                        sf65ParsingData -> additional_linefeed = true;
+                    }
+            
                     break;
                 }
                 default: {
@@ -272,7 +281,7 @@ int main (int argc, char *argv[]) {
 
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
-            conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
+            //conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
             
             // Increase current_column by length of current term
             sf65ParsingData -> current_column += p2 - p1;
@@ -281,6 +290,7 @@ int main (int argc, char *argv[]) {
             p1 = p2;
         }
         ++line;
+        if ( sf65ParsingData -> additional_linefeed ) fputc ('\n', output);
     }
 
     fclose (input);
