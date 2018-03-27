@@ -11,7 +11,7 @@ int sgn(int x){
     return 0;
 }
 char echoChar (char ch) {
-    fputc (ch, stdout);
+    //fputc (ch, stdout);
     return ch;
 }
 
@@ -215,7 +215,11 @@ void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65Pa
 }
 
 void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData){
-    if (sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_OUT) {
-        fputc('\n', output);
+    if ( sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_OUT ){
+        sf65ParsingData -> additional_linefeed = true;
     }
+}
+
+void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *sf65ParsingData){
+    if ( sf65ParsingData -> additional_linefeed ) fputc ('\n', output);
 }

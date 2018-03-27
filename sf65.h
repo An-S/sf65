@@ -61,8 +61,12 @@ int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
  */
 sf65Expression_t sf65DetermineExpression(char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt);
 
+/*
+ * These functions help with empty padding lines before and after indented sections of code
+ */
 void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
 void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
+void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *sf65ParsingData);
 
 /*
  * Evaluate flag belonging to certain assembler directive

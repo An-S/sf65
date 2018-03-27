@@ -15,6 +15,7 @@ typedef struct{
     int align_comment;      // should comments be aligned with mnemonics if they are found on linestart?
     int nesting_space;      // tab width or according number of spaces to fill in output
     int labels_own_line;    // flag, if labels should be moved to own line in output file
+    int oversized_labels_own_line;
     int mnemonics_case;     // flag, if mnemonics should be output lower/uppercase or leave unmodified
     int directives_case;    // flag, if directives should be output lower/uppercase or leave unmodified
     int pad_directives;     // determine whether certain directives should be padded with empty lines
@@ -76,7 +77,8 @@ typedef struct{
     bool label_detected;
     bool mnemonic_detected;
     bool directive_detected;
-
+    bool operand_detected;
+    
     int current_column;
     int request;
     int current_level;
@@ -87,6 +89,8 @@ typedef struct{
     int prev_comment_final_location;
     
     bool additional_linefeed;
+    bool instant_additional_linefeed;
+    
     sf65Expression_t prev_expr;
 } sf65ParsingData_t;
 #endif

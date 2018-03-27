@@ -42,6 +42,7 @@ label2 ;comment after label
 .proc dfkdjkfd
     label3: lda#$00
     .endproc
+    
     label4: aDC $d020               ;comment after label and command
     
     .BYTe 65
@@ -51,4 +52,5 @@ label2 ;comment after label
 label5 .byte 123
 label6 .byte "Directive after label"
 label7                      ;my 2nd comment after label
+alengthyLabelInItsOwnLine
 alengthyLabelWithMnemonicBehind lSR $d019

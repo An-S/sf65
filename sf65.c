@@ -144,9 +144,7 @@ int main (int argc, char *argv[]) {
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     while (fgets (linebuf, sizeof (linebuf), input), !feof (input)) {
-        // Output linebuf so we see if there's a line which causes parser to lockup
-        fprintf (stdout, "%04d:__", line);
-        fprintf (stdout, "%s\n", linebuf);
+        
 
         // Set pointer p1 to start of line
         p1 = p = linebuf;
@@ -163,10 +161,14 @@ int main (int argc, char *argv[]) {
         }
 
         if (linebuf[allocation - 1] != '\n') {
-            fprintf (stdout, "Line too long");
+            fprintf (stdout, "Error: Line %d too long: %s", line, linebuf);
             exit (1);
         }
-
+        
+        // Output linebuf so we see if there's a line which causes parser to lockup
+        fprintf (stdout, "%04d:__", line);
+        fprintf (stdout, "%s", linebuf);
+        
         sf65ParsingData -> directive_detected = 0;
         sf65ParsingData -> mnemonic_detected = 0;
         sf65ParsingData -> current_column = 0;
@@ -209,6 +211,8 @@ int main (int argc, char *argv[]) {
             
             sf65ParsingData -> flags = 0;
             sf65ParsingData -> prev_expr = currentExpr;
+            sf65ParsingData -> instant_additional_linefeed = false;
+            
             currentExpr  = sf65DetermineExpression(p1, p2, sf65ParsingData, sf65Options);
             
             if ( currentExpr.exprType == SF65_COMMENT) {   /* Comment */
@@ -239,9 +243,7 @@ int main (int argc, char *argv[]) {
                 }
                 case SF65_DIRECTIVE: {
                     sf65_PlaceDirectiveInLine(p1, p2, sf65Options, sf65ParsingData);
-                    if ( sf65Options -> pad_directives && sf65ParsingData -> flags & LEVEL_OUT ){
-                        sf65ParsingData -> additional_linefeed = true;
-                    }
+                    conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
             
                     break;
                 }
@@ -249,8 +251,12 @@ int main (int argc, char *argv[]) {
                     if (sf65ParsingData -> mnemonic_detected) {
                         //Previous term was mnemonic -> assume operand, here
                         sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
+                        sf65ParsingData -> operand_detected = 1;
                     }else if (sf65ParsingData -> directive_detected){
                         sf65ParsingData -> directive_detected = 0;
+                    }else if (sf65ParsingData -> operand_detected){
+                        //placeholder for doing something here
+                        sf65ParsingData -> operand_detected = 0;
                     }else if (sf65ParsingData -> label_detected == 0){
                         // If label has not been detected in line, it may still be possible
                         // that current term is a label
@@ -259,6 +265,19 @@ int main (int argc, char *argv[]) {
                             sf65ParsingData -> request = 0;
                             sf65ParsingData -> label_detected = 1;
                             sf65ParsingData -> flags = DONT_RELOCATE;
+                            
+                            //Check, if p2 already at end of line
+                            //Then additional cr is not needed
+                            if (allocation > p2-p){
+                                if (sf65Options -> oversized_labels_own_line){
+                                    if ( p2-p1 >= sf65Options -> start_mnemonic){
+                                        sf65ParsingData -> instant_additional_linefeed = true;
+                                    }
+                                }
+                                if (sf65Options -> labels_own_line){
+                                    sf65ParsingData -> instant_additional_linefeed = true;
+                                }
+                            }
                         }else{
                             //sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                             sf65ParsingData -> request = 0;
@@ -282,7 +301,10 @@ int main (int argc, char *argv[]) {
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
             //conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
-            
+            if (sf65ParsingData -> instant_additional_linefeed){
+                fputc('\n', output);
+                sf65ParsingData -> current_column = 0;
+            }
             // Increase current_column by length of current term
             sf65ParsingData -> current_column += p2 - p1;
 
@@ -290,7 +312,8 @@ int main (int argc, char *argv[]) {
             p1 = p2;
         }
         ++line;
-        if ( sf65ParsingData -> additional_linefeed ) fputc ('\n', output);
+        conditionallyInsertAdditionalLinefeed(sf65ParsingData);
+        
     }
 
     fclose (input);

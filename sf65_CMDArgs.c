@@ -8,7 +8,9 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
 
     if (argc < 3) {
         fprintf (stderr, "\n");
+        fprintf (stderr, "SF65 by Monte Carlos / Cascade, Mar 2018. Based on:\n\n");
         fprintf (stderr, "Pretty6502 " VERSION " by Oscar Toledo G. http://nanochess.org/\n");
+        fprintf (stderr, "For more information about the changes since forking, see release notes.\n");
         fprintf (stderr, "\n");
         fprintf (stderr, "Usage:\n");
         fprintf (stderr, "    pretty6502 [args] input.asm output.asm\n");
@@ -24,7 +26,7 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
         fprintf (stderr, "    -p0       Processor unknown\n");
         fprintf (stderr, "    -p1       Processor 6502 + DASM syntax (default)\n");
         fprintf (stderr, "    -m8       Start of mnemonic column (default)\n");
-        fprintf (stderr, "    -o16      Start of operand column (default)\n");
+        fprintf (stderr, "    -o16      Start of operand column (default)\n");        
         fprintf (stderr, "    -c32      Start of comment column (default)\n");
         fprintf (stderr, "    -t8       Use tabs of size 8 to reach column\n");
         fprintf (stderr, "    -t0       Use spaces to align (default)\n");
@@ -38,6 +40,7 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
         fprintf (stderr, "    -du       Change directives to uppercase\n");
         fprintf (stderr, "    -ml       Change mnemonics to lowercase\n");
         fprintf (stderr, "    -mu       Change mnemonics to uppercase\n");
+        fprintf (stderr, "    -e1       Pad sectioning directives with empty lines\n");
         fprintf (stderr, "\n");
         fprintf (stderr, "Assumes all your labels are at start of line and there is space\n");
         fprintf (stderr, "before mnemonic.\n");
@@ -60,6 +63,7 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
     sf65Options -> align_comment = 1;
     sf65Options -> nesting_space = 4;
     sf65Options -> labels_own_line = 0;
+    sf65Options -> oversized_labels_own_line = 1;
     sf65Options -> mnemonics_case = 0;
     sf65Options -> directives_case = 0;
     sf65Options -> pad_directives = 1;
@@ -79,6 +83,13 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
             exit (1);
         }
         switch (tolower (argv[c][1])) {
+            case 'e':   /* sf65Options -> pad lines */
+                sf65Options -> pad_directives = atoi (&argv[c][2]);
+                if (sf65Options -> pad_directives != 0 && sf65Options -> pad_directives != 1) {
+                    fprintf (stderr, "Bad sf65Options -> pad directives: %d\n", sf65Options -> pad_directives);
+                    exit (1);
+                }
+                break;
             case 's':   /* sf65Options -> Style */
                 sf65Options -> style = atoi (&argv[c][2]);
                 if (sf65Options -> style != 0 && sf65Options -> style != 1) {
@@ -121,8 +132,21 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
             case 'n':   /* Nesting space */
                 sf65Options -> nesting_space = atoi (&argv[c][2]);
                 break;
-            case 'l':   /* Labels in own line */
-                sf65Options -> labels_own_line = 1;
+            case 'l':   /* Labels in own line. l0 = labels in existing line
+                           l1 = oversized labels own line
+                           l2 = all labels own line*/
+                if (strlen(argv[c]) > 2){
+                    sf65Options -> oversized_labels_own_line = atoi (&argv[c][2]);
+                    if (sf65Options -> oversized_labels_own_line < 0 || sf65Options -> oversized_labels_own_line > 2) {
+                        fprintf (stderr, "Bad label line placement: %d\n", sf65Options -> oversized_labels_own_line);
+                        exit (1);
+                    }
+                    if (sf65Options -> oversized_labels_own_line == 2){
+                        sf65Options -> labels_own_line = 1;
+                    }
+                } else {
+                    sf65Options -> labels_own_line = 1;
+                }
                 break;
             case 'd':   /* Directives */
                 if (tolower (argv[c][2]) == 'l') {
