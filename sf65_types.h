@@ -82,7 +82,7 @@ typedef struct{
     int first_expression:1;
     int additional_linefeed:1;
     int instant_additional_linefeed:1;
-    
+    int force_separating_space:1;
     
     int current_column;
     int request;
@@ -92,7 +92,6 @@ typedef struct{
     
     int prev_comment_original_location;
     int prev_comment_final_location;
-    
     
     sf65Expression_t prev_expr;
 } sf65ParsingData_t;

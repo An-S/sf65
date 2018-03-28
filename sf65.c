@@ -167,13 +167,14 @@ int main (int argc, char *argv[]) {
         fprintf (stdout, "%04d:__", line);
         fprintf (stdout, "%s", linebuf);
         
-        sf65ParsingData -> directive_detected = 0;
-        sf65ParsingData -> mnemonic_detected = 0;
-        sf65ParsingData -> current_column = 0;
-        sf65ParsingData -> label_detected = 0;
-
+        sf65ParsingData -> directive_detected = 
+        sf65ParsingData -> mnemonic_detected = 
+        sf65ParsingData -> current_column = 
+        sf65ParsingData -> label_detected = 
         sf65ParsingData -> additional_linefeed = 0;
-        sf65ParsingData -> first_expression = 1;
+        
+        sf65ParsingData -> first_expression = 
+        sf65ParsingData -> force_separating_space = 1;
         /*
          * PARSING NOTES
          *
@@ -243,6 +244,7 @@ int main (int argc, char *argv[]) {
                 case SF65_OPERAND: {
                     sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                     sf65ParsingData -> operand_detected = 1;
+                    sf65ParsingData -> force_separating_space = 0;
                     break;
                 }
                 case SF65_LABEL: {
@@ -251,7 +253,7 @@ int main (int argc, char *argv[]) {
                     
                     //Check, if p2 already at end of line
                     //Then additional cr is not needed
-                    if (allocation > p2-p){
+                    if (allocation > p2-p1){
                         if (sf65Options -> oversized_labels_own_line){
                             if ( p2-p1 >= sf65Options -> start_mnemonic){
                                 sf65ParsingData -> instant_additional_linefeed = true;
@@ -280,11 +282,14 @@ int main (int argc, char *argv[]) {
             sf65_correctOutputColumnForFlags(sf65ParsingData, sf65Options);
             
             // Indent by level times tab width
-            if (sf65ParsingData -> flags != DONT_RELOCATE) sf65ParsingData -> request += sf65ParsingData -> current_level * sf65Options -> nesting_space;
+            if (sf65ParsingData -> flags != DONT_RELOCATE) 
+                sf65ParsingData -> request += sf65ParsingData -> current_level * 
+                sf65Options -> nesting_space;
 
             // Add filling spaces for alignment
             if (*p1 != ',') 
-                request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 1, sf65Options -> tabs);
+                request_space (output, &sf65ParsingData -> current_column, sf65ParsingData -> request, 
+                                        sf65ParsingData -> force_separating_space, sf65Options -> tabs);
 
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
