@@ -244,7 +244,7 @@ int main (int argc, char *argv[]) {
                 case SF65_OPERAND: {
                     sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                     sf65ParsingData -> operand_detected = 1;
-                    sf65ParsingData -> force_separating_space = 0;
+                    if ( !isalnum(*p1) ) sf65ParsingData -> force_separating_space = 0;
                     break;
                 }
                 case SF65_LABEL: {
@@ -275,6 +275,7 @@ int main (int argc, char *argv[]) {
                     }else{
                         sf65ParsingData -> request = 0;
                     }
+                    break;
                 }
             }
             
@@ -294,12 +295,13 @@ int main (int argc, char *argv[]) {
             // Write current term to output file
             fwrite (p1, sizeof (char), p2 - p1, output);
             //conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
-            if (sf65ParsingData -> instant_additional_linefeed){
-                fputc('\n', output);
-                //sf65ParsingData -> current_column = 0;
-            }
             // Increase current_column by length of current term
             sf65ParsingData -> current_column += p2 - p1;
+            
+            if (sf65ParsingData -> instant_additional_linefeed){
+                fputc('\n', output);
+                sf65ParsingData -> current_column = 0;
+            }
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
