@@ -153,11 +153,10 @@ int main (int argc, char *argv[]) {
         // If linebuf contains not more than a newline and a termination character, process next line
         if (allocation < 2) {
             fputc ('\n', output);
-            currentExpr.exprType = SF65_EMPTYLINE;
-            
+            sf65ParsingData -> prev_expr.exprType = SF65_EMPTYLINE;
             continue;
         }
-
+    
         if (linebuf[allocation - 1] != '\n') {
             fprintf (stdout, "Error: Line %d too long: %s", line, linebuf);
             exit (1);
@@ -166,6 +165,9 @@ int main (int argc, char *argv[]) {
         // Output linebuf so we see if there's a line which causes parser to lockup
         fprintf (stdout, "%04d:__", line);
         fprintf (stdout, "%s", linebuf);
+        
+                
+        conditionallyInsertAdditionalLinefeed(sf65ParsingData);
         
         sf65ParsingData -> directive_detected = 
         sf65ParsingData -> mnemonic_detected = 
@@ -206,6 +208,7 @@ int main (int argc, char *argv[]) {
             sf65ParsingData -> flags = 0;
             sf65ParsingData -> prev_expr = currentExpr;
             sf65ParsingData -> instant_additional_linefeed = false;
+            sf65ParsingData -> last_column = sf65ParsingData -> current_column;
             
             currentExpr  = sf65DetermineExpression(p1, p2, sf65ParsingData, sf65Options);
             
@@ -242,9 +245,17 @@ int main (int argc, char *argv[]) {
                     break;
                 }
                 case SF65_OPERAND: {
+                    int alignoffset = sf65ParsingData -> current_column - sf65ParsingData -> last_column;
+                   
                     sf65_PlaceOperandInLine(p1, p2, sf65Options, sf65ParsingData);
                     sf65ParsingData -> operand_detected = 1;
                     if ( !isalnum(*p1) ) sf65ParsingData -> force_separating_space = 0;
+                    
+                    sf65ParsingData -> request = 
+                         alignoffset % sf65Options -> nesting_space == 0 ? 
+                            sf65ParsingData -> current_column:
+                            sf65ParsingData -> current_column + sf65Options -> nesting_space - alignoffset;
+                    ; 
                     break;
                 }
                 case SF65_LABEL: {
@@ -267,14 +278,23 @@ int main (int argc, char *argv[]) {
                 }
                 default: {
                     if (*p1 == ','){
+                        currentExpr.exprType = SF65_COMMASEP;
+                    }else if ( sf65ParsingData -> prev_expr.exprType == SF65_COMMASEP ){
+                        int alignoffset = (p1-p);// - sf65ParsingData -> last_column;
+                        
                         sf65ParsingData -> request = 
-                            (sf65ParsingData -> current_column + 
-                             1)
-                            / sf65Options -> nesting_space *
-                            sf65Options -> nesting_space;
-                    }else{
+                            (sf65ParsingData -> current_column + sf65Options -> nesting_space / 2) /
+                            sf65Options -> nesting_space * sf65Options -> nesting_space;
+                            
+                            // alignoffset % sf65Options -> nesting_space == 0 ? 
+                              //  (p1-p)://sf65ParsingData -> current_column:
+                                //(p1-p)+sf65Options -> nesting_space;
+                                //sf65ParsingData -> current_column + sf65Options -> nesting_space;
+                        //; 
+                    }else {
                         sf65ParsingData -> request = 0;
                     }
+                    
                     break;
                 }
             }
@@ -308,9 +328,8 @@ int main (int argc, char *argv[]) {
             
             sf65ParsingData -> first_expression = false;
         }
-        ++line;
-        conditionallyInsertAdditionalLinefeed(sf65ParsingData);
         
+        ++line;
     }
 
     fclose (input);

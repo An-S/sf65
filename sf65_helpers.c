@@ -234,9 +234,9 @@ void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65Par
 }
 
 void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *sf65ParsingData){
-    if ( sf65ParsingData -> additional_linefeed && 
-         sf65ParsingData -> prev_expr.exprType != SF65_EMPTYLINE) {
-             
+    if ( sf65ParsingData -> prev_expr.exprType != SF65_EMPTYLINE &&
+         sf65ParsingData -> additional_linefeed ) {
+  
          fputc ('\n', output);
     }
 }

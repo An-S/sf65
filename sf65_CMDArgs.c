@@ -202,8 +202,17 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
         }
     }
     
-    sf65Options -> infilename = argv[c];
-    sf65Options -> outfilename = argv[c+1];
+    if ( c < argc ){
+        sf65Options -> infilename = argv[c];
+    }else{
+        sf65Options -> infilename = "test.src";
+    }
+    
+    if ( c + 1 < argc ){
+        sf65Options -> outfilename = argv[c+1];
+    }else{
+        sf65Options -> outfilename = "test.out";
+    }
     
     return c;
 }

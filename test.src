@@ -5,13 +5,13 @@ var = 100
     var2 = 1000
 label10     inc $d020
 label11 dec         $d021
- .ProC abcd
+ .ProC abcd  ;the line before was not empty
  Lda#$00
  sTa$d020 ;comment after command
   Sta $d021
-  .proc efgh
-  ;isolated comment in the middle of line
-                  ;another comment
+  .proc efgh 
+  ;isolated comment in the middle of line. no empty line before .proc
+                  ;the following line is empty
 
         ;comment after comment ; blabla ; ajkajkajk
   inx
@@ -19,15 +19,16 @@ label11 dec         $d021
      INY
        dec $d020
         lDA label0
-anotheroversizedlabel:    LDa label10
+anotheroversizedlabel:    LDa label10 ;blablabla
 againoversized:         ;dskjdlskldskl
-       .byte 123,128,3,4,5   ,6,    7 , 8,  10,    20
+       .byte 123,128,3,4,5   ,6,    7 , 8,  10,    20 ; a list of data
        .byte 1, 4, 5,78,10,2,3,4
       .endproc ;comment after directive
        .asciiz "cdfd"
                     lda label1
 .endProc
 lda #$00
+lda #$00 ;there is no empty line after .endProc
 sta $d020 ; comment after command at beginning of line
     INX
   iny
@@ -38,14 +39,15 @@ sta $d020 ; comment after command at beginning of line
    
    
    
+;there were 5 empty lines before
 label8
-label2 ;comment after label
+label2 ;comment after label. Following line is empty
 
 .proc dfkdjkfd
     label3: lda#$00
     .endproc
     
-    label4: aDC $d020               ;comment after label and command
+    label4: aDC $d020               ;comment after label and command. Prev line was empty
     
     .BYTe 65
     .Addr $1234

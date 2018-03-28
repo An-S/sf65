@@ -35,7 +35,9 @@ typedef struct {
 } directives_t;
 
 typedef enum {
-    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, SF65_COMMENT, SF65_EMPTYLINE, SF65_OTHEREXPR, SF65_INVALIDEXPR
+    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, 
+    SF65_COMMENT, SF65_EMPTYLINE, 
+    SF65_COMMASEP, SF65_OTHEREXPR, SF65_INVALIDEXPR
 } sf65ExpressionEnum_t;
 
 
@@ -85,6 +87,7 @@ typedef struct{
     int force_separating_space:1;
     
     int current_column;
+    int last_column;
     int request;
     int current_level;
 
