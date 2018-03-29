@@ -232,10 +232,6 @@ int main ( int argc, char *argv[] ) {
             ParserData -> flags = 0;
             ParserData -> instant_additional_linefeed = false;
 
-            // Propagate current values from last run to the variables holding prev values
-            ParserData -> prev_expr = currentExpr;
-            ParserData -> last_column = ParserData -> current_column;
-
             // Analyze expression determined by the start and end pointers p1 and p2
             // Except for currentExpr all values are returned in ParserData struct
             currentExpr  = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
@@ -308,10 +304,7 @@ int main ( int argc, char *argv[] ) {
                 }
             default: {
                     // Detect separator for comma separated list of values
-                    if ( *p1 == ',' ) {
-                        currentExpr.exprType = SF65_COMMASEP;
-                        ParserData -> request = 0;
-                    } else if ( ParserData -> prev_expr.exprType == SF65_COMMASEP ) {
+                    if ( ParserData -> prev_expr.exprType == SF65_COMMASEP ) {
 
                         // Align comma separated list of values
                         ParserData -> request =
@@ -371,6 +364,10 @@ int main ( int argc, char *argv[] ) {
             // If come here, at least one expression has been evaluated so unset
             // first_expression flag
             ParserData -> first_expression = false;
+
+            // Propagate current values from last run to the variables holding prev values
+            ParserData -> prev_expr = currentExpr;
+            ParserData -> last_column = ParserData -> current_column;
         }
 
         ++line;

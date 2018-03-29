@@ -2,7 +2,7 @@
 
 extern sf65Options_t *CMDOptions;
 
-void initializeParser ( sf65ParsingData_t *ParserData ) {
+void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> request = 0;
     ParserData -> prev_comment_original_location = 0;
     ParserData -> prev_comment_final_location = 0;
@@ -154,40 +154,13 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
         return expr;
     }
 
+    if ( *p1 == ',' ) {
+        expr.exprType = SF65_COMMASEP;
+        pData -> request = 0;
+        return expr;
+    }
+
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
-
-    /*
-        if (*p1 == '_'){
-            // Probably label, because mnemonics nor directives start with '_'
-            // Now check previous expression type
-
-            switch ( pData -> prev_expr.exprType ){
-                case SF65_DIRECTIVE:
-                    expr.exprType = SF65_OPERAND;
-                    pData -> operand_detected = 1;
-                    pData -> directive_detected = 0;
-                    break;
-
-                case SF65_MNEMONIC:
-                    expr.exprType = SF65_OPERAND;
-                    pData -> operand_detected = 1;
-                    pData -> mnemonic_detected = 0;
-                    break;
-
-                case SF65_LABEL:
-                    expr.exprType = SF65_OTHEREXPR;
-                    break;
-
-                default:
-                    if ( pData -> label_detected || !pData -> first_expression ){
-                        // Can't be label, because only one label per line allowed
-                        expr.exprType = SF65_OTHEREXPR;
-                    }else{
-                        expr.exprType = SF65_LABEL;
-                        pData -> label_detected = 1;
-                    }
-            }
-        }else{*/
     if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' ) {
         // p1 points to start of codeword, p2 be moved to end of word
         c = detectOpcode ( p1, p2, CMDOptions -> processor, &pData -> request, &pData -> flags );

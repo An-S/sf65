@@ -22,6 +22,8 @@
     <File Name="sf65_helpers.c"/>
     <File Name="sf65_expression.c"/>
     <File Name="sf65_directives.c"/>
+    <File Name="testfiles/scope_padding_test.s" ExcludeProjConfig="Debug"/>
+    <File Name="testfiles/scope_padding_test.out"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
