@@ -1,6 +1,6 @@
 #include "sf65.h"
 
-int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
+int processCMDArgs(int argc, char** argv, sf65Options_t *CMDOptions){
     /*
     ** Show usage if less than 3 arguments (program name counts as one)
     */
@@ -53,25 +53,25 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
     /*
     ** Default settings
     */
-    sf65Options -> style = 0;
-    sf65Options -> processor = 1;
-    sf65Options -> start_mnemonic = 8;
-    sf65Options -> start_operand = 16;
-    sf65Options -> start_comment = 32;
-    sf65Options -> start_directive = 0;//7;
-    sf65Options -> tabs = 0;
-    sf65Options -> align_comment = 1;
-    sf65Options -> nesting_space = 4;
-    sf65Options -> labels_own_line = 0;
-    sf65Options -> oversized_labels_own_line = 1;
-    sf65Options -> mnemonics_case = 0;
-    sf65Options -> directives_case = 0;
-    sf65Options -> pad_directives = 1;
+    CMDOptions -> style = 0;
+    CMDOptions -> processor = 1;
+    CMDOptions -> start_mnemonic = 8;
+    CMDOptions -> start_operand = 16;
+    CMDOptions -> start_comment = 32;
+    CMDOptions -> start_directive = 0;//7;
+    CMDOptions -> tabs = 0;
+    CMDOptions -> align_comment = 1;
+    CMDOptions -> nesting_space = 4;
+    CMDOptions -> labels_own_line = 0;
+    CMDOptions -> oversized_labels_own_line = 1;
+    CMDOptions -> mnemonics_case = 0;
+    CMDOptions -> directives_case = 0;
+    CMDOptions -> pad_directives = 1;
     
     // Default to stdin
-    sf65Options -> infilename = "-";
+    CMDOptions -> infilename = "-";
     // Default to stdout
-    sf65Options -> outfilename = "-";
+    CMDOptions -> outfilename = "-";
     
     /*
      * Process arguments
@@ -84,75 +84,75 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
         }
         switch (tolower (argv[c][1])) {
             case 'e':   /* sf65Options -> pad lines */
-                sf65Options -> pad_directives = atoi (&argv[c][2]);
-                if (sf65Options -> pad_directives != 0 && sf65Options -> pad_directives != 1) {
-                    fprintf (stderr, "Bad sf65Options -> pad directives: %d\n", sf65Options -> pad_directives);
+                CMDOptions -> pad_directives = atoi (&argv[c][2]);
+                if (CMDOptions -> pad_directives != 0 && CMDOptions -> pad_directives != 1) {
+                    fprintf (stderr, "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives);
                     exit (1);
                 }
                 break;
             case 's':   /* sf65Options -> Style */
-                sf65Options -> style = atoi (&argv[c][2]);
-                if (sf65Options -> style != 0 && sf65Options -> style != 1) {
-                    fprintf (stderr, "Bad sf65Options -> style code: %d\n", sf65Options -> style);
+                CMDOptions -> style = atoi (&argv[c][2]);
+                if (CMDOptions -> style != 0 && CMDOptions -> style != 1) {
+                    fprintf (stderr, "Bad sf65Options -> style code: %d\n", CMDOptions -> style);
                     exit (1);
                 }
                 break;
             case 'p':   /* Processor */
-                sf65Options -> processor = atoi (&argv[c][2]);
-                if (sf65Options -> processor < 0 || sf65Options -> processor > 1) {
-                    fprintf (stderr, "Bad sf65Options -> processor code: %d\n", sf65Options -> processor);
+                CMDOptions -> processor = atoi (&argv[c][2]);
+                if (CMDOptions -> processor < 0 || CMDOptions -> processor > 1) {
+                    fprintf (stderr, "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor);
                     exit (1);
                 }
                 break;
             case 'm':   /* Mnemonic start */
                 if (tolower (argv[c][2]) == 'l') {
-                    sf65Options -> mnemonics_case = 1;
+                    CMDOptions -> mnemonics_case = 1;
                 } else if (tolower (argv[c][2]) == 'u') {
-                    sf65Options -> mnemonics_case = 2;
+                    CMDOptions -> mnemonics_case = 2;
                 } else {
-                    sf65Options -> start_mnemonic = atoi (&argv[c][2]);
+                    CMDOptions -> start_mnemonic = atoi (&argv[c][2]);
                 }
                 break;
             case 'o':   /* Operand start */
-                sf65Options -> start_operand = atoi (&argv[c][2]);
+                CMDOptions -> start_operand = atoi (&argv[c][2]);
                 break;
             case 'c':   /* Comment start */
-                sf65Options -> start_comment = atoi (&argv[c][2]);
+                CMDOptions -> start_comment = atoi (&argv[c][2]);
                 break;
             case 't':   /* Tab size */
-                sf65Options -> tabs = atoi (&argv[c][2]);
+                CMDOptions -> tabs = atoi (&argv[c][2]);
                 break;
             case 'a':   /* Comment alignment */
-                sf65Options -> align_comment = atoi (&argv[c][2]);
-                if (sf65Options -> align_comment != 0 && sf65Options -> align_comment != 1) {
-                    fprintf (stderr, "Bad comment alignment: %d\n", sf65Options -> align_comment);
+                CMDOptions -> align_comment = atoi (&argv[c][2]);
+                if (CMDOptions -> align_comment != 0 && CMDOptions -> align_comment != 1) {
+                    fprintf (stderr, "Bad comment alignment: %d\n", CMDOptions -> align_comment);
                     exit (1);
                 }
                 break;
             case 'n':   /* Nesting space */
-                sf65Options -> nesting_space = atoi (&argv[c][2]);
+                CMDOptions -> nesting_space = atoi (&argv[c][2]);
                 break;
             case 'l':   /* Labels in own line. l0 = labels in existing line
                            l1 = oversized labels own line
                            l2 = all labels own line*/
                 if (strlen(argv[c]) > 2){
-                    sf65Options -> oversized_labels_own_line = atoi (&argv[c][2]);
-                    if (sf65Options -> oversized_labels_own_line < 0 || sf65Options -> oversized_labels_own_line > 2) {
-                        fprintf (stderr, "Bad label line placement: %d\n", sf65Options -> oversized_labels_own_line);
+                    CMDOptions -> oversized_labels_own_line = atoi (&argv[c][2]);
+                    if (CMDOptions -> oversized_labels_own_line < 0 || CMDOptions -> oversized_labels_own_line > 2) {
+                        fprintf (stderr, "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line);
                         exit (1);
                     }
-                    if (sf65Options -> oversized_labels_own_line == 2){
-                        sf65Options -> labels_own_line = 1;
+                    if (CMDOptions -> oversized_labels_own_line == 2){
+                        CMDOptions -> labels_own_line = 1;
                     }
                 } else {
-                    sf65Options -> labels_own_line = 1;
+                    CMDOptions -> labels_own_line = 1;
                 }
                 break;
             case 'd':   /* Directives */
                 if (tolower (argv[c][2]) == 'l') {
-                    sf65Options -> directives_case = 1;
+                    CMDOptions -> directives_case = 1;
                 } else if (tolower (argv[c][2]) == 'u') {
-                    sf65Options -> directives_case = 2;
+                    CMDOptions -> directives_case = 2;
                 } else {
                     fprintf (stderr, "Unknown argument: %c%c\n", argv[c][1], argv[c][2]);
                 }
@@ -167,51 +167,51 @@ int processCMDArgs(int argc, char** argv, sf65Options_t *sf65Options){
     /*
     ** Validate constraints
     */
-    if (sf65Options -> style == 1) {
-        if (sf65Options -> start_mnemonic > sf65Options -> start_comment) {
-            fprintf (stderr, "Operand error: -m%d > -c%d\n", sf65Options -> start_mnemonic, sf65Options -> start_comment);
+    if (CMDOptions -> style == 1) {
+        if (CMDOptions -> start_mnemonic > CMDOptions -> start_comment) {
+            fprintf (stderr, "Operand error: -m%d > -c%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_comment);
             exit (1);
         }
-        sf65Options -> start_operand = sf65Options -> start_mnemonic;
-    } else if (sf65Options -> style == 0) {
-        if (sf65Options -> start_mnemonic > sf65Options -> start_operand) {
-            fprintf (stderr, "Operand error: -m%d > -o%d\n", sf65Options -> start_mnemonic, sf65Options -> start_operand);
+        CMDOptions -> start_operand = CMDOptions -> start_mnemonic;
+    } else if (CMDOptions -> style == 0) {
+        if (CMDOptions -> start_mnemonic > CMDOptions -> start_operand) {
+            fprintf (stderr, "Operand error: -m%d > -o%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_operand);
             exit (1);
         }
-        if (sf65Options -> start_operand > sf65Options -> start_comment) {
-            fprintf (stderr, "Operand error: -o%d > -c%d\n", sf65Options -> start_operand, sf65Options -> start_comment);
+        if (CMDOptions -> start_operand > CMDOptions -> start_comment) {
+            fprintf (stderr, "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment);
             exit (1);
         }
     }
-    if (sf65Options -> tabs > 0) {
-        if (sf65Options -> start_mnemonic % sf65Options -> tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_mnemonic, sf65Options -> tabs);
+    if (CMDOptions -> tabs > 0) {
+        if (CMDOptions -> start_mnemonic % CMDOptions -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs);
             exit (1);
         }
-        if (sf65Options -> start_operand % sf65Options -> tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_operand, sf65Options -> tabs);
+        if (CMDOptions -> start_operand % CMDOptions -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs);
             exit (1);
         }
-        if (sf65Options -> start_comment % sf65Options -> tabs) {
-            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", sf65Options -> start_comment, sf65Options -> tabs);
+        if (CMDOptions -> start_comment % CMDOptions -> tabs) {
+            fprintf (stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs);
             exit (1);
         }
-        if (sf65Options -> nesting_space % sf65Options -> tabs) {
-            fprintf (stderr, "Operand error: -n%d isn't a multiple of %d\n", sf65Options -> nesting_space, sf65Options -> tabs);
+        if (CMDOptions -> nesting_space % CMDOptions -> tabs) {
+            fprintf (stderr, "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs);
             exit (1);
         }
     }
     
     if ( c < argc ){
-        sf65Options -> infilename = argv[c];
+        CMDOptions -> infilename = argv[c];
     }else{
-        sf65Options -> infilename = "test.src";
+        CMDOptions -> infilename = "test.src";
     }
     
     if ( c + 1 < argc ){
-        sf65Options -> outfilename = argv[c+1];
+        CMDOptions -> outfilename = argv[c+1];
     }else{
-        sf65Options -> outfilename = "test.out";
+        CMDOptions -> outfilename = "test.out";
     }
     
     return c;

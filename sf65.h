@@ -48,7 +48,7 @@ FILE *sf65_openOutputFile (char *filename);
  * Prototypes for functions dealing with command line args
  * ************************************************************
  */
-int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
+int processCMDArgs (int argc, char **argv, sf65Options_t *CMDOptions);
 
 /* ************************************************************
  * Prototypes for parsing functions
@@ -64,9 +64,11 @@ sf65Expression_t sf65DetermineExpression(char *p1, char *p2, sf65ParsingData_t *
 /*
  * These functions help with empty padding lines before and after indented sections of code
  */
-void conditionallyAddPaddingLineBeforeSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
-void conditionallyAddPaddingLineAfterSection(sf65Options_t *sf65Options, sf65ParsingData_t *sf65ParsingData);
-void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *sf65ParsingData);
+void conditionallyAddPaddingLineBeforeSection(sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData);
+void conditionallyAddPaddingLineAfterSection(sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData);
+void conditionallyInsertAdditionalLinefeed(sf65ParsingData_t *ParserData);
+
+int sf65_align(int val, int align);
 
 /*
  * Evaluate flag belonging to certain assembler directive
@@ -78,29 +80,29 @@ void sf65_correctOutputColumnForFlags(sf65ParsingData_t *pData, const sf65Option
  * This function sets correct case for mnemonic and sets requested x position to start_mnemonic
  * It also indicates that a mnemonic was found and clears the directive found flag
  */
-void sf65_PlaceMnemonicInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
-                              sf65ParsingData_t *sf65ParsingData);
+void sf65_PlaceMnemonicInLine(char *p1, char *p2, sf65Options_t *CMDOptions, 
+                              sf65ParsingData_t *ParserData);
 
 /*
  * This function sets correct case for directive and sets requested x position to start_directive
  * It also indicates that a directive was found and clears the mnemonic found flag
  */
-void sf65_PlaceDirectiveInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
-                              sf65ParsingData_t *sf65ParsingData);
+void sf65_PlaceDirectiveInLine(char *p1, char *p2, sf65Options_t *CMDOptions, 
+                              sf65ParsingData_t *ParserData);
            
 /*
  * This function sets x position for operand. It evaluates the 3/4 column style flag.
  * If 4 columns then operand is placed at start_operand, else it is placed directly behind mnemonic
  */
-void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *sf65Options, 
-                              sf65ParsingData_t *sf65ParsingData);
+void sf65_PlaceOperandInLine(char *p1, char *p2, sf65Options_t *CMDOptions, 
+                              sf65ParsingData_t *ParserData);
 
 
 /*
  * Procedure to process command line arguments given to sf65
  * Fills given struct with values of command line options and/or default values
  */
-int processCMDArgs (int argc, char **argv, sf65Options_t *sf65Options);
+int processCMDArgs (int argc, char **argv, sf65Options_t *CMDOptions);
 
 
 // **************************************************************************************
