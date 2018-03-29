@@ -4,7 +4,7 @@
 /*
  * Struct to hold values of command line arguments given to sf65
  */
-typedef struct{
+typedef struct {
     int tabs;               // 0 = default = use spaces not tabs, 1 = use tabs not spaces
     int style;              // 0 = four columns, 1 = three columns
     int processor;          // 0 = unknown assembler, 1 = CA65
@@ -15,29 +15,15 @@ typedef struct{
     int align_comment;      // should comments be aligned with mnemonics if they are found on linestart?
     int nesting_space;      // tab width or according number of spaces to fill in output
     int labels_own_line;    // flag, if labels should be moved to own line in output file
+    int oversized_labels_own_line;
     int mnemonics_case;     // flag, if mnemonics should be output lower/uppercase or leave unmodified
     int directives_case;    // flag, if directives should be output lower/uppercase or leave unmodified
+    int pad_directives;     // determine whether certain directives should be padded with empty lines
     char *infilename;       // filename of the unformatted source
     char *outfilename;      // filename of the formatted source
 } sf65Options_t;
 
-/*
- * Struct to hold variables needed for parsing of unformatted source
- */
-typedef struct{
-    bool label_detected;
-    bool mnemonic_detected;
-    bool directive_detected;
 
-    int current_column;
-    int request;
-    int current_level;
-
-    int flags;
-    
-    int prev_comment_original_location;
-    int prev_comment_final_location;
-} sf65ParsingData_t;
 
 /*
  * Struct to hold the names of the assembler directives
@@ -49,23 +35,25 @@ typedef struct {
 } directives_t;
 
 typedef enum {
-    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL, SF65_COMMENT, SF65_OTHEREXPR, SF65_INVALIDEXPR
+    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL,
+    SF65_COMMENT, SF65_EMPTYLINE,
+    SF65_COMMASEP, SF65_OTHEREXPR, SF65_INVALIDEXPR
 } sf65ExpressionEnum_t;
 
 
 /* Use XMacro trick to generate appropriate bitmasks for Alignment types
  */
 #define ALGNMTYPES A(ALIGN_LOWLIMIT), A(DONT_RELOCATE),\
-                  A(LEVEL_IN),\
-                  A(LEVEL_OUT),\
-                  A(LEVEL_MINUS),\
-                  A(ALIGN_MNEMONIC),\
-                  A(ALIGN_HIGHLIMIT)
+    A(LEVEL_IN),\
+    A(LEVEL_OUT),\
+    A(LEVEL_MINUS),\
+    A(ALIGN_MNEMONIC),\
+    A(ALIGN_HIGHLIMIT)
 
 /* First assign bit positions to alignment constants
  */
 #define A(x) x##_BITNO
-enum{
+enum {
     ALGNMTYPES
 };
 #undef A
@@ -74,14 +62,41 @@ enum{
  * constants
  */
 #define A(x) x = 1<<x##_BITNO
-typedef enum{ 
+typedef enum {
     ALGNMTYPES
 } sf65Alignment_t;
 #undef A
 
-typedef struct{
+typedef struct {
     sf65ExpressionEnum_t exprType;
     int index;
 } sf65Expression_t;
 
+/*
+ * Struct to hold variables needed for parsing of unformatted source
+ */
+typedef struct {
+
+    unsigned int label_detected: 1;
+    unsigned int mnemonic_detected: 1;
+    unsigned int directive_detected: 1;
+    unsigned int operand_detected: 1;
+    unsigned int first_expression: 1;
+    unsigned int additional_linefeed: 1;
+    unsigned int instant_additional_linefeed: 1;
+    unsigned int force_separating_space: 1;
+    unsigned int line_continuation: 1;
+
+    int current_column;
+    int last_column;
+    int request;
+    int current_level;
+
+    int flags;
+
+    int prev_comment_original_location;
+    int prev_comment_final_location;
+
+    sf65Expression_t prev_expr;
+} sf65ParsingData_t;
 #endif
