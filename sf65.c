@@ -150,14 +150,16 @@ int main ( int argc, char *argv[] ) {
 
         // Get length of current line, just read
         allocation = strlen ( linebuf );
-
+    
         // If linebuf contains not more than a newline and a termination character, process next line
         if ( allocation < 2 ) {
             fputc ( '\n', output );
             ParserData -> prev_expr.exprType = SF65_EMPTYLINE;
             continue;
         }
-
+        
+        currentExpr.exprType = SF65_OTHEREXPR;
+        
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
         // truncated upon reading
@@ -180,7 +182,8 @@ int main ( int argc, char *argv[] ) {
             ParserData -> mnemonic_detected =
                 ParserData -> current_column =
                     ParserData -> label_detected =
-                        ParserData -> additional_linefeed = 0;
+                        ParserData -> operand_detected = 
+                            ParserData -> additional_linefeed = 0;
 
         // Indicate, that we are at the beginning of a line by setting first_expression flag.
         // Enforce separating space after parts of expressions as a default
