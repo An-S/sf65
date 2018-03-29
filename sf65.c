@@ -193,7 +193,9 @@ int main ( int argc, char *argv[] ) {
 
         // Loop over all chars in a line
         while ( true ) {
-            if ( *p1 == 0 || ( p1 - linebuf ) >= allocation ) {
+            // Allocation >= 2, here
+
+            if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
                 fputc ( '\n', output );
                 break;
             }
@@ -294,9 +296,9 @@ int main ( int argc, char *argv[] ) {
                             );
                         ParserData -> flags = DONT_RELOCATE;
                     } else {
-                        if ( ParserData -> line_continuation ) {
+                        if ( ParserData -> first_expression && ParserData -> line_continuation ) {
                             ParserData -> line_continuation = 0;
-                            ParserData -> request = CMDOptions -> start_mnemonic;
+                            ParserData -> request = CMDOptions -> start_operand;
                         } else {
                             ParserData -> request = 0;
 

@@ -1,5 +1,9 @@
 .feature labels_without_colons
 .BSS
+.define amacro 1234
+.define alist 123 456 678\
+891 101112      141516\
+123
 
 var = 100
     var2 = 1000
@@ -62,8 +66,5 @@ label7                      ;my 2nd comment after label
 alengthyLabelInItsOwnLine
 alengthyLabelWithMnemonicBehind lSR $d019
 
-.define amacro 1234
-.define alist 123 456 678\
-891 101112      141516\
-123
+
 
