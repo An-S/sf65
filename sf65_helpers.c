@@ -26,6 +26,12 @@ char *skipWhiteSpace ( char *p ) {
     return p;
 }
 
+char *readUntilClosingQuote ( char *p ) {
+
+    // Skip quote at p. Find closing quote
+    return strpbrk ( p + 1, "\"" );
+}
+
 char *modifyChars ( char *p1, char *p2, int func ( int ) ) {
     char ch;
 

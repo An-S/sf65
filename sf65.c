@@ -200,10 +200,15 @@ int main ( int argc, char *argv[] ) {
 
             p1 = skipWhiteSpace ( p1 );
 
-            p2 = detectCodeWord ( p1 );
-            if ( p2 == p1 ) {
-                p2 = detectOperand ( p1 );
-                //p2 = skipWhiteSpace ( p2 );
+            if ( *p1 == '"' ) {
+                p2 = readUntilClosingQuote ( p1 );
+                ++p2; // skip closing quote
+            } else {
+                p2 = detectCodeWord ( p1 );
+                if ( p2 == p1 ) {
+                    p2 = detectOperand ( p1 );
+                    //p2 = skipWhiteSpace ( p2 );
+                }
             }
 
             ParserData -> flags = 0;
