@@ -2,6 +2,13 @@
 
 extern sf65Options_t *CMDOptions;
 
+void initializeParser ( sf65ParsingData_t *ParserData ) {
+    ParserData -> request = 0;
+    ParserData -> prev_comment_original_location = 0;
+    ParserData -> prev_comment_final_location = 0;
+    ParserData -> current_level = 0;
+}
+
 /*
 ** Check for opcode or directive
 * c > 0 -> directive detected

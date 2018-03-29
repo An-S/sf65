@@ -55,6 +55,8 @@ int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
  * ************************************************************
  */
 
+void initializeParser ( sf65ParsingData_t *ParserData );
+
 /*
  * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
  * directive list where appropriate. Else index will be set to 0
