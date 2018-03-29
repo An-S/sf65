@@ -294,7 +294,13 @@ int main ( int argc, char *argv[] ) {
                             );
                         ParserData -> flags = DONT_RELOCATE;
                     } else {
-                        ParserData -> request = 0;
+                        if ( ParserData -> line_continuation ) {
+                            ParserData -> line_continuation = 0;
+                            ParserData -> request = CMDOptions -> start_mnemonic;
+                        } else {
+                            ParserData -> request = 0;
+
+                        }
                     }
 
                     break;
