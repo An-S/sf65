@@ -148,17 +148,7 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
     expr.index = 0;
 
-    // Comments always start with ';' and proceed until rest of line
-    if ( *p1 == ';' ) {
-        expr.exprType = SF65_COMMENT;
-        return expr;
-    }
 
-    if ( *p1 == ',' ) {
-        expr.exprType = SF65_COMMASEP;
-        pData -> request = 0;
-        return expr;
-    }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
     if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' ) {
@@ -207,27 +197,40 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
             }
         }
     } else {
-        switch ( pData -> prev_expr.exprType ) {
-        case SF65_DIRECTIVE:
-            expr.exprType = SF65_OPERAND;
-            pData -> operand_detected = 1;
-            pData -> directive_detected = 0;
+        switch ( *p1 ) {
+            // Comments always start with ';' and proceed until rest of line
+        case ';':
+            expr.exprType = SF65_COMMENT;
             break;
-
-        case SF65_MNEMONIC:
-            expr.exprType = SF65_OPERAND;
-            pData -> operand_detected = 1;
-            pData -> mnemonic_detected = 0;
-
+        case ',' :
+            expr.exprType = SF65_COMMASEP;
+            pData -> request = 0;
+            break;
+        case '\0':
+            expr.exprType = SF65_EMPTYLINE;
             break;
         default:
-            if ( *p1 == '\\' && *p2 == '\n' ) {
-                pData -> line_continuation = 1;
+            switch ( pData -> prev_expr.exprType ) {
+            case SF65_DIRECTIVE:
+                expr.exprType = SF65_OPERAND;
+                pData -> operand_detected = 1;
+                pData -> directive_detected = 0;
+                break;
+
+            case SF65_MNEMONIC:
+                expr.exprType = SF65_OPERAND;
+                pData -> operand_detected = 1;
+                pData -> mnemonic_detected = 0;
+
+                break;
+            default:
+                if ( *p1 == '\\' && *p2 == '\n' ) {
+                    pData -> line_continuation = 1;
+                }
+                expr.exprType = SF65_OTHEREXPR;
+                break;
             }
-            expr.exprType = SF65_OTHEREXPR;
-            break;
         }
     }
-    //}
     return expr;
 }
