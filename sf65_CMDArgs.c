@@ -65,6 +65,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     ** Show usage if less than 3 arguments (program name counts as one)
     */
     int c = 0, cmdNumArg;
+    bool cmdNumArgIs0Or1;
     char *currentOptPtr;
     char cmdSwitchCh;
 
@@ -152,16 +153,19 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
         if ( isdigit ( currentOptPtr ) ) {
             cmdNumArg = getIntArg ( currentOptPtr );
+            cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
         } else {
             cmdNumArg = -1;
+            cmdNumArgIs0Or1 = false;
         }
 
         // If come here, option after switch character was given
         switch ( cmdSwitchCh ) {
         case 'e':   /* sf65Options -> pad lines */
             CMDOptions -> pad_directives = cmdNumArg;
+
             conditionallyFailWthMsg (
-                checkIf0Or1 ( cmdNumArg ),
+                cmdNumArgIs0Or1,
                 "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives
             );
             break;
@@ -169,17 +173,17 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             CMDOptions -> style = cmdNumArg;
 
             conditionallyFailWthMsg (
-                checkIf0Or1 ( cmdNumArg ),
+                cmdNumArgIs0Or1,
                 "Bad sf65Options -> style code: %d\n", CMDOptions -> style
             );
             break;
         case 'p':   /* Processor */
             CMDOptions -> processor = cmdNumArg;
 
-            if ( !checkIf0Or1 ( cmdNumArg ) ) {
-                sf65_pError ( "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor );
-                exit ( 1 );
-            }
+            conditionallyFailWthMsg (
+                cmdNumArgIs0Or1,
+                "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor
+            );
             break;
         case 'm':   /* Mnemonic start */
             if ( *currentOptPtr == 'l' ) {
@@ -187,7 +191,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             } else if ( *currentOptPtr == 'u' ) {
                 CMDOptions -> mnemonics_case = 2;
             } else {
-                CMDOptions -> start_mnemonic = getIntArg ( currentOptPtr );
+                CMDOptions -> start_mnemonic = cmdNumArg;
             }
             break;
         case 'o':   /* Operand start */
@@ -201,10 +205,10 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             break;
         case 'a':   /* Comment alignment */
             CMDOptions -> align_comment = cmdNumArg;
-            if ( !checkIf0Or1 ( CMDOptions -> align_comment ) ) {
-                sf65_pError ( "Bad comment alignment: %d\n", CMDOptions -> align_comment );
-                exit ( 1 );
-            }
+            conditionallyFailWthMsg (
+                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", CMDOptions -> align_comment
+            );
+
             break;
         case 'n':   /* Nesting space */
             CMDOptions -> nesting_space = cmdNumArg;
@@ -214,10 +218,12 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
                            l2 = all labels own line*/
             if ( strlen ( currentOptPtr ) > 0 ) {
                 CMDOptions -> oversized_labels_own_line = cmdNumArg;
-                if ( !checkRange ( cmdNumArg, 0, 2 ) ) {
-                    sf65_pError ( "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line );
-                    exit ( 1 );
-                }
+
+                conditionallyFailWthMsg (
+                    checkRange ( cmdNumArg, 0, 2 ) ,
+                    "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line
+                );
+
                 if ( CMDOptions -> oversized_labels_own_line == 2 ) {
                     CMDOptions -> labels_own_line = 1;
                 }
