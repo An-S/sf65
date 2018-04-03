@@ -43,6 +43,10 @@ bool checkRange ( int val, int min, int  max ) {
     return true;
 }
 
+bool checkIf0Or1 ( int val ) {
+    return checkRange ( val, 0, 1 );
+}
+
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     /*
     ** Show usage if less than 3 arguments (program name counts as one)
