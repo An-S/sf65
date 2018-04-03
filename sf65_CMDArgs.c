@@ -166,7 +166,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
             conditionallyFailWthMsg (
                 cmdNumArgIs0Or1,
-                "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives
+                "Bad sf65Options -> pad directives: %d\n", cmdNumArg
             );
             break;
         case 's':   /* sf65Options -> Style */
@@ -174,7 +174,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
             conditionallyFailWthMsg (
                 cmdNumArgIs0Or1,
-                "Bad sf65Options -> style code: %d\n", CMDOptions -> style
+                "Bad sf65Options -> style code: %d\n", cmdNumArg
             );
             break;
         case 'p':   /* Processor */
@@ -182,7 +182,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
             conditionallyFailWthMsg (
                 cmdNumArgIs0Or1,
-                "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor
+                "Bad sf65Options -> processor code: %d\n", cmdNumArg
             );
             break;
         case 'm':   /* Mnemonic start */
@@ -206,7 +206,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
         case 'a':   /* Comment alignment */
             CMDOptions -> align_comment = cmdNumArg;
             conditionallyFailWthMsg (
-                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", CMDOptions -> align_comment
+                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
             );
 
             break;
@@ -221,7 +221,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
                 conditionallyFailWthMsg (
                     checkRange ( cmdNumArg, 0, 2 ) ,
-                    "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line
+                    "Bad label line placement: %d\n", cmdNumArg
                 );
 
                 if ( CMDOptions -> oversized_labels_own_line == 2 ) {
@@ -251,36 +251,37 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     ** Validate constraints
     */
     if ( CMDOptions -> style == 1 ) {
-        if ( CMDOptions -> start_mnemonic > CMDOptions -> start_comment ) {
-            sf65_pError ( "Operand error: -m%d > -c%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_comment );
-            exit ( 1 );
-        }
+        conditionallyFailWthMsg (
+            CMDOptions -> start_mnemonic <= CMDOptions -> start_comment,
+            "Operand error: -m%d > -c%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_comment
+        );
+
         CMDOptions -> start_operand = CMDOptions -> start_mnemonic;
     } else if ( CMDOptions -> style == 0 ) {
-        if ( CMDOptions -> start_mnemonic > CMDOptions -> start_operand ) {
-            sf65_pError ( "Operand error: -m%d > -o%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_operand );
-            exit ( 1 );
-        }
-        if ( CMDOptions -> start_operand > CMDOptions -> start_comment ) {
-            sf65_pError ( "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment );
-            exit ( 1 );
-        }
+        conditionallyFailWthMsg (
+            CMDOptions -> start_mnemonic <= CMDOptions -> start_operand ,
+            "Operand error: -m%d > -o%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_operand
+        );
+        conditionallyFailWthMsg (
+            CMDOptions -> start_operand <= CMDOptions -> start_comment ,
+            "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment
+        );
     }
     if ( CMDOptions -> tabs > 0 ) {
-        if ( CMDOptions -> start_mnemonic % CMDOptions -> tabs ) {
-            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs );
-            exit ( 1 );
-        }
+        conditionallyFailWthMsg (
+            !CMDOptions -> start_mnemonic % CMDOptions -> tabs ,
+            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs
+                        );
         if ( CMDOptions -> start_operand % CMDOptions -> tabs ) {
-            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs );
+        sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs );
             exit ( 1 );
         }
         if ( CMDOptions -> start_comment % CMDOptions -> tabs ) {
-            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs );
+        sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs );
             exit ( 1 );
         }
         if ( CMDOptions -> nesting_space % CMDOptions -> tabs ) {
-            sf65_pError ( "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs );
+        sf65_pError ( "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs );
             exit ( 1 );
         }
     }
