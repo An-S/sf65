@@ -51,6 +51,7 @@ FILE *sf65_openOutputFile ( char *filename );
  */
 int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
 void sf65_pError ( char *format, ... );
+void sf65_vpError ( char *format, va_list va );
 
 /* ************************************************************
  * Prototypes for parsing functions

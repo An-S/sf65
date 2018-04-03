@@ -47,12 +47,26 @@ bool checkIf0Or1 ( int val ) {
     return checkRange ( val, 0, 1 );
 }
 
+bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
+    va_list va;
+    va_start ( va, format );
+
+    if ( !succeed ) {
+        sf65_vpError ( format, va );
+        exit ( 1 );
+    }
+
+    va_end ( va );
+    return succeed;
+}
+
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     /*
     ** Show usage if less than 3 arguments (program name counts as one)
     */
-    int c = 0;
+    int c = 0, cmdNumArg;
     char *currentOptPtr;
+    char cmdSwitchCh;
 
     if ( argc < 3 ) {
         fprintf ( stderr, "\n" );
@@ -134,25 +148,35 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             exit ( 1 );
         }
 
+        cmdSwitchCh = *currentOptPtr++;
+
+        if ( isdigit ( currentOptPtr ) ) {
+            cmdNumArg = getIntArg ( currentOptPtr );
+        } else {
+            cmdNumArg = -1;
+        }
+
         // If come here, option after switch character was given
-        switch ( *currentOptPtr++ ) {
+        switch ( cmdSwitchCh ) {
         case 'e':   /* sf65Options -> pad lines */
-            CMDOptions -> pad_directives = getIntArg ( currentOptPtr );
-            if ( !checkRange ( CMDOptions -> pad_directives, 0, 1 ) ) {
-                sf65_pError ( "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives );
-                exit ( 1 );
-            }
+            CMDOptions -> pad_directives = cmdNumArg;
+            conditionallyFailWthMsg (
+                checkIf0Or1 ( cmdNumArg ),
+                "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives
+            );
             break;
         case 's':   /* sf65Options -> Style */
-            CMDOptions -> style = getIntArg ( currentOptPtr );
-            if ( CMDOptions -> style != 0 && CMDOptions -> style != 1 ) {
-                sf65_pError ( "Bad sf65Options -> style code: %d\n", CMDOptions -> style );
-                exit ( 1 );
-            }
+            CMDOptions -> style = cmdNumArg;
+
+            conditionallyFailWthMsg (
+                checkIf0Or1 ( cmdNumArg ),
+                "Bad sf65Options -> style code: %d\n", CMDOptions -> style
+            );
             break;
         case 'p':   /* Processor */
-            CMDOptions -> processor = getIntArg ( currentOptPtr );
-            if ( CMDOptions -> processor < 0 || CMDOptions -> processor > 1 ) {
+            CMDOptions -> processor = cmdNumArg;
+
+            if ( !checkIf0Or1 ( cmdNumArg ) ) {
                 sf65_pError ( "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor );
                 exit ( 1 );
             }
@@ -167,30 +191,30 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             }
             break;
         case 'o':   /* Operand start */
-            CMDOptions -> start_operand = getIntArg ( currentOptPtr );
+            CMDOptions -> start_operand = cmdNumArg;
             break;
         case 'c':   /* Comment start */
-            CMDOptions -> start_comment = getIntArg ( currentOptPtr );
+            CMDOptions -> start_comment = cmdNumArg;
             break;
         case 't':   /* Tab size */
-            CMDOptions -> tabs = getIntArg ( currentOptPtr );
+            CMDOptions -> tabs = cmdNumArg;
             break;
         case 'a':   /* Comment alignment */
-            CMDOptions -> align_comment = getIntArg ( currentOptPtr );
-            if ( CMDOptions -> align_comment != 0 && CMDOptions -> align_comment != 1 ) {
+            CMDOptions -> align_comment = cmdNumArg;
+            if ( !checkIf0Or1 ( CMDOptions -> align_comment ) ) {
                 sf65_pError ( "Bad comment alignment: %d\n", CMDOptions -> align_comment );
                 exit ( 1 );
             }
             break;
         case 'n':   /* Nesting space */
-            CMDOptions -> nesting_space = getIntArg ( currentOptPtr );
+            CMDOptions -> nesting_space = cmdNumArg;
             break;
         case 'l':   /* Labels in own line. l0 = labels in existing line
                            l1 = oversized labels own line
                            l2 = all labels own line*/
             if ( strlen ( currentOptPtr ) > 0 ) {
-                CMDOptions -> oversized_labels_own_line = getIntArg ( currentOptPtr );
-                if ( CMDOptions -> oversized_labels_own_line < 0 || CMDOptions -> oversized_labels_own_line > 2 ) {
+                CMDOptions -> oversized_labels_own_line = cmdNumArg;
+                if ( !checkRange ( cmdNumArg, 0, 2 ) ) {
                     sf65_pError ( "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line );
                     exit ( 1 );
                 }

@@ -13,6 +13,10 @@ char echoChar ( char ch ) {
     return ch;
 }
 
+void sf65_vpError ( char *format, va_list va ) {
+    vfprintf ( stderr, format, va );
+}
+
 void sf65_pError ( char *format, ... ) {
     va_list va;
     va_start ( va, format );
