@@ -1,5 +1,145 @@
 #include "sf65.h"
 
+bool checkRange ( int val, int min, int max ) {
+    if ( val < min ) return false;
+    if ( val > max ) return false;
+    return true;
+}
+
+bool checkIf0Or1 ( int val ) {
+    return checkRange ( val, 0, 1 );
+}
+
+bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
+    va_list va;
+    va_start ( va, format );
+
+    if ( !succeed ) {
+        sf65_vpError ( format, va );
+        exit ( 1 );
+    }
+
+    va_end ( va );
+    return succeed;
+}
+
+/* Attempts to convert the string from arg into a decimal integer
+ */
+int getIntArg ( char* arg ) {
+    long int num = -1;
+    char *endarg;
+
+    num = strtol ( arg, &endarg, 0 );
+
+    // There should be only numeric until end of arg. If not, return -1 to indicate error
+    if ( *endarg != '\0' ) {
+        return -1;
+    }
+
+    return num;
+}
+
+void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
+    int cmdNumArg;
+    bool cmdNumArgIs0Or1;
+    char cmdSwitchCh;
+
+    cmdSwitchCh = *currentOptPtr++;
+
+    if ( isdigit ( *currentOptPtr ) ) {
+        cmdNumArg = getIntArg ( currentOptPtr );
+        cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
+    } else {
+        cmdNumArg = -1;
+        cmdNumArgIs0Or1 = false;
+    }
+
+    // If come here, option after switch character was given
+    switch ( cmdSwitchCh ) {
+    case 'e':   /* sf65Options -> pad lines */
+        CMDOptions -> pad_directives = cmdNumArg;
+
+        conditionallyFailWthMsg (
+            cmdNumArgIs0Or1,
+            "Bad sf65Options -> pad directives: %d\n", cmdNumArg
+        );
+        break;
+    case 's':   /* sf65Options -> Style */
+        CMDOptions -> style = cmdNumArg;
+
+        conditionallyFailWthMsg (
+            cmdNumArgIs0Or1,
+            "Bad sf65Options -> style code: %d\n", cmdNumArg
+        );
+        break;
+    case 'p':   /* Processor */
+        CMDOptions -> processor = cmdNumArg;
+
+        conditionallyFailWthMsg (
+            cmdNumArgIs0Or1,
+            "Bad sf65Options -> processor code: %d\n", cmdNumArg
+        );
+        break;
+    case 'm':   /* Mnemonic start */
+        if ( *currentOptPtr == 'l' ) {
+            CMDOptions -> mnemonics_case = 1;
+        } else if ( *currentOptPtr == 'u' ) {
+            CMDOptions -> mnemonics_case = 2;
+        } else {
+            CMDOptions -> start_mnemonic = cmdNumArg;
+        }
+        break;
+    case 'o':   /* Operand start */
+        CMDOptions -> start_operand = cmdNumArg;
+        break;
+    case 'c':   /* Comment start */
+        CMDOptions -> start_comment = cmdNumArg;
+        break;
+    case 't':   /* Tab size */
+        CMDOptions -> tabs = cmdNumArg;
+        break;
+    case 'a':   /* Comment alignment */
+        CMDOptions -> align_comment = cmdNumArg;
+        conditionallyFailWthMsg (
+            cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
+        );
+
+        break;
+    case 'n':   /* Nesting space */
+        CMDOptions -> nesting_space = cmdNumArg;
+        break;
+    case 'l':   /* Labels in own line. l0 = labels in existing line
+                           l1 = oversized labels own line
+                           l2 = all labels own line*/
+        if ( strlen ( currentOptPtr ) > 0 ) {
+            CMDOptions -> oversized_labels_own_line = cmdNumArg;
+
+            conditionallyFailWthMsg (
+                checkRange ( cmdNumArg, 0, 2 ) ,
+                "Bad label line placement: %d\n", cmdNumArg
+            );
+
+            if ( CMDOptions -> oversized_labels_own_line == 2 ) {
+                CMDOptions -> labels_own_line = 1;
+            }
+        } else {
+            CMDOptions -> labels_own_line = 1;
+        }
+        break;
+    case 'd':   /* Directives */
+        if ( *currentOptPtr == 'l' ) {
+            CMDOptions -> directives_case = 1;
+        } else if ( *currentOptPtr == 'u' ) {
+            CMDOptions -> directives_case = 2;
+        } else {
+            sf65_pError ( "Unknown argument: %c%c\n", cmdSwitchCh, *currentOptPtr );
+        }
+        break;
+    default:    /* Other */
+        sf65_pError ( "Unknown argument: %c\n", cmdSwitchCh );
+        exit ( 1 );
+    }
+}
 
 // Detect an option specified by '-' and returns pointer to first character after
 // '-'
@@ -21,43 +161,6 @@ char *getOpt ( int argc, char ** argv ) {
 
     }
     return NULL; // No arg specified after '-'
-}
-
-int getIntArg ( char* arg ) {
-    long int num = -1;
-    char *endarg;
-
-    num = strtol ( arg, &endarg, 0 );
-
-    // There should be only numeric until end of arg. If not, return -1 to indicate error
-    if ( *endarg != '\0' ) {
-        return -1;
-    }
-
-    return num;
-}
-
-bool checkRange ( int val, int min, int  max ) {
-    if ( val < min ) return false;
-    if ( val > max ) return false;
-    return true;
-}
-
-bool checkIf0Or1 ( int val ) {
-    return checkRange ( val, 0, 1 );
-}
-
-bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
-    va_list va;
-    va_start ( va, format );
-
-    if ( !succeed ) {
-        sf65_vpError ( format, va );
-        exit ( 1 );
-    }
-
-    va_end ( va );
-    return succeed;
 }
 
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
@@ -151,13 +254,15 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
         cmdSwitchCh = *currentOptPtr++;
 
-        if ( isdigit ( currentOptPtr ) ) {
+        if ( isdigit ( *currentOptPtr ) ) {
             cmdNumArg = getIntArg ( currentOptPtr );
             cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
         } else {
             cmdNumArg = -1;
             cmdNumArgIs0Or1 = false;
         }
+
+        detectCMDLineSwitches ( CMDOptions, currentOptPtr );
 
         // If come here, option after switch character was given
         switch ( cmdSwitchCh ) {
@@ -267,23 +372,28 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment
         );
     }
+
     if ( CMDOptions -> tabs > 0 ) {
         conditionallyFailWthMsg (
             !CMDOptions -> start_mnemonic % CMDOptions -> tabs ,
-            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs
-                        );
-        if ( CMDOptions -> start_operand % CMDOptions -> tabs ) {
-        sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs );
-            exit ( 1 );
-        }
-        if ( CMDOptions -> start_comment % CMDOptions -> tabs ) {
-        sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs );
-            exit ( 1 );
-        }
-        if ( CMDOptions -> nesting_space % CMDOptions -> tabs ) {
-        sf65_pError ( "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs );
-            exit ( 1 );
-        }
+            "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs
+        );
+
+        conditionallyFailWthMsg (
+            CMDOptions -> start_operand % CMDOptions -> tabs,
+            "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs
+        );
+
+        conditionallyFailWthMsg (
+            CMDOptions -> start_comment % CMDOptions -> tabs,
+            "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs
+        );
+
+        conditionallyFailWthMsg (
+            CMDOptions -> nesting_space % CMDOptions -> tabs,
+            "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs
+        );
+
     }
 
     if ( c < argc ) {
