@@ -1,10 +1,54 @@
 #include "sf65.h"
 
+
+// Detect an option specified by '-' and returns pointer to first character after
+// '-'
+// Converts all chars after '-' to lowercase, if any
+char *getOpt ( int argc, char ** argv ) {
+    char *arg = argv[argc];
+
+    if ( arg[0] != '-' ) {
+        fprintf ( stderr, "Bad argument\n" );
+        exit ( 1 );
+    }
+
+    ++arg;
+
+    if ( *arg ) {
+        changeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
+
+        return arg;//skipWhiteSpace ( arg );
+
+    }
+    return NULL; // No arg specified after '-'
+}
+
+int getIntArg ( char* arg ) {
+    long int num = -1;
+    char *endarg;
+
+    num = strtol ( arg, &endarg, 0 );
+
+    // There should be only numeric until end of arg. If not, return -1 to indicate error
+    if ( *endarg != '\0' ) {
+        return -1;
+    }
+
+    return num;
+}
+
+bool checkRange ( int val, int min, int  max ) {
+    if ( val < min ) return false;
+    if ( val > max ) return false;
+    return true;
+}
+
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     /*
     ** Show usage if less than 3 arguments (program name counts as one)
     */
     int c = 0;
+    char *currentOptPtr;
 
     if ( argc < 3 ) {
         fprintf ( stderr, "\n" );
@@ -78,67 +122,72 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
      */
     c = 1;
     while ( c < argc - 2 ) {
-        if ( argv[c][0] != '-' ) {
-            fprintf ( stderr, "Bad argument\n" );
+        currentOptPtr = getOpt ( c, argv );
+
+        // Detect forgotton option after switch character
+        if ( !currentOptPtr ) {
+            sf65_pError ( "Missing option after switch!" );
             exit ( 1 );
         }
-        switch ( tolower ( argv[c][1] ) ) {
+
+        // If come here, option after switch character was given
+        switch ( *currentOptPtr++ ) {
         case 'e':   /* sf65Options -> pad lines */
-            CMDOptions -> pad_directives = atoi ( &argv[c][2] );
-            if ( CMDOptions -> pad_directives != 0 && CMDOptions -> pad_directives != 1 ) {
-                fprintf ( stderr, "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives );
+            CMDOptions -> pad_directives = getIntArg ( currentOptPtr );
+            if ( !checkRange ( CMDOptions -> pad_directives, 0, 1 ) ) {
+                sf65_pError ( "Bad sf65Options -> pad directives: %d\n", CMDOptions -> pad_directives );
                 exit ( 1 );
             }
             break;
         case 's':   /* sf65Options -> Style */
-            CMDOptions -> style = atoi ( &argv[c][2] );
+            CMDOptions -> style = getIntArg ( currentOptPtr );
             if ( CMDOptions -> style != 0 && CMDOptions -> style != 1 ) {
-                fprintf ( stderr, "Bad sf65Options -> style code: %d\n", CMDOptions -> style );
+                sf65_pError ( "Bad sf65Options -> style code: %d\n", CMDOptions -> style );
                 exit ( 1 );
             }
             break;
         case 'p':   /* Processor */
-            CMDOptions -> processor = atoi ( &argv[c][2] );
+            CMDOptions -> processor = getIntArg ( currentOptPtr );
             if ( CMDOptions -> processor < 0 || CMDOptions -> processor > 1 ) {
-                fprintf ( stderr, "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor );
+                sf65_pError ( "Bad sf65Options -> processor code: %d\n", CMDOptions -> processor );
                 exit ( 1 );
             }
             break;
         case 'm':   /* Mnemonic start */
-            if ( tolower ( argv[c][2] ) == 'l' ) {
+            if ( *currentOptPtr == 'l' ) {
                 CMDOptions -> mnemonics_case = 1;
-            } else if ( tolower ( argv[c][2] ) == 'u' ) {
+            } else if ( *currentOptPtr == 'u' ) {
                 CMDOptions -> mnemonics_case = 2;
             } else {
-                CMDOptions -> start_mnemonic = atoi ( &argv[c][2] );
+                CMDOptions -> start_mnemonic = getIntArg ( currentOptPtr );
             }
             break;
         case 'o':   /* Operand start */
-            CMDOptions -> start_operand = atoi ( &argv[c][2] );
+            CMDOptions -> start_operand = getIntArg ( currentOptPtr );
             break;
         case 'c':   /* Comment start */
-            CMDOptions -> start_comment = atoi ( &argv[c][2] );
+            CMDOptions -> start_comment = getIntArg ( currentOptPtr );
             break;
         case 't':   /* Tab size */
-            CMDOptions -> tabs = atoi ( &argv[c][2] );
+            CMDOptions -> tabs = getIntArg ( currentOptPtr );
             break;
         case 'a':   /* Comment alignment */
-            CMDOptions -> align_comment = atoi ( &argv[c][2] );
+            CMDOptions -> align_comment = getIntArg ( currentOptPtr );
             if ( CMDOptions -> align_comment != 0 && CMDOptions -> align_comment != 1 ) {
-                fprintf ( stderr, "Bad comment alignment: %d\n", CMDOptions -> align_comment );
+                sf65_pError ( "Bad comment alignment: %d\n", CMDOptions -> align_comment );
                 exit ( 1 );
             }
             break;
         case 'n':   /* Nesting space */
-            CMDOptions -> nesting_space = atoi ( &argv[c][2] );
+            CMDOptions -> nesting_space = getIntArg ( currentOptPtr );
             break;
         case 'l':   /* Labels in own line. l0 = labels in existing line
                            l1 = oversized labels own line
                            l2 = all labels own line*/
-            if ( strlen ( argv[c] ) > 2 ) {
-                CMDOptions -> oversized_labels_own_line = atoi ( &argv[c][2] );
+            if ( strlen ( currentOptPtr ) > 0 ) {
+                CMDOptions -> oversized_labels_own_line = getIntArg ( currentOptPtr );
                 if ( CMDOptions -> oversized_labels_own_line < 0 || CMDOptions -> oversized_labels_own_line > 2 ) {
-                    fprintf ( stderr, "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line );
+                    sf65_pError ( "Bad label line placement: %d\n", CMDOptions -> oversized_labels_own_line );
                     exit ( 1 );
                 }
                 if ( CMDOptions -> oversized_labels_own_line == 2 ) {
@@ -149,16 +198,16 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             }
             break;
         case 'd':   /* Directives */
-            if ( tolower ( argv[c][2] ) == 'l' ) {
+            if ( *currentOptPtr == 'l' ) {
                 CMDOptions -> directives_case = 1;
-            } else if ( tolower ( argv[c][2] ) == 'u' ) {
+            } else if ( *currentOptPtr == 'u' ) {
                 CMDOptions -> directives_case = 2;
             } else {
-                fprintf ( stderr, "Unknown argument: %c%c\n", argv[c][1], argv[c][2] );
+                sf65_pError ( "Unknown argument: %c%c\n", argv[c][1], argv[c][2] );
             }
             break;
         default:    /* Other */
-            fprintf ( stderr, "Unknown argument: %c\n", argv[c][1] );
+            sf65_pError ( "Unknown argument: %c\n", argv[c][1] );
             exit ( 1 );
         }
         c++;
@@ -169,35 +218,35 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     */
     if ( CMDOptions -> style == 1 ) {
         if ( CMDOptions -> start_mnemonic > CMDOptions -> start_comment ) {
-            fprintf ( stderr, "Operand error: -m%d > -c%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_comment );
+            sf65_pError ( "Operand error: -m%d > -c%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_comment );
             exit ( 1 );
         }
         CMDOptions -> start_operand = CMDOptions -> start_mnemonic;
     } else if ( CMDOptions -> style == 0 ) {
         if ( CMDOptions -> start_mnemonic > CMDOptions -> start_operand ) {
-            fprintf ( stderr, "Operand error: -m%d > -o%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_operand );
+            sf65_pError ( "Operand error: -m%d > -o%d\n", CMDOptions -> start_mnemonic, CMDOptions -> start_operand );
             exit ( 1 );
         }
         if ( CMDOptions -> start_operand > CMDOptions -> start_comment ) {
-            fprintf ( stderr, "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment );
+            sf65_pError ( "Operand error: -o%d > -c%d\n", CMDOptions -> start_operand, CMDOptions -> start_comment );
             exit ( 1 );
         }
     }
     if ( CMDOptions -> tabs > 0 ) {
         if ( CMDOptions -> start_mnemonic % CMDOptions -> tabs ) {
-            fprintf ( stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs );
+            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_mnemonic, CMDOptions -> tabs );
             exit ( 1 );
         }
         if ( CMDOptions -> start_operand % CMDOptions -> tabs ) {
-            fprintf ( stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs );
+            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_operand, CMDOptions -> tabs );
             exit ( 1 );
         }
         if ( CMDOptions -> start_comment % CMDOptions -> tabs ) {
-            fprintf ( stderr, "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs );
+            sf65_pError ( "Operand error: -m%d isn't a multiple of %d\n", CMDOptions -> start_comment, CMDOptions -> tabs );
             exit ( 1 );
         }
         if ( CMDOptions -> nesting_space % CMDOptions -> tabs ) {
-            fprintf ( stderr, "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs );
+            sf65_pError ( "Operand error: -n%d isn't a multiple of %d\n", CMDOptions -> nesting_space, CMDOptions -> tabs );
             exit ( 1 );
         }
     }

@@ -1,6 +1,4 @@
 #include "sf65.h"
-#include "stdlib.h"
-#include "ctype.h"
 
 extern sf65Options_t *CMDOptions;
 
@@ -15,9 +13,20 @@ char echoChar ( char ch ) {
     return ch;
 }
 
+void sf65_pError ( char *format, ... ) {
+    va_list va;
+    va_start ( va, format );
+
+    vfprintf ( stderr, format, va );
+    va_end ( va );
+}
+/*
+ * Reads characters from input until a non white-space character or line-end or '\0'
+ * is found. Returns pointer to first non-whitespace char or '\n' or '\0'
+ */
 char *skipWhiteSpace ( char *p ) {
     char ch;
-    while ( ch = *p, ch && isspace ( ch ) ) {
+    while ( ch = *p, ch && isspace ( ch ) && ch != '\n' ) {
         echoChar ( ch );
         ++p;
     }

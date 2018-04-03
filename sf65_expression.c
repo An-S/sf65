@@ -206,8 +206,10 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
             expr.exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
-        case '\0':
-            expr.exprType = SF65_EMPTYLINE;
+        case '\n':
+            if ( pData -> first_expression ) {
+                expr.exprType = SF65_EMPTYLINE;
+            }
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {

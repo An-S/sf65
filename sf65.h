@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdarg.h>
 #include <ctype.h>
 #include "sf65_types.h"
 
@@ -49,6 +50,7 @@ FILE *sf65_openOutputFile ( char *filename );
  * ************************************************************
  */
 int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
+void sf65_pError ( char *format, ... );
 
 /* ************************************************************
  * Prototypes for parsing functions

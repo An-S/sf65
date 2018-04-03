@@ -1,6 +1,10 @@
 #ifndef __SF65_TYPES_H__
 #define __SF65_TYPES_H__
 
+typedef enum {
+    SF65_KEEPCASE, SF65_LOWERC, SF65_UPPERC
+} sf65Case_t;
+
 /*
  * Struct to hold values of command line arguments given to sf65
  */
