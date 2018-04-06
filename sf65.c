@@ -58,6 +58,9 @@
  * then operands are separated by space instead of using start_operand column
  *      ->
  *
+ * When variables are assigned to an hexadecimal value, sf65 outputs space between $ and xdigits,
+ * which cause syntax error
+ *
  * Missing command line options
  *
  * Reintegrated possibility to choose between extra operand column and

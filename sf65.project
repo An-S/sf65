@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="sf65" Version="10.0.0" InternalType="Console">
   <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
     <Plugin Name="CMakePlugin">
       <![CDATA[[{
   "name": "Debug",
@@ -13,9 +16,6 @@
   "parentProject": ""
  }]]]>
     </Plugin>
-    <Plugin Name="qmake">
-      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
-    </Plugin>
   </Plugins>
   <Description/>
   <Dependencies/>
@@ -26,8 +26,6 @@
     <File Name="test.out" ExcludeProjConfig="Debug"/>
     <File Name="test.src" ExcludeProjConfig="Debug"/>
     <File Name="sf65_types.h"/>
-    <File Name="sf65_files.c"/>
-    <File Name="sf65_CMDArgs.c"/>
     <File Name="circcycv1.out" ExcludeProjConfig="Debug"/>
     <File Name="circcycv1.s" ExcludeProjConfig="Debug"/>
     <File Name="sf65_mnemonics.c"/>
@@ -36,6 +34,19 @@
     <File Name="sf65_directives.c"/>
     <File Name="testfiles/scope_padding_test.s" ExcludeProjConfig="Debug"/>
     <File Name="testfiles/scope_padding_test.out"/>
+    <VirtualDirectory Name="StringParsingAndModification">
+      <File Name="StringParsing/StringParsing.c/StringParsing.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="StatementEvaluation"/>
+    <VirtualDirectory Name="CommandLineParsing">
+      <File Name="sf65_CMDArgs.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="FileIO">
+      <File Name="sf65_files.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="Math">
+      <File Name="sf65_math.c"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
