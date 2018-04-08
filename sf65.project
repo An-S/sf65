@@ -35,7 +35,8 @@
     <File Name="testfiles/scope_padding_test.s" ExcludeProjConfig="Debug"/>
     <File Name="testfiles/scope_padding_test.out"/>
     <VirtualDirectory Name="StringFunctions">
-      <File Name="StringParsing/StringParsing.c/StringFunctions.c"/>
+      <File Name="stringfunctions/sf65_stringfunctions.h"/>
+      <File Name="stringfunctions/sf65_stringfunctions.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="StatementEvaluation"/>
     <VirtualDirectory Name="CommandLineParsing">

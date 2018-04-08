@@ -10,7 +10,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include "sf65_types.h"
-
+#include "stringfunctions/sf65_stringfunctions.h"
 
 
 /*
@@ -74,7 +74,7 @@ void conditionallyAddPaddingLineAfterSection ( sf65Options_t *CMDOptions, sf65Pa
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t *ParserData );
 
 int sf65_align ( int val, int align );
-char *readUntilClosingQuote ( char *p );
+
 
 /*
  * Evaluate flag belonging to certain assembler directive
@@ -126,25 +126,6 @@ int check_opcode ( char *p1, char *p2 );
  */
 int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *flags );
 
-/*
- * Read array pointed to by p as long as whitespace is found.
- * Stop at first non whitespace character or string terminator
- */
-char *skipWhiteSpace ( char *p );
-
-/*
- * Iterate over char array from p1 to p2.
- * Call modificator function for each of the chars of the array
- * and write back modificated char.
- */
-char *modifyChars ( char *p1, char *p2, int func ( int ) );
-
-/*
- * Iterate over char array from p1 to p2.
- * Dependent on the value of the _case parameter
- * leave array as is(0), change to uppercase(2), change to lowercase(1)
- */
-char *changeCase ( char *p1, char *p2, sf65Case_t _case );
 
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
@@ -153,10 +134,6 @@ char *detectCodeWord ( char *p );
 
 char *detectOperand ( char *p );
 
-/*
- * Comparison without case
- */
-sf65StrEq_t memcmpcase ( char *p1, char *p2, int size );
 
 
 char echoChar ( char ch );
