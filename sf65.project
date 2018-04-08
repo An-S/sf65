@@ -34,8 +34,8 @@
     <File Name="sf65_directives.c"/>
     <File Name="testfiles/scope_padding_test.s" ExcludeProjConfig="Debug"/>
     <File Name="testfiles/scope_padding_test.out"/>
-    <VirtualDirectory Name="StringParsingAndModification">
-      <File Name="StringParsing/StringParsing.c/StringParsing.c"/>
+    <VirtualDirectory Name="StringFunctions">
+      <File Name="StringParsing/StringParsing.c/StringFunctions.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="StatementEvaluation"/>
     <VirtualDirectory Name="CommandLineParsing">
@@ -46,6 +46,9 @@
     </VirtualDirectory>
     <VirtualDirectory Name="Math">
       <File Name="sf65_math.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="ErrorHandling">
+      <File Name="ErrorHandling/sf65_error.c"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">

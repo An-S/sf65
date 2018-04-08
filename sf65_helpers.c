@@ -2,28 +2,19 @@
 
 extern sf65Options_t *CMDOptions;
 
+/*
+ * Echo a char to stdout instead of outputting to file
+ * May be used for debug purposes
+ */
 char echoChar ( char ch ) {
     //fputc (ch, stdout);
     return ch;
 }
 
-void sf65_vpError ( char *format, va_list va ) {
-    vfprintf ( stderr, format, va );
-}
-
-void sf65_pError ( char *format, ... ) {
-    va_list va;
-    va_start ( va, format );
-
-    vfprintf ( stderr, format, va );
-    va_end ( va );
-}
-
-
-int sf65_align ( int val, int align ) {
-    return ( val + align - 1 ) / align * align;
-}
-
+/*
+ * Determines, if a certain char is a valid expression(statement)
+ * character
+ */
 bool isExpressionCharacter ( char ch ) {
     bool flag;
 
