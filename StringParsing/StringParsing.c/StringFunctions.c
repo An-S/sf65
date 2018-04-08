@@ -38,12 +38,12 @@ char *modifyChars ( char *p1, char *p2, int func ( int ) ) {
  * Modify case of chars between p1 and p2. The desired case can be given as third arg.
  * 0: Leave case unchanged, 1: tolower, 2: toupper
  */
-char *changeCase ( char *p1, char *p2, char _case ) {
+char *changeCase ( char *p1, char *p2, sf65Case_t _case ) {
     switch ( _case ) {
-    case 1:
+    case SF65_LOWERC:
         modifyChars ( p1, p2, tolower );
         break;
-    case 2:
+    case SF65_UPPERC:
         modifyChars ( p1, p2, toupper );
         break;
     default:
@@ -59,7 +59,7 @@ char *changeCase ( char *p1, char *p2, char _case ) {
 sf65StrEq_t memcmpcase ( char *p1, char *p2, int size ) {
     while ( size-- ) {
         if ( tolower ( *p1 ) != tolower ( *p2 ) )
-            return SF65_STNOTEQ;
+            return SF65_STRNOTEQ;
         p1++;
         p2++;
     }

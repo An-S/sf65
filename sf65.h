@@ -144,7 +144,7 @@ char *modifyChars ( char *p1, char *p2, int func ( int ) );
  * Dependent on the value of the _case parameter
  * leave array as is(0), change to uppercase(2), change to lowercase(1)
  */
-char *changeCase ( char *p1, char *p2, char _case );
+char *changeCase ( char *p1, char *p2, sf65Case_t _case );
 
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
@@ -156,7 +156,10 @@ char *detectOperand ( char *p );
 /*
  * Comparison without case
  */
-int memcmpcase ( char *p1, char *p2, int size );
+sf65StrEq_t memcmpcase ( char *p1, char *p2, int size );
+
+
+char echoChar ( char ch );
 
 /*
 ** Request space in line
