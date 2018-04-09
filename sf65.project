@@ -38,13 +38,16 @@
       <File Name="stringfunctions/sf65_stringfunctions.h"/>
       <File Name="stringfunctions/sf65_stringfunctions.c"/>
     </VirtualDirectory>
-    <VirtualDirectory Name="StatementEvaluation"/>
+    <VirtualDirectory Name="ExpressionParsing">
+      <File Name="expressionparsing/sf65_expressionparsing.h"/>
+    </VirtualDirectory>
     <VirtualDirectory Name="CommandLineParsing">
       <File Name="sf65_CMDArgs.c"/>
       <File Name="cmdlineparsing/sf65_cmdline.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="FileIO">
       <File Name="sf65_files.c"/>
+      <File Name="fileio/fileio.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="MathFunctions">
       <File Name="sf65_math.c"/>
@@ -53,6 +56,10 @@
     <VirtualDirectory Name="ErrorHandling">
       <File Name="errorhandling/sf65_error.c"/>
       <File Name="errorhandling/sf65_errorhandling.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="OutputFormatting">
+      <File Name="outputformatting/sf65_outputformatting.h"/>
+      <File Name="outputformatting/sf65‌_outputformatting.c"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
