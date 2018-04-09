@@ -1,5 +1,5 @@
 #ifndef __SF65_H__
-#define __SF65_h__
+#define __SF65_H__
 
 #define VERSION "v0.2"
 
@@ -11,7 +11,8 @@
 #include <ctype.h>
 #include "sf65_types.h"
 #include "stringfunctions/sf65_stringfunctions.h"
-
+#include "errorhandling/errorhandling.h"
+#include "mathfunctions/sf65_math.h"
 
 /*
  * Globals
@@ -50,8 +51,6 @@ FILE *sf65_openOutputFile ( char *filename );
  * ************************************************************
  */
 int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
-void sf65_pError ( char *format, ... );
-void sf65_vpError ( char *format, va_list va );
 
 /* ************************************************************
  * Prototypes for parsing functions
@@ -73,7 +72,6 @@ void conditionallyAddPaddingLineBeforeSection ( sf65Options_t *CMDOptions, sf65P
 void conditionallyAddPaddingLineAfterSection ( sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData );
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t *ParserData );
 
-int sf65_align ( int val, int align );
 
 
 /*
@@ -158,5 +156,5 @@ char *convertLinefeedsToStringSeparator ( char *data, int allocation );
 
 int getCommentSpacing ( char *p /*linestart*/, char *p1 /*commentstart*/, sf65ParsingData_t *pData );
 
-int sgn ( int x );
+
 #endif

@@ -41,15 +41,18 @@
     <VirtualDirectory Name="StatementEvaluation"/>
     <VirtualDirectory Name="CommandLineParsing">
       <File Name="sf65_CMDArgs.c"/>
+      <File Name="cmdlineparsing/sf65_cmdline.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="FileIO">
       <File Name="sf65_files.c"/>
     </VirtualDirectory>
-    <VirtualDirectory Name="Math">
+    <VirtualDirectory Name="MathFunctions">
       <File Name="sf65_math.c"/>
+      <File Name="mathfunctions/sf65_math.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ErrorHandling">
-      <File Name="ErrorHandling/sf65_error.c"/>
+      <File Name="errorhandling/sf65_error.c"/>
+      <File Name="errorhandling/sf65_errorhandling.h"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
