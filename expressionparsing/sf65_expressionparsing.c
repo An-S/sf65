@@ -172,3 +172,49 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
     }
     return expr;
 }
+
+bool isExpressionCharacter ( char ch ) {
+    bool flag;
+
+    if ( ch == '.' || ch == '_' ) {
+        flag = true;
+    } else {
+        flag = ( ch != ';' &&
+                 ch != '\'' && ch != '"' &&
+                 ch != '#' &&
+                 ch != '$' &&
+                 ch != '%' &&
+                 ch != ',' &&
+                 ch != '\\' &&
+                 ch != '=' );
+    }
+    return flag;
+}
+
+char *detectCodeWord ( char *p ) {
+    //
+    char ch;
+
+    while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
+        echoChar ( ch );
+        ++p;
+    }
+
+    //Rewind pointer to last non delimiting char
+    //--p;
+    return p;
+}
+
+char *detectOperand ( char *p ) {
+    //
+    char ch;
+
+    while ( ch = *p, ch && !isspace ( ch ) && !isExpressionCharacter ( ch ) ) {
+        echoChar ( ch );
+        ++p;
+    }
+
+    //Rewind pointer to last non delimiting char
+    //--p;
+    return p;
+}
