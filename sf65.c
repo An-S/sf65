@@ -321,9 +321,9 @@ int main ( int argc, char *argv[] ) {
                 ParserData -> additional_linefeed = false;
                 break;
             case SF65_ASSIGNMENT:
-                ParserData -> instant_additional_linefeed = false;
-
+                //ParserData -> instant_additional_linefeed = false;
                 ParserData -> force_separating_space = false;
+                ParserData -> request = CMDOptions -> start_operand;
                 break;
             default: {
                     // Detect separator for comma separated list of values

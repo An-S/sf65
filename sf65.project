@@ -29,7 +29,6 @@
     <VirtualDirectory Name="StringFunctions">
       <File Name="stringfunctions/sf65_stringfunctions.h"/>
       <File Name="stringfunctions/sf65_stringfunctions.c"/>
-      <File Name="sf65.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ExpressionParsing">
       <File Name="expressionparsing/sf65_expressionparsing.h"/>
@@ -65,6 +64,7 @@
       <File Name="circcycv1.txt"/>
       <File Name="testfiles/scope_padding_test.txt"/>
     </VirtualDirectory>
+    <File Name="sf65.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
