@@ -67,7 +67,13 @@
  * Reintegrated possibility to choose between extra operand column and
  * operand separated by single space -> 23.03.2018
  *
+ * In mode which breaks long labels and rest of line into each one line, also variable assignments
+ * are beeing broken into two lines. However, this does not make sense.
+ *
  * The flag that specifies alignment of comments to nearest column is ignored
+ *
+ * Labels starting in first line of source are aligned with mnemonics
+ *
  */
 
 /* MISSING FEATURES
@@ -313,6 +319,11 @@ int main ( int argc, char *argv[] ) {
                 }
             case SF65_EMPTYLINE:
                 ParserData -> additional_linefeed = false;
+                break;
+            case SF65_ASSIGNMENT:
+                ParserData -> instant_additional_linefeed = false;
+
+                ParserData -> force_separating_space = false;
                 break;
             default: {
                     // Detect separator for comma separated list of values

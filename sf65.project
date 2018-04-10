@@ -21,7 +21,6 @@
   <Dependencies/>
   <VirtualDirectory Name="pretty6502">
     <File Name="sf65.h"/>
-    <File Name="sf65.c"/>
     <File Name="pretty6502.c" ExcludeProjConfig="Debug"/>
     <File Name="sf65_types.h"/>
     <File Name="sf65_mnemonics.c"/>
@@ -30,6 +29,7 @@
     <VirtualDirectory Name="StringFunctions">
       <File Name="stringfunctions/sf65_stringfunctions.h"/>
       <File Name="stringfunctions/sf65_stringfunctions.c"/>
+      <File Name="sf65.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ExpressionParsing">
       <File Name="expressionparsing/sf65_expressionparsing.h"/>

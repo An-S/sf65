@@ -147,6 +147,9 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                 expr.exprType = SF65_EMPTYLINE;
             }
             break;
+        case '=':
+            expr.exprType = SF65_ASSIGNMENT;
+            break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
