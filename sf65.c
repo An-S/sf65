@@ -41,7 +41,7 @@
  * (However, comments are correctly recignized and aligned with mnemonics)
  *         -> 19./20.03.2018
  * Labels are indented with section(.proc, .scope ...) directives
- *      -> Fixed in the way that labels or only indented with section when they are aligned with mnemonics
+ *      -> Fixed in the way that labels are only indented with section when they are aligned with mnemonics
  *          -> 21.03.2018
  * Missing spaces after directives
  *      -> Fixed by remembering a found directive and issuing a space before processing the next term
@@ -56,7 +56,11 @@
  *      -> Problem persists after directives in prev line -> Fixed 21.03.2018
  * If unformatted source contains mnemonics which reference to variables
  * then operands are separated by space instead of using start_operand column
- *      ->
+ *      -> fixed, by remembering found mnemonic and formatting following statement
+ *         at start_operand column
+ *
+ * When variables are assigned to an hexadecimal value, sf65 outputs space between $ and xdigits,
+ * which cause syntax error
  *
  * Missing command line options
  *

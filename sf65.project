@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CodeLite_Project Name="sf65" Version="10.0.0" InternalType="Console">
   <Plugins>
+    <Plugin Name="qmake">
+      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
+    </Plugin>
     <Plugin Name="CMakePlugin">
       <![CDATA[[{
   "name": "Debug",
@@ -13,9 +16,6 @@
   "parentProject": ""
  }]]]>
     </Plugin>
-    <Plugin Name="qmake">
-      <![CDATA[00020001N0005Debug0000000000000001N0007Release000000000000]]>
-    </Plugin>
   </Plugins>
   <Description/>
   <Dependencies/>
@@ -23,19 +23,48 @@
     <File Name="sf65.h"/>
     <File Name="sf65.c"/>
     <File Name="pretty6502.c" ExcludeProjConfig="Debug"/>
-    <File Name="test.out" ExcludeProjConfig="Debug"/>
-    <File Name="test.src" ExcludeProjConfig="Debug"/>
     <File Name="sf65_types.h"/>
-    <File Name="sf65_files.c"/>
-    <File Name="sf65_CMDArgs.c"/>
-    <File Name="circcycv1.out" ExcludeProjConfig="Debug"/>
-    <File Name="circcycv1.s" ExcludeProjConfig="Debug"/>
     <File Name="sf65_mnemonics.c"/>
     <File Name="sf65_helpers.c"/>
-    <File Name="sf65_expression.c"/>
     <File Name="sf65_directives.c"/>
-    <File Name="testfiles/scope_padding_test.s" ExcludeProjConfig="Debug"/>
-    <File Name="testfiles/scope_padding_test.out"/>
+    <VirtualDirectory Name="StringFunctions">
+      <File Name="stringfunctions/sf65_stringfunctions.h"/>
+      <File Name="stringfunctions/sf65_stringfunctions.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="ExpressionParsing">
+      <File Name="expressionparsing/sf65_expressionparsing.h"/>
+      <File Name="expressionparsing/sf65_expressionparsing.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="CommandLineParsing">
+      <File Name="sf65_CMDArgs.c"/>
+      <File Name="cmdlineparsing/sf65_cmdline.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="FileIO">
+      <File Name="sf65_files.c"/>
+      <File Name="fileio/fileio.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="MathFunctions">
+      <File Name="sf65_math.c"/>
+      <File Name="mathfunctions/sf65_math.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="ErrorHandling">
+      <File Name="errorhandling/sf65_error.c"/>
+      <File Name="errorhandling/sf65_errorhandling.h"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="OutputFormatting">
+      <File Name="outputformatting/sf65_outputformatting.h"/>
+      <File Name="outputformatting/sf65‌_outputformatting.c"/>
+    </VirtualDirectory>
+    <VirtualDirectory Name="Testfiles">
+      <File Name="test.out"/>
+      <File Name="test.src"/>
+      <File Name="circcycv1.out"/>
+      <File Name="testfiles/scope_padding_test.out"/>
+      <File Name="testfiles/hexvariable_test.txt"/>
+      <File Name="testfiles/hexvariable_test.out"/>
+      <File Name="circcycv1.txt"/>
+      <File Name="testfiles/scope_padding_test.txt"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

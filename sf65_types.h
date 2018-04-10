@@ -5,6 +5,10 @@ typedef enum {
     SF65_KEEPCASE, SF65_LOWERC, SF65_UPPERC
 } sf65Case_t;
 
+typedef enum {
+    SF65_STREQ, SF65_STRNOTEQ
+} sf65StrEq_t;
+
 /*
  * Struct to hold values of command line arguments given to sf65
  */

@@ -75,70 +75,6 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 }
 
 
-void sf65_correctOutputColumnForFlags ( sf65ParsingData_t *ParserData, const sf65Options_t *CMDOptions ) {
-    if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
-        fputc ( '\n', output );
-        ParserData -> current_column = 0;
-    }
-
-    if ( ParserData -> flags & LEVEL_IN ) {
-        ParserData -> current_level++;
-        ParserData -> request = CMDOptions -> start_mnemonic - 4;
-    }
-
-    if ( ParserData -> flags & LEVEL_OUT ) {
-        if ( ParserData -> current_level > 0 )
-            ParserData -> current_level--;
-        ParserData -> request = CMDOptions -> start_mnemonic;
-    }
-
-    if ( ParserData -> flags & ALIGN_MNEMONIC ) {
-        ParserData -> request = CMDOptions -> start_mnemonic;
-    }
-
-    // Unindent by one level
-    if ( ParserData -> flags & LEVEL_MINUS )
-        if ( ParserData -> request > CMDOptions -> nesting_space )
-            ParserData -> request -= CMDOptions -> nesting_space;
-}
-
-/*
- * This function sets correct case for mnemonic and sets requested x position to start_mnemonic
- * It also indicates that a mnemonic was found and clears the directive found flag
- */
-void sf65_PlaceMnemonicInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                                sf65ParsingData_t *ParserData ) {
-    changeCase ( p1, p2, CMDOptions -> mnemonics_case );
-    ParserData -> request = CMDOptions -> start_mnemonic;
-    ParserData -> directive_detected = 0;
-    ParserData -> mnemonic_detected = 1;
-}
-
-/*
- * This function sets correct case for directive and sets requested x position to start_directive
- * It also indicates that a directive was found and clears the mnemonic found flag
- */
-void sf65_PlaceDirectiveInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                                 sf65ParsingData_t *ParserData ) {
-    changeCase ( p1, p2, CMDOptions -> directives_case );
-    ParserData -> request = CMDOptions -> start_directive;
-    ParserData -> directive_detected = 1;
-    ParserData -> mnemonic_detected = 0;
-}
-
-/*
- * This function sets correct case for directive and sets requested x position to start_directive
- * It also indicates that a directive was found and clears the mnemonic found flag
- */
-void sf65_PlaceOperandInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                               sf65ParsingData_t *ParserData ) {
-    if ( CMDOptions -> style != 0 ) {
-        ParserData -> request = 0;
-    } else {
-        ParserData -> request = CMDOptions -> start_operand;
-    }
-    ParserData -> mnemonic_detected = 0;
-}
 
 sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt ) {
     sf65Expression_t expr;
@@ -235,4 +171,50 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
         }
     }
     return expr;
+}
+
+bool isExpressionCharacter ( char ch ) {
+    bool flag;
+
+    if ( ch == '.' || ch == '_' ) {
+        flag = true;
+    } else {
+        flag = ( ch != ';' &&
+                 ch != '\'' && ch != '"' &&
+                 ch != '#' &&
+                 ch != '$' &&
+                 ch != '%' &&
+                 ch != ',' &&
+                 ch != '\\' &&
+                 ch != '=' );
+    }
+    return flag;
+}
+
+char *detectCodeWord ( char *p ) {
+    //
+    char ch;
+
+    while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
+        echoChar ( ch );
+        ++p;
+    }
+
+    //Rewind pointer to last non delimiting char
+    //--p;
+    return p;
+}
+
+char *detectOperand ( char *p ) {
+    //
+    char ch;
+
+    while ( ch = *p, ch && !isspace ( ch ) && !isExpressionCharacter ( ch ) ) {
+        echoChar ( ch );
+        ++p;
+    }
+
+    //Rewind pointer to last non delimiting char
+    //--p;
+    return p;
 }
