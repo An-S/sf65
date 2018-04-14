@@ -6,7 +6,9 @@
 123
 
 var = 100
-    var2 = 1000
+    var2 = $1000
+    var3=$500
+var4=$1234
 label10     inc $d020
 label11 dec         $d021
  .ProC abcd  ;the line before was not empty

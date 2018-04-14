@@ -195,12 +195,12 @@ bool isExpressionCharacter ( char ch ) {
 }
 
 char *detectCodeWord ( char *p ) {
-    //char ch;
-    p = p+strcspn(p, ";'\"#$%,\\=");
-    //while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
-      //  echoChar ( ch );
-        //++p;
-    //}
+    char ch;
+    //p += strcspn ( p, ";'\"#$%,\\= \t\v\0" );
+    while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
+        //  echoChar ( ch );
+        ++p;
+    }
 
     //Rewind pointer to last non delimiting char
     //--p;

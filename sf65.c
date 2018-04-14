@@ -61,6 +61,7 @@
  *
  * When variables are assigned to an hexadecimal value, sf65 outputs space between $ and xdigits,
  * which cause syntax error
+ *      -> Fixed, 14.04.2018
  *
  * Missing command line options
  *
@@ -240,7 +241,7 @@ int main ( int argc, char *argv[] ) {
                 // Sanity check to prevent lockups from pointers beeing not increased anymore
                 if ( p2 == p1 ) {
                     // Read rest of expression
-                    p2 = detectOperand ( p1 );
+                    ++p2; //= detectOperand ( p1 );
                 }
             }
 
@@ -322,36 +323,40 @@ int main ( int argc, char *argv[] ) {
                 break;
             case SF65_ASSIGNMENT:
                 //ParserData -> instant_additional_linefeed = false;
-                ParserData -> force_separating_space = false;
-                ParserData -> request = CMDOptions -> start_operand;
+                ParserData -> request = CMDOptions -> start_mnemonic;
                 break;
-            default: {
-                    // Detect separator for comma separated list of values
-                    if ( ParserData -> prev_expr.exprType == SF65_COMMASEP ) {
+            default:
+                // Detect separator for comma separated list of values
+                switch ( ParserData -> prev_expr.exprType ) {
+                case SF65_COMMASEP:
+                    // Align comma separated list of values
+                    ParserData -> request =
+                        sf65_align (
+                            ParserData -> current_column,
+                            CMDOptions -> nesting_space
+                        );
+                    ParserData -> flags = DONT_RELOCATE;
+                    break;
+                case SF65_ASSIGNMENT:
+                    ParserData -> force_separating_space = true;
+                    break;
+                default:
+                    // No comma separated list of values.
 
-                        // Align comma separated list of values
-                        ParserData -> request =
-                            sf65_align (
-                                ParserData -> current_column,
-                                CMDOptions -> nesting_space
-                            );
-                        ParserData -> flags = DONT_RELOCATE;
+                    // Detect line continuation character and eventually indent line accordingly
+                    if ( ParserData -> first_expression && ParserData -> line_continuation ) {
+                        ParserData -> line_continuation = 0;
+                        ParserData -> request = CMDOptions -> start_operand;
                     } else {
-                        // No comma separated list of values.
-
-                        // Detect line continuation character and eventually indent line accordingly
-                        if ( ParserData -> first_expression && ParserData -> line_continuation ) {
-                            ParserData -> line_continuation = 0;
-                            ParserData -> request = CMDOptions -> start_operand;
-                        } else {
-                            // Standard output
-                            ParserData -> request = 0;
-                        }
+                        // Standard output
+                        ParserData -> request = 0;
                     }
-
                     break;
                 }
+
+                break;
             }
+
 
             // For scope enclosing directives, add padding lines if requested by cmd options
             conditionallyAddPaddingLineBeforeSection ( CMDOptions, ParserData );
@@ -368,6 +373,8 @@ int main ( int argc, char *argv[] ) {
             if ( *p1 != ',' )
                 request_space ( output, &ParserData -> current_column, ParserData -> request,
                                 ParserData -> force_separating_space, CMDOptions -> tabs );
+
+            ParserData -> force_separating_space = 0;
 
             // Write current term to output file
             fwrite ( p1, sizeof ( char ), p2 - p1, output );
