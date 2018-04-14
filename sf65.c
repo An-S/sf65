@@ -201,7 +201,8 @@ int main ( int argc, char *argv[] ) {
         // the beginning of a line by setting first_expression flag.
         // Enforce separating space after parts of expressions as a default
         ParserData -> first_expression =
-            ParserData -> force_separating_space = 1;
+            ParserData -> force_separating_space =
+                ParserData -> beginning_of_line = 1;
         /*
          * PARSING NOTES
          *
@@ -229,6 +230,7 @@ int main ( int argc, char *argv[] ) {
 
             // Overread white space at beginning of line
             p1 = skipWhiteSpace ( p1 );
+            if ( p1 - p ) { ParserData -> beginning_of_line = false;}
 
             // Detect quotes and return whole string at once, if quote is found
             if ( *p1 == '"' ) {

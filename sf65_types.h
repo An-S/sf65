@@ -90,6 +90,7 @@ typedef struct {
     unsigned int directive_detected: 1;
     unsigned int operand_detected: 1;
     unsigned int first_expression: 1;
+    unsigned int beginning_of_line: 1;
     unsigned int additional_linefeed: 1;
     unsigned int instant_additional_linefeed: 1;
     unsigned int force_separating_space: 1;

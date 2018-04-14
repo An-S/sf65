@@ -76,7 +76,9 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 
 
 
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt ) {
+sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
+        sf65Options_t *pOpt ) {
+
     sf65Expression_t expr;
     int c = 0;
 
@@ -123,11 +125,18 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                 break;
 
             default:
+                // Here, no matching mnemonice or directive was found
                 if ( !pData -> first_expression ) {
                     expr.exprType = SF65_OTHEREXPR;
                 } else {
-                    expr.exprType = SF65_LABEL;
-                    pData -> label_detected = 1;
+                    if ( *p1 != '.' ) {
+                        if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {
+                            expr.exprType = SF65_LABEL;
+                            pData -> label_detected = 1;
+                        } else {
+                            expr.exprType = SF65_OTHEREXPR; //maybe macro name
+                        }
+                    }
                 }
                 break;
             }
