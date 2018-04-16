@@ -138,7 +138,7 @@ int main ( int argc, char *argv[] ) {
     input = sf65_openInputFile ( CMDOptions -> infilename );
 
     // Tell user that processing of input file is about to be started
-    fprintf ( stderr, "Processing %s...\n", CMDOptions -> infilename );
+    fprintf ( stdout, "Processing %s...\n", CMDOptions -> infilename );
 
     /*
     ** Now generate output file
@@ -155,7 +155,9 @@ int main ( int argc, char *argv[] ) {
 
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
-    while ( fgets ( linebuf, sizeof ( linebuf ), input ), !feof ( input ) ) {
+    do {
+        fgets ( linebuf, sizeof ( linebuf ), input );
+
         // Set pointer p1 to start of line
         p1 = p = linebuf;
 
@@ -175,7 +177,7 @@ int main ( int argc, char *argv[] ) {
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
         // truncated upon reading
-        if ( linebuf[allocation - 1] != '\n' ) {
+        if ( linebuf[allocation - 1] != '\n' && !feof ( input ) ) {
             fprintf ( stdout, "Error: Line %d too long: %s", line, linebuf );
             exit ( 1 );
         }
@@ -195,14 +197,14 @@ int main ( int argc, char *argv[] ) {
                 ParserData -> current_column =
                     ParserData -> label_detected =
                         ParserData -> operand_detected =
-                            ParserData -> additional_linefeed = 0;
+                            ParserData -> additional_linefeed = false;
 
         // Indicate, that we are at
         // the beginning of a line by setting first_expression flag.
         // Enforce separating space after parts of expressions as a default
         ParserData -> first_expression =
             ParserData -> force_separating_space =
-                ParserData -> beginning_of_line = 1;
+                ParserData -> beginning_of_line = true;
         /*
          * PARSING NOTES
          *
@@ -280,6 +282,7 @@ int main ( int argc, char *argv[] ) {
             }
 
             switch ( currentExpr.exprType ) {
+            case SF65_MACRONAME:
             case SF65_MNEMONIC: {
                     sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
                     break;
@@ -403,7 +406,8 @@ int main ( int argc, char *argv[] ) {
         }
 
         ++line;
-    }
+    } while ( !feof ( input ) );
+    fprintf ( stdout , "\n" );
 
     fclose ( input );
     fclose ( output );

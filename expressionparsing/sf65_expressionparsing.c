@@ -134,8 +134,10 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                             expr.exprType = SF65_LABEL;
                             pData -> label_detected = 1;
                         } else {
-                            expr.exprType = SF65_OTHEREXPR; //maybe macro name
+                            expr.exprType = SF65_MACRONAME; //maybe macro name
                         }
+                    } else {
+                        expr.exprType = SF65_OTHEREXPR;
                     }
                 }
                 break;
