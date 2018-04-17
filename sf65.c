@@ -98,6 +98,7 @@
 
 FILE *input;
 FILE *output;
+FILE *logoutput;
 
 //Create instance of sf65Options_t, but do not use directly
 //(Avoid replacement of -> by . or -> by .)
