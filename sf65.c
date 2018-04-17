@@ -148,6 +148,7 @@ int main ( int argc, char *argv[] ) {
     // Try to open output file. Procedure exits in case of error.
     // No further err checking necessary
     output = sf65_openOutputFile ( CMDOptions -> outfilename );
+    logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
 
     // Start with debug output (Line number of 0)
     fprintf ( stdout, "%4d:", line );
