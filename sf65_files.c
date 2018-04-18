@@ -88,3 +88,22 @@ int sf65_printfUserInfo ( const char *format, ... ) {
 
     return printfErr;
 }
+
+void sf65_conditionallyPrintFError ( FILE *file ) {
+    if ( ferror ( file ) ) {
+        sf65_pError ( strerror ( ferror ( file ) ) );
+        clearerr ( file );
+    }
+}
+
+size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file ) {
+    size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), endPtr - startPtr, file );
+    sf65_conditionallyPrintFError ( file );
+    return bytesWritten;
+}
+
+size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file ) {
+    size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), count, file );
+    sf65_conditionallyPrintFError ( file );
+    return bytesWritten;
+}

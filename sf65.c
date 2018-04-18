@@ -139,7 +139,7 @@ int main ( int argc, char *argv[] ) {
     input = sf65_openInputFile ( CMDOptions -> infilename );
 
     // Tell user that processing of input file is about to be started
-    sf65_fprintUserInfo ( stdout, "Processing %s...\n", CMDOptions -> infilename );
+    sf65_printfUserInfo ( "Processing %s...\n", CMDOptions -> infilename );
 
     /*
     ** Now generate output file
@@ -151,7 +151,7 @@ int main ( int argc, char *argv[] ) {
     logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
 
     // Start with debug output (Line number of 0)
-    sf65_fprintUserInfo ( stdout, "%4d:", line );
+    sf65_printfUserInfo ( "%4d:", line );
 
     sf65_initializeParser ( ParserData );
 
@@ -180,13 +180,13 @@ int main ( int argc, char *argv[] ) {
         // the input buffer is too small to hold the complete line and was therefor
         // truncated upon reading
         if ( linebuf[allocation - 1] != '\n' && !feof ( input ) ) {
-            sf65_fprintUserInfo ( stdout, "Error: Line %d too long: %s", line, linebuf );
+            sf65_printfUserInfo ( "Error: Line %d too long: %s", line, linebuf );
             exit ( 1 );
         }
 
         // Output linebuf so we see if there's a line which causes parser to lockup
-        sf65_fprintUserInfo ( stdout, "%04d:__", line );
-        sf65_fprintUserInfo ( stdout, "%s", linebuf );
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", linebuf );
 
         // If parser requested additional linefeed on parsing prev line, then insert
         // the requested additional linefeed. However, if there is already an
@@ -277,7 +277,7 @@ int main ( int argc, char *argv[] ) {
                                 ParserData -> request, 1, CMDOptions -> tabs );
 
                 // Store formatted expression into output
-                fwrite ( p1, sizeof ( char ), allocation - ( p1 - p ), output );
+                sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
 
                 //When comment if found, rest of line is also comment. So proceed to next line
                 break;
@@ -384,7 +384,7 @@ int main ( int argc, char *argv[] ) {
             ParserData -> force_separating_space = 0;
 
             // Write current term to output file
-            fwrite ( p1, sizeof ( char ), p2 - p1, output );
+            sf65_fwrite ( p1, p2, output );
 
             // Increase current_column by length of current term
             ParserData -> current_column += p2 - p1;
@@ -409,7 +409,7 @@ int main ( int argc, char *argv[] ) {
 
         ++line;
     } while ( !feof ( input ) );
-    sf65_fprintUserInfo ( stdout , "\n" );
+    sf65_printfUserInfo ( "\n" );
 
     fclose ( input );
     fclose ( output );

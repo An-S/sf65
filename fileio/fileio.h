@@ -39,4 +39,7 @@ char *sf65_addReplaceFileExt ( char *filename, char *ext );
  */
 int sf65_printfUserInfo ( const char *format, ... );
 
+size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file );
+size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file );
+
 #endif
