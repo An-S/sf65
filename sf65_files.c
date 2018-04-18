@@ -1,5 +1,12 @@
 #include "sf65.h"
 
+void sf65_conditionallyPrintFError ( FILE *file ) {
+    if ( ferror ( file ) ) {
+        sf65_pError ( strerror ( ferror ( file ) ) );
+        clearerr ( file );
+    }
+}
+
 FILE *sf65_openFile ( char *filename, char *mode ) {
     FILE *aFile = fopen ( filename, mode );
     if ( aFile == NULL ) {
@@ -71,9 +78,7 @@ int sf65_fprintf ( FILE *file, const char *format, ... ) {
 
     va_start ( va, format );
     fprintfErr = vfprintf ( file, format, va );
-    if ( ferror ( file ) ) {
-        sf65_pError ( strerror ( ferror ( file ) ) );
-    }
+    sf65_conditionallyPrintFError ( file );
     va_end ( va );
     return fprintfErr;
 }
@@ -87,13 +92,6 @@ int sf65_printfUserInfo ( const char *format, ... ) {
     va_end ( va );
 
     return printfErr;
-}
-
-void sf65_conditionallyPrintFError ( FILE *file ) {
-    if ( ferror ( file ) ) {
-        sf65_pError ( strerror ( ferror ( file ) ) );
-        clearerr ( file );
-    }
 }
 
 size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file ) {
