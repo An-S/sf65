@@ -77,3 +77,14 @@ int sf65_fprintf ( FILE *file, const char *format, ... ) {
     va_end ( va );
     return fprintfErr;
 }
+
+int sf65_printfUserInfo ( const char *format, ... ) {
+    va_list va;
+    int printfErr;
+
+    va_start ( va, format );
+    printfErr = vprintf ( format, va );
+    va_end ( va );
+
+    return printfErr;
+}

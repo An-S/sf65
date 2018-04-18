@@ -17,6 +17,8 @@ FILE *sf65_openInputFile ( char *filename );
  */
 FILE *sf65_openOutputFile ( char *filename );
 
+FILE *sf65_openLogFile ( char *basefilename ) ;
+
 /*
  * Wrapper for standard fprintf function with checking of ferror
  */
@@ -31,5 +33,10 @@ FILE *sf65_openFile ( char *filename, char *mode );
  * Function to strip a base filename from filename input and add or replace the extension
  */
 char *sf65_addReplaceFileExt ( char *filename, char *ext );
+
+/*
+ * Output formatted message to user
+ */
+int sf65_printfUserInfo ( const char *format, ... );
 
 #endif
