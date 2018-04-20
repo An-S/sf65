@@ -1,5 +1,9 @@
 #include "sf65.h"
 
+#define ET(x) #x
+char *sf65StrExprTypes[] = {EXPRTYPES};
+#undef ET
+
 extern sf65Options_t *CMDOptions;
 
 void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {

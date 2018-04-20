@@ -61,13 +61,20 @@
  *
  * When variables are assigned to an hexadecimal value, sf65 outputs space between $ and xdigits,
  * which cause syntax error
+ *      -> Fixed, 14.04.2018
  *
  * Missing command line options
  *
  * Reintegrated possibility to choose between extra operand column and
  * operand separated by single space -> 23.03.2018
  *
+ * In mode which breaks long labels and rest of line into each one line, also variable assignments
+ * are beeing broken into two lines. However, this does not make sense.
+ *
  * The flag that specifies alignment of comments to nearest column is ignored
+ *
+ * Labels starting in first line of source are aligned with mnemonics
+ *
  */
 
 /* MISSING FEATURES
@@ -89,8 +96,15 @@
 #include "sf65.h"
 
 
+typedef struct {
+    FILE *input;
+    FILE *output;
+    FILE *logoutput;
+} sf65FileDescr_t;
+
 FILE *input;
 FILE *output;
+FILE *logoutput;
 
 //Create instance of sf65Options_t, but do not use directly
 //(Avoid replacement of -> by . or -> by .)
@@ -131,7 +145,7 @@ int main ( int argc, char *argv[] ) {
     input = sf65_openInputFile ( CMDOptions -> infilename );
 
     // Tell user that processing of input file is about to be started
-    fprintf ( stderr, "Processing %s...\n", CMDOptions -> infilename );
+    sf65_printfUserInfo ( "Processing %s...\n", CMDOptions -> infilename );
 
     /*
     ** Now generate output file
@@ -140,15 +154,31 @@ int main ( int argc, char *argv[] ) {
     // Try to open output file. Procedure exits in case of error.
     // No further err checking necessary
     output = sf65_openOutputFile ( CMDOptions -> outfilename );
+    logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
 
     // Start with debug output (Line number of 0)
-    fprintf ( stdout, "%4d:", line );
+    sf65_printfUserInfo ( "%4d:", line );
 
     sf65_initializeParser ( ParserData );
 
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
-    while ( fgets ( linebuf, sizeof ( linebuf ), input ), !feof ( input ) ) {
+    do {
+        fgets ( linebuf, sizeof ( linebuf ), input );
+        if ( !feof ( input ) ) {
+            if ( ferror ( input ) ) {
+                sf65_printfUserInfo ( "Error reading line\n" );
+                exit ( 1 );
+            }
+        }
+
+        // Output linebuf so we see if there's a line which causes parser to lockup
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
+        sf65_fprintf ( logoutput, linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
+
         // Set pointer p1 to start of line
         p1 = p = linebuf;
 
@@ -157,9 +187,13 @@ int main ( int argc, char *argv[] ) {
 
         // If linebuf contains not more than a newline and a termination character, process next line
         if ( allocation < 2 ) {
-            fputc ( '\n', output );
+            sf65_fputc ( '\n', output );
+            sf65_fprintf ( logoutput, "%s\n", sf65StrExprTypes[SF65_EMPTYLINE] );
+
             ParserData -> prev_expr.exprType = SF65_EMPTYLINE;
             ParserData -> additional_linefeed = 0;
+
+            ++line;
             continue;
         }
 
@@ -168,14 +202,14 @@ int main ( int argc, char *argv[] ) {
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
         // truncated upon reading
-        if ( linebuf[allocation - 1] != '\n' ) {
-            fprintf ( stdout, "Error: Line %d too long: %s", line, linebuf );
+        if ( linebuf[allocation - 1] != '\n' && !feof ( input ) ) {
+            sf65_printfUserInfo ( "Error: Line %d too long: %s", line, linebuf );
             exit ( 1 );
         }
 
         // Output linebuf so we see if there's a line which causes parser to lockup
-        fprintf ( stdout, "%04d:__", line );
-        fprintf ( stdout, "%s", linebuf );
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", linebuf );
 
         // If parser requested additional linefeed on parsing prev line, then insert
         // the requested additional linefeed. However, if there is already an
@@ -188,13 +222,13 @@ int main ( int argc, char *argv[] ) {
                 ParserData -> current_column =
                     ParserData -> label_detected =
                         ParserData -> operand_detected =
-                            ParserData -> additional_linefeed = 0;
+                            ParserData -> additional_linefeed = false;
 
         // Indicate, that we are at
         // the beginning of a line by setting first_expression flag.
         // Enforce separating space after parts of expressions as a default
         ParserData -> first_expression =
-            ParserData -> force_separating_space = 1;
+            ParserData -> beginning_of_line = true;
         /*
          * PARSING NOTES
          *
@@ -217,11 +251,14 @@ int main ( int argc, char *argv[] ) {
             // with total length of current line
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
                 fputc ( '\n', output );
+                sf65_fputc (  '\n', logoutput );
+
                 break;
             }
 
             // Overread white space at beginning of line
             p1 = skipWhiteSpace ( p1 );
+            if ( p1 - p ) { ParserData -> beginning_of_line = false;}
 
             // Detect quotes and return whole string at once, if quote is found
             if ( *p1 == '"' ) {
@@ -234,7 +271,7 @@ int main ( int argc, char *argv[] ) {
                 // Sanity check to prevent lockups from pointers beeing not increased anymore
                 if ( p2 == p1 ) {
                     // Read rest of expression
-                    p2 = detectOperand ( p1 );
+                    ++p2; //= detectOperand ( p1 );
                 }
             }
 
@@ -264,13 +301,14 @@ int main ( int argc, char *argv[] ) {
                                 ParserData -> request, 1, CMDOptions -> tabs );
 
                 // Store formatted expression into output
-                fwrite ( p1, sizeof ( char ), allocation - ( p1 - p ), output );
-
-                //When comment if found, rest of line is also comment. So proceed to next line
+                sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
+                sf65_fprintf ( logoutput, "%s / \n", sf65StrExprTypes[SF65_COMMENT] );
+                //When comment is found, rest of line is also comment. So proceed to next line
                 break;
             }
 
             switch ( currentExpr.exprType ) {
+            case SF65_MACRONAME:
             case SF65_MNEMONIC: {
                     sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
                     break;
@@ -314,33 +352,42 @@ int main ( int argc, char *argv[] ) {
             case SF65_EMPTYLINE:
                 ParserData -> additional_linefeed = false;
                 break;
-            default: {
-                    // Detect separator for comma separated list of values
-                    if ( ParserData -> prev_expr.exprType == SF65_COMMASEP ) {
+            case SF65_ASSIGNMENT:
+                //ParserData -> instant_additional_linefeed = false;
+                ParserData -> request = CMDOptions -> start_mnemonic;
+                break;
+            default:
+                // Detect separator for comma separated list of values
+                switch ( ParserData -> prev_expr.exprType ) {
+                case SF65_COMMASEP:
+                    // Align comma separated list of values
+                    ParserData -> request =
+                        sf65_align (
+                            ParserData -> current_column,
+                            CMDOptions -> nesting_space
+                        );
+                    ParserData -> flags = DONT_RELOCATE;
+                    break;
+                case SF65_ASSIGNMENT:
+                    ParserData -> force_separating_space = true;
+                    break;
+                default:
+                    // No comma separated list of values.
 
-                        // Align comma separated list of values
-                        ParserData -> request =
-                            sf65_align (
-                                ParserData -> current_column,
-                                CMDOptions -> nesting_space
-                            );
-                        ParserData -> flags = DONT_RELOCATE;
+                    // Detect line continuation character and eventually indent line accordingly
+                    if ( ParserData -> first_expression && ParserData -> line_continuation ) {
+                        ParserData -> line_continuation = 0;
+                        ParserData -> request = CMDOptions -> start_operand;
                     } else {
-                        // No comma separated list of values.
-
-                        // Detect line continuation character and eventually indent line accordingly
-                        if ( ParserData -> first_expression && ParserData -> line_continuation ) {
-                            ParserData -> line_continuation = 0;
-                            ParserData -> request = CMDOptions -> start_operand;
-                        } else {
-                            // Standard output
-                            ParserData -> request = 0;
-                        }
+                        // Standard output
+                        ParserData -> request = 0;
                     }
-
                     break;
                 }
+
+                break;
             }
+
 
             // For scope enclosing directives, add padding lines if requested by cmd options
             conditionallyAddPaddingLineBeforeSection ( CMDOptions, ParserData );
@@ -358,8 +405,15 @@ int main ( int argc, char *argv[] ) {
                 request_space ( output, &ParserData -> current_column, ParserData -> request,
                                 ParserData -> force_separating_space, CMDOptions -> tabs );
 
+            ParserData -> force_separating_space = false;
+
             // Write current term to output file
-            fwrite ( p1, sizeof ( char ), p2 - p1, output );
+            sf65_fwrite ( p1, p2, output );
+            //sf65_fwrite ( p1, p2, logoutput );
+
+            sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr.exprType],
+                                    strlen ( sf65StrExprTypes[currentExpr.exprType] ), logoutput );
+            sf65_fprintf ( logoutput, " / " );
 
             // Increase current_column by length of current term
             ParserData -> current_column += p2 - p1;
@@ -383,9 +437,13 @@ int main ( int argc, char *argv[] ) {
         }
 
         ++line;
-    }
+    } while ( !feof ( input ) );
+    sf65_printfUserInfo ( "\n" );
+    sf65_fprintf ( logoutput, "\n" );
 
     fclose ( input );
     fclose ( output );
+    fclose ( logoutput );
+
     exit ( 0 );
 }
