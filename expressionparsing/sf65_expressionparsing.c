@@ -88,7 +88,11 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
     expr.index = 0;
 
-
+    if ( p2 > p1 ) {
+        expr.rightmostChar = * ( p2 - 1 );
+    } else {
+        expr.rightmostChar = *p1;
+    }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
     if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' ) {

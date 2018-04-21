@@ -325,7 +325,7 @@ int main ( int argc, char *argv[] ) {
                     // Is operand does not start with a variable or label character or a number
                     // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
                     // "lda #$00". However, "lda label1" or "sta 1" is ok.
-                    if ( !isalnum ( *p1 ) ) ParserData -> force_separating_space = 0;
+                    if ( !isExpressionCharacter ( *p1 ) ) ParserData -> force_separating_space = 0;
 
                     break;
                 }
@@ -373,7 +373,10 @@ int main ( int argc, char *argv[] ) {
                     break;
                 default:
                     // No comma separated list of values.
-
+                    if ( isExpressionCharacter ( *p1 ) &&
+                            isExpressionCharacter ( ParserData->prev_expr.rightmostChar ) ) {
+                        ParserData -> force_separating_space = true;
+                    }
                     // Detect line continuation character and eventually indent line accordingly
                     if ( ParserData -> first_expression && ParserData -> line_continuation ) {
                         ParserData -> line_continuation = 0;

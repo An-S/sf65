@@ -84,6 +84,7 @@ typedef enum {
 typedef struct {
     sf65ExpressionEnum_t exprType;
     int index;
+    char rightmostChar;
 } sf65Expression_t;
 
 /*
