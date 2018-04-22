@@ -52,4 +52,7 @@ char *detectCodeWord ( char *p );
 
 char *detectOperand ( char *p );
 
+bool isExpressionCharacter ( char ch );
+
+extern char *sf65StrExprTypes[];
 #endif
