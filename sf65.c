@@ -131,6 +131,7 @@ int main ( int argc, char *argv[] ) {
     char *p;        // Pointer for line start
     char *p1;       // Pointer for start of expression
     char *p2;       // Pointer for end of expression
+    //char *p3;       // Pointer for forward peeks
 
     int allocation; // Holds the length the currently processed line of the input file
     // counted from start to a '\n' or EOF
@@ -329,6 +330,7 @@ int main ( int argc, char *argv[] ) {
 
                     break;
                 }
+            case SF65_VARIABLE:
             case SF65_LABEL: {
                     // Leave label at start of line
                     ParserData -> request = 0;

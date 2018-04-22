@@ -64,6 +64,7 @@
       <File Name="testfiles/hexvariable_test.out"/>
       <File Name="circcycv1.txt"/>
       <File Name="testfiles/scope_padding_test.txt"/>
+      <File Name="testfiles/hexvariable_test.log"/>
     </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">

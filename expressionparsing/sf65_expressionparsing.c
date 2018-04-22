@@ -132,7 +132,18 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
             default:
                 if ( !pData -> first_expression ) {
-                    expr.exprType = SF65_OTHEREXPR;
+                    if ( *p2 != '=' ) {
+                        if ( isblank ( *p2 ) ) {
+                            char *p3 = skipWhiteSpace ( p2 );
+                            if ( *p3 == '=' ) {
+                                expr.exprType = SF65_VARIABLE;
+                            }
+                            expr.exprType = SF65_OTHEREXPR;
+                        } else {
+                            expr.exprType = SF65_VARIABLE;
+                        }
+                    }
+                    expr.exprType = SF65_MACRONAME;
                 } else {
                     expr.exprType = SF65_LABEL;
                     pData -> label_detected = 1;
