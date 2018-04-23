@@ -21,7 +21,6 @@
   <Dependencies/>
   <VirtualDirectory Name="pretty6502">
     <File Name="sf65.h"/>
-    <File Name="sf65.c"/>
     <File Name="pretty6502.c" ExcludeProjConfig="Debug"/>
     <File Name="sf65_types.h"/>
     <File Name="sf65_mnemonics.c"/>
@@ -66,6 +65,7 @@
       <File Name="testfiles/scope_padding_test.txt"/>
       <File Name="testfiles/hexvariable_test.log"/>
     </VirtualDirectory>
+    <File Name="sf65.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

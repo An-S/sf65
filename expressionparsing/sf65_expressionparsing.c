@@ -80,7 +80,9 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 
 
 
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt ) {
+sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
+        sf65Options_t *pOpt ) {
+
     sf65Expression_t expr;
     int c = 0;
 
@@ -131,6 +133,7 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                 break;
 
             default:
+                // Here, no matching mnemonice or directive was found
                 if ( !pData -> first_expression ) {
                     if ( *p2 != '=' ) {
                         if ( isblank ( *p2 ) ) {
@@ -145,8 +148,16 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                     }
                     expr.exprType = SF65_MACRONAME;
                 } else {
-                    expr.exprType = SF65_LABEL;
-                    pData -> label_detected = 1;
+                    if ( *p1 != '.' ) {
+                        if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {
+                            expr.exprType = SF65_LABEL;
+                            pData -> label_detected = 1;
+                        } else {
+                            expr.exprType = SF65_MACRONAME; //maybe macro name
+                        }
+                    } else {
+                        expr.exprType = SF65_OTHEREXPR;
+                    }
                 }
                 break;
             }
@@ -165,6 +176,9 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
             if ( pData -> first_expression ) {
                 expr.exprType = SF65_EMPTYLINE;
             }
+            break;
+        case '=':
+            expr.exprType = SF65_ASSIGNMENT;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
@@ -211,11 +225,10 @@ bool isExpressionCharacter ( char ch ) {
 }
 
 char *detectCodeWord ( char *p ) {
-    //
     char ch;
-
+    //p += strcspn ( p, ";'\"#$%,\\= \t\v\0" );
     while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
-        echoChar ( ch );
+        //  echoChar ( ch );
         ++p;
     }
 

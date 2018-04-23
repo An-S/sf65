@@ -1,1 +1,10 @@
 label=$5678
+label=$ 5678
+label= $5678
+label =$5678
+label = $5678
+label = $ 5678
+label2=start
+label=$5678
+alengthylabel=1234
+alengthylabel2=$1234

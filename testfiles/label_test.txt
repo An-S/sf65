@@ -1,0 +1,6 @@
+label0
+label1
+    macroname
+    label2:
+        anothermacroname
+label3:
