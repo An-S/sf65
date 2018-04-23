@@ -331,17 +331,17 @@ int main ( int argc, char *argv[] ) {
                 break;
 
             case SF65_IDENTIFIER:
+                ParserData -> force_separating_space = true;
+
                 switch ( ParserData->prev_expr.exprType ) {
                 case SF65_ASSIGNMENT:
                     ParserData -> request = 0;
-                    ParserData -> force_separating_space = true;
                     break;
                 case SF65_MNEMONIC:
                     ParserData -> request = CMDOptions->start_operand;
                     break;
                 default:
                     ParserData -> request = 0; // Do not put identifier at special position
-                    ParserData -> force_separating_space = true;
                     break;
                 }
 
@@ -373,7 +373,7 @@ int main ( int argc, char *argv[] ) {
                 break;
 
             case SF65_ASSIGNMENT:
-                //ParserData -> instant_additional_linefeed = false;
+                ParserData -> force_separating_space = true;
                 ParserData -> request = CMDOptions -> start_mnemonic;
                 break;
 
