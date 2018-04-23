@@ -310,54 +310,73 @@ int main ( int argc, char *argv[] ) {
 
             switch ( currentExpr.exprType ) {
             case SF65_MACRONAME:
-            case SF65_MNEMONIC: {
-                    sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
-                    break;
-                }
-            case SF65_DIRECTIVE: {
-                    sf65_PlaceDirectiveInLine ( p1, p2, CMDOptions, ParserData );
-                    conditionallyAddPaddingLineAfterSection ( CMDOptions, ParserData );
+            case SF65_MNEMONIC:
+                sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
+                break;
 
-                    break;
-                }
-            case SF65_OPERAND: {
-                    sf65_PlaceOperandInLine ( p1, p2, CMDOptions, ParserData );
+            case SF65_DIRECTIVE:
+                sf65_PlaceDirectiveInLine ( p1, p2, CMDOptions, ParserData );
+                conditionallyAddPaddingLineAfterSection ( CMDOptions, ParserData );
 
-                    // Is operand does not start with a variable or label character or a number
-                    // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
-                    // "lda #$00". However, "lda label1" or "sta 1" is ok.
-                    if ( !isExpressionCharacter ( *p1 ) ) ParserData -> force_separating_space = 0;
+                break;
 
-                    break;
-                }
-            case SF65_VARIABLE:
-            case SF65_LABEL: {
-                    // Leave label at start of line
+            case SF65_OPERAND:
+                sf65_PlaceOperandInLine ( p1, p2, CMDOptions, ParserData );
+
+                // Is operand does not start with a variable or label character or a number
+                // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
+                // "lda #$00". However, "lda label1" or "sta 1" is ok.
+                if ( !isExpressionCharacter ( *p1 ) ) ParserData -> force_separating_space = 0;
+
+                break;
+
+            case SF65_IDENTIFIER:
+                switch ( ParserData->prev_expr.exprType ) {
+                case SF65_ASSIGNMENT:
                     ParserData -> request = 0;
-                    ParserData -> flags = DONT_RELOCATE;
+                    ParserData -> force_separating_space = true;
+                    break;
+                case SF65_MNEMONIC:
+                    ParserData -> request = CMDOptions->start_operand;
+                    break;
+                default:
+                    ParserData -> request = 0; // Do not put identifier at special position
+                    ParserData -> force_separating_space = true;
+                    break;
+                }
 
-                    // Detect oversized labels.
-                    // Check, if p2 already at end of line
-                    // Then additional cr is not needed
-                    if ( allocation > p2 - p1 ) {
-                        if ( CMDOptions -> oversized_labels_own_line ) {
-                            if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
-                                ParserData -> instant_additional_linefeed = true;
-                            }
-                        }
-                        if ( CMDOptions -> labels_own_line ) {
+
+                break;
+
+            case SF65_LABEL:
+                // Leave label at start of line
+                ParserData -> request = 0;
+                ParserData -> flags = DONT_RELOCATE;
+
+                // Detect oversized labels.
+                // Check, if p2 already at end of line
+                // Then additional cr is not needed
+                if ( allocation > p2 - p1 ) {
+                    if ( CMDOptions -> oversized_labels_own_line ) {
+                        if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
                             ParserData -> instant_additional_linefeed = true;
                         }
                     }
-                    break;
+                    if ( CMDOptions -> labels_own_line ) {
+                        ParserData -> instant_additional_linefeed = true;
+                    }
                 }
+                break;
+
             case SF65_EMPTYLINE:
                 ParserData -> additional_linefeed = false;
                 break;
+
             case SF65_ASSIGNMENT:
                 //ParserData -> instant_additional_linefeed = false;
                 ParserData -> request = CMDOptions -> start_mnemonic;
                 break;
+
             default:
                 // Detect separator for comma separated list of values
                 switch ( ParserData -> prev_expr.exprType ) {
@@ -370,9 +389,11 @@ int main ( int argc, char *argv[] ) {
                         );
                     ParserData -> flags = DONT_RELOCATE;
                     break;
+
                 case SF65_ASSIGNMENT:
                     ParserData -> force_separating_space = true;
                     break;
+
                 default:
                     // No comma separated list of values.
                     if ( isExpressionCharacter ( *p1 ) &&
