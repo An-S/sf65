@@ -1,6 +1,7 @@
-Pretty6502 v0.2 by Oscar Toledo G. http://nanochess.org/
+SF65 by Stefan Andree, Mar 2018. Based on:
 
-Executables provided for Mac OS X and Windows.
+Pretty6502 v0.2 by Oscar Toledo G. http://nanochess.org/
+For more information about the changes since forking, see release notes.
 
 Usage:
     pretty6502 [args] input.asm output.asm
@@ -13,7 +14,7 @@ Arguments:
               label: mnemonic operand comment
     -s1       Code in three columns
               label: mnemonic+operand comment
-    -p0       Processor unknown.
+    -p0       Processor unknown
     -p1       Processor 6502 + DASM syntax (default)
     -m8       Start of mnemonic column (default)
     -o16      Start of operand column (default)
@@ -25,11 +26,12 @@ Arguments:
               to mnemonic (default)
     -n4       Nesting spacing (can be any number
               of spaces or multiple of tab size)
-    -l        Put labels in its own line
+    -l        Puts labels in its own line
     -dl       Change directives to lowercase
     -du       Change directives to uppercase
     -ml       Change mnemonics to lowercase
     -mu       Change mnemonics to uppercase
+    -e1       Pad sectioning directives with empty lines
 
 Assumes all your labels are at start of line and there is space
 before mnemonic.

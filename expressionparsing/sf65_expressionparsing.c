@@ -11,6 +11,8 @@ void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_comment_original_location = 0;
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
+
+    ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
 }
 
 /*
@@ -133,31 +135,37 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                 break;
 
             default:
-                // Here, no matching mnemonice or directive was found
-                if ( !pData -> first_expression ) {
-                    if ( *p2 != '=' ) {
-                        if ( isblank ( *p2 ) ) {
-                            char *p3 = skipWhiteSpace ( p2 );
-                            if ( *p3 == '=' ) {
-                                expr.exprType = SF65_VARIABLE;
-                            }
-                            expr.exprType = SF65_OTHEREXPR;
-                        } else {
-                            expr.exprType = SF65_VARIABLE;
-                        }
+                // Here, no matching mnemonic or directive was found
+                if ( pData -> first_expression ) {
+                    if ( *p1 == '.' ) {
+                        expr.exprType = SF65_DIRECTIVE;
                     }
-                    expr.exprType = SF65_MACRONAME;
-                } else {
-                    if ( *p1 != '.' ) {
+                    //Check for equation character
+                    else if ( *p2 == '=' ) {
+                        expr.exprType = SF65_IDENTIFIER;
+                    }
+                    //No equation character found, but may be after whitespace
+                    //so check for blank characters
+                    else if ( isblank ( *p2 ) ) {
+                        char *p3 = skipWhiteSpace ( p2 );
+                        //Ok, found equation in the second run
+                        if ( *p3 == '=' ) {
+                            expr.exprType = SF65_IDENTIFIER;
+                        }
+                        //Did not find equation.
+                        else {
+                            expr.exprType = SF65_MACRONAME;
+                        }
+                    } else {
                         if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {
                             expr.exprType = SF65_LABEL;
                             pData -> label_detected = 1;
                         } else {
                             expr.exprType = SF65_MACRONAME; //maybe macro name
                         }
-                    } else {
-                        expr.exprType = SF65_OTHEREXPR;
                     }
+                } else {
+                    expr.exprType = SF65_IDENTIFIER;
                 }
                 break;
             }
