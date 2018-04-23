@@ -8,6 +8,8 @@ int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos );
 int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData );
 int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add );
 
+int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace );
+
 /*
  * These functions help with empty padding lines before and after indented sections of code
  */

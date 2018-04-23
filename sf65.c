@@ -293,10 +293,14 @@ int main ( int argc, char *argv[] ) {
                 );
 
                 // Indent by level times nesting space/tab width
-                if ( ParserData -> request == CMDOptions -> start_mnemonic ) {
-                    ParserData -> request +=
-                        ParserData -> current_level *
-                        CMDOptions -> nesting_space;
+                if (
+                    sf65_GetOutputXPositionInLine ( ParserData ) ==
+                    CMDOptions -> start_mnemonic
+                ) {
+                    sf65_IncOutputXPositionByNestingLevel (
+                        ParserData,
+                        CMDOptions -> nesting_space
+                    );
                 }
 
                 // Align output by filling up with spaces

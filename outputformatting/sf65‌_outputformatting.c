@@ -14,6 +14,12 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
     return pData->request;
 }
 
+int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace ) {
+    pData->request +=
+        pData -> current_level *
+        nestingSpace;
+    return pData->request;
+}
 /*
 ** Request space in line
 *  Return number of spaces actually written
