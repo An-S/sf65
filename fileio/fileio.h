@@ -6,6 +6,7 @@
  */
 extern FILE *input;
 extern FILE *output;
+extern FILE *logoutput;
 
 /*
  * Open input file (unformatted source), check error
@@ -41,5 +42,6 @@ int sf65_printfUserInfo ( const char *format, ... );
 
 size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file );
 size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file );
+size_t sf65_fputc ( char ch, FILE *file );
 
 #endif

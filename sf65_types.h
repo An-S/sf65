@@ -42,12 +42,18 @@ typedef struct {
     int flags;
 } directives_t;
 
+#define EXPRTYPES \
+    ET(MNEMONIC), ET(DIRECTIVE), ET(OPERAND), ET(LABEL), ET(COMMENT),\
+    ET(EMPTYLINE), ET(MACRONAME), ET(COMMASEP), ET(ASSIGNMENT),\
+    ET(OTHEREXPR), ET(VARIABLE), ET(STRLITERAL), ET(INVALIDEXPR)
+
+#define ET(x) SF65_##x
+
 typedef enum {
-    SF65_MNEMONIC, SF65_DIRECTIVE, SF65_OPERAND, SF65_LABEL,
-    SF65_COMMENT, SF65_EMPTYLINE, SF65_MACRONAME,
-    SF65_COMMASEP, SF65_ASSIGNMENT, SF65_OTHEREXPR, SF65_INVALIDEXPR
+    EXPRTYPES
 } sf65ExpressionEnum_t;
 
+#undef ET
 
 /* Use XMacro trick to generate appropriate bitmasks for Alignment types
  */
@@ -78,6 +84,7 @@ typedef enum {
 typedef struct {
     sf65ExpressionEnum_t exprType;
     int index;
+    char rightmostChar;
 } sf65Expression_t;
 
 /*

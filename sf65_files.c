@@ -100,6 +100,12 @@ size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file ) {
     return bytesWritten;
 }
 
+size_t sf65_fputc ( char ch, FILE *file ) {
+    fputc ( ch, file );
+    sf65_conditionallyPrintFError ( file );
+    return 1;
+}
+
 size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file ) {
     size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), count, file );
     sf65_conditionallyPrintFError ( file );

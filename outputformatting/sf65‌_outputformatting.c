@@ -105,7 +105,7 @@ int getCommentSpacing ( char *p /*linestart*/, char *p1 /*commentstart*/, sf65Pa
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN ) {
         if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE ) {
-            fputc ( '\n', output );
+            sf65_fputc ( '\n', output );
         }
     }
 }
@@ -119,14 +119,14 @@ void conditionallyAddPaddingLineAfterSection ( sf65Options_t *CMDOptions, sf65Pa
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t *ParserData ) {
     if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE &&
             ParserData -> additional_linefeed ) {
-
-        fputc ( '\n', output );
+        sf65_fputc ( '\n', output );
     }
 }
 
 void sf65_correctOutputColumnForFlags ( sf65ParsingData_t *ParserData, const sf65Options_t *CMDOptions ) {
     if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
-        fputc ( '\n', output );
+        sf65_fputc ( '\n', output );
+
         ParserData -> current_column = 0;
     }
 

@@ -1,5 +1,9 @@
 #include "sf65.h"
 
+#define ET(x) #x
+char *sf65StrExprTypes[] = {EXPRTYPES};
+#undef ET
+
 extern sf65Options_t *CMDOptions;
 
 void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
@@ -86,7 +90,11 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
     expr.index = 0;
 
-
+    if ( p2 > p1 ) {
+        expr.rightmostChar = * ( p2 - 1 );
+    } else {
+        expr.rightmostChar = *p1;
+    }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
     if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' ) {
@@ -127,7 +135,18 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
             default:
                 // Here, no matching mnemonice or directive was found
                 if ( !pData -> first_expression ) {
-                    expr.exprType = SF65_OTHEREXPR;
+                    if ( *p2 != '=' ) {
+                        if ( isblank ( *p2 ) ) {
+                            char *p3 = skipWhiteSpace ( p2 );
+                            if ( *p3 == '=' ) {
+                                expr.exprType = SF65_VARIABLE;
+                            }
+                            expr.exprType = SF65_OTHEREXPR;
+                        } else {
+                            expr.exprType = SF65_VARIABLE;
+                        }
+                    }
+                    expr.exprType = SF65_MACRONAME;
                 } else {
                     if ( *p1 != '.' ) {
                         if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {

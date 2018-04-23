@@ -96,6 +96,12 @@
 #include "sf65.h"
 
 
+typedef struct {
+    FILE *input;
+    FILE *output;
+    FILE *logoutput;
+} sf65FileDescr_t;
+
 FILE *input;
 FILE *output;
 FILE *logoutput;
@@ -125,6 +131,7 @@ int main ( int argc, char *argv[] ) {
     char *p;        // Pointer for line start
     char *p1;       // Pointer for start of expression
     char *p2;       // Pointer for end of expression
+    //char *p3;       // Pointer for forward peeks
 
     int allocation; // Holds the length the currently processed line of the input file
     // counted from start to a '\n' or EOF
@@ -159,6 +166,19 @@ int main ( int argc, char *argv[] ) {
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     do {
         fgets ( linebuf, sizeof ( linebuf ), input );
+        if ( !feof ( input ) ) {
+            if ( ferror ( input ) ) {
+                sf65_printfUserInfo ( "Error reading line\n" );
+                exit ( 1 );
+            }
+        }
+
+        // Output linebuf so we see if there's a line which causes parser to lockup
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
+        sf65_fprintf ( logoutput, linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
 
         // Set pointer p1 to start of line
         p1 = p = linebuf;
@@ -168,9 +188,13 @@ int main ( int argc, char *argv[] ) {
 
         // If linebuf contains not more than a newline and a termination character, process next line
         if ( allocation < 2 ) {
-            fputc ( '\n', output );
+            sf65_fputc ( '\n', output );
+            sf65_fprintf ( logoutput, "%s\n", sf65StrExprTypes[SF65_EMPTYLINE] );
+
             ParserData -> prev_expr.exprType = SF65_EMPTYLINE;
             ParserData -> additional_linefeed = 0;
+
+            ++line;
             continue;
         }
 
@@ -205,8 +229,7 @@ int main ( int argc, char *argv[] ) {
         // the beginning of a line by setting first_expression flag.
         // Enforce separating space after parts of expressions as a default
         ParserData -> first_expression =
-            ParserData -> force_separating_space =
-                ParserData -> beginning_of_line = true;
+            ParserData -> beginning_of_line = true;
         /*
          * PARSING NOTES
          *
@@ -229,6 +252,8 @@ int main ( int argc, char *argv[] ) {
             // with total length of current line
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
                 fputc ( '\n', output );
+                sf65_fputc (  '\n', logoutput );
+
                 break;
             }
 
@@ -278,8 +303,8 @@ int main ( int argc, char *argv[] ) {
 
                 // Store formatted expression into output
                 sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
-
-                //When comment if found, rest of line is also comment. So proceed to next line
+                sf65_fprintf ( logoutput, "%s / \n", sf65StrExprTypes[SF65_COMMENT] );
+                //When comment is found, rest of line is also comment. So proceed to next line
                 break;
             }
 
@@ -301,10 +326,11 @@ int main ( int argc, char *argv[] ) {
                     // Is operand does not start with a variable or label character or a number
                     // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
                     // "lda #$00". However, "lda label1" or "sta 1" is ok.
-                    if ( !isalnum ( *p1 ) ) ParserData -> force_separating_space = 0;
+                    if ( !isExpressionCharacter ( *p1 ) ) ParserData -> force_separating_space = 0;
 
                     break;
                 }
+            case SF65_VARIABLE:
             case SF65_LABEL: {
                     // Leave label at start of line
                     ParserData -> request = 0;
@@ -349,7 +375,10 @@ int main ( int argc, char *argv[] ) {
                     break;
                 default:
                     // No comma separated list of values.
-
+                    if ( isExpressionCharacter ( *p1 ) &&
+                            isExpressionCharacter ( ParserData->prev_expr.rightmostChar ) ) {
+                        ParserData -> force_separating_space = true;
+                    }
                     // Detect line continuation character and eventually indent line accordingly
                     if ( ParserData -> first_expression && ParserData -> line_continuation ) {
                         ParserData -> line_continuation = 0;
@@ -381,10 +410,15 @@ int main ( int argc, char *argv[] ) {
                 request_space ( output, &ParserData -> current_column, ParserData -> request,
                                 ParserData -> force_separating_space, CMDOptions -> tabs );
 
-            ParserData -> force_separating_space = 0;
+            ParserData -> force_separating_space = false;
 
             // Write current term to output file
             sf65_fwrite ( p1, p2, output );
+            //sf65_fwrite ( p1, p2, logoutput );
+
+            sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr.exprType],
+                                    strlen ( sf65StrExprTypes[currentExpr.exprType] ), logoutput );
+            sf65_fprintf ( logoutput, " / " );
 
             // Increase current_column by length of current term
             ParserData -> current_column += p2 - p1;
@@ -410,6 +444,7 @@ int main ( int argc, char *argv[] ) {
         ++line;
     } while ( !feof ( input ) );
     sf65_printfUserInfo ( "\n" );
+    sf65_fprintf ( logoutput, "\n" );
 
     fclose ( input );
     fclose ( output );
