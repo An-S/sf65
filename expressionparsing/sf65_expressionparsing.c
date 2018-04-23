@@ -130,9 +130,9 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                 pData -> mnemonic_detected = 0;
                 break;
 
-            case SF65_LABEL:
-                expr.exprType = SF65_OTHEREXPR;
-                break;
+                //case SF65_LABEL:
+                //  expr.exprType = SF65_OTHEREXPR;
+                //break;
 
             default:
                 // Here, no matching mnemonic or directive was found
@@ -154,7 +154,7 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                         }
                         //Did not find equation.
                         else {
-                            expr.exprType = SF65_MACRONAME;
+                            expr.exprType = SF65_LABEL;
                         }
                     } else {
                         if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {

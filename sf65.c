@@ -366,6 +366,9 @@ int main ( int argc, char *argv[] ) {
                         ParserData -> instant_additional_linefeed = true;
                     }
                 }
+
+                // Separately position labels which are not at
+                // beginning of line and terminated by colon
                 break;
 
             case SF65_EMPTYLINE:
