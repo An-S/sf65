@@ -11,6 +11,8 @@ void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_comment_original_location = 0;
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
+
+    ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
 }
 
 /*
