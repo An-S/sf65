@@ -67,6 +67,7 @@
       <File Name="testfiles/label_test.out"/>
       <File Name="testfiles/label_test.txt"/>
       <File Name="testfiles/label_test.log"/>
+      <File Name="test.log"/>
     </VirtualDirectory>
     <File Name="sf65.c"/>
   </VirtualDirectory>

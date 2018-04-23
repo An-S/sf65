@@ -160,7 +160,7 @@ void sf65_PlaceMnemonicInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
     changeCase ( p1, p2, CMDOptions -> mnemonics_case );
     ParserData -> request = CMDOptions -> start_mnemonic;
     ParserData -> directive_detected = 0;
-    ParserData -> mnemonic_detected = 1;
+    ParserData -> mnemonic_detected = true;
 }
 
 /*

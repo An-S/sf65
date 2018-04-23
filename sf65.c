@@ -186,6 +186,8 @@ int main ( int argc, char *argv[] ) {
         // Get length of current line, just read
         allocation = strlen ( linebuf );
 
+        currentExpr.exprType = ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
+
         // If linebuf contains not more than a newline and a termination character, process next line
         if ( allocation < 2 ) {
             sf65_fputc ( '\n', output );
@@ -197,8 +199,6 @@ int main ( int argc, char *argv[] ) {
             ++line;
             continue;
         }
-
-        currentExpr.exprType = SF65_OTHEREXPR;
 
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
@@ -312,6 +312,13 @@ int main ( int argc, char *argv[] ) {
             case SF65_MACRONAME:
             case SF65_MNEMONIC:
                 sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
+                switch ( ParserData -> prev_expr.exprType ) {
+                case SF65_LABEL:
+                    ParserData -> force_separating_space = true;
+                    break;
+                default:
+                    break;
+                }
                 break;
 
             case SF65_DIRECTIVE:
@@ -331,11 +338,10 @@ int main ( int argc, char *argv[] ) {
                 break;
 
             case SF65_IDENTIFIER:
-                ParserData -> force_separating_space = true;
-
                 switch ( ParserData->prev_expr.exprType ) {
                 case SF65_ASSIGNMENT:
                     ParserData -> request = 0;
+                    ParserData -> force_separating_space = true;
                     break;
                 case SF65_MNEMONIC:
                     ParserData -> request = CMDOptions->start_operand;
@@ -349,9 +355,9 @@ int main ( int argc, char *argv[] ) {
                 break;
 
             case SF65_LABEL:
+                ParserData -> force_separating_space = true;
                 // Leave label at start of line
                 ParserData -> request = 0;
-                ParserData -> flags = DONT_RELOCATE;
 
                 // Detect oversized labels.
                 // Check, if p2 already at end of line
@@ -369,6 +375,16 @@ int main ( int argc, char *argv[] ) {
 
                 // Separately position labels which are not at
                 // beginning of line and terminated by colon
+                if ( !ParserData -> beginning_of_line ) {
+                    // Place label in same column as directives
+                    // The sense of this to indent nested labels with code
+                    // The behaviour can be overritten by removing the colon after the label
+                    // and placing it at the start of the line
+                    ParserData -> request = CMDOptions -> start_mnemonic;
+                    ParserData -> flags = LEVEL_MINUS;
+                } else {
+                    ParserData -> flags = DONT_RELOCATE;
+                }
                 break;
 
             case SF65_EMPTYLINE:
