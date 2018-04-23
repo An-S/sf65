@@ -1,5 +1,19 @@
 #include "sf65.h"
 
+int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
+    pData->request = xpos;
+    return xpos;
+}
+
+int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData ) {
+    return pData->request;
+}
+
+int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
+    pData->request += add;
+    return pData->request;
+}
+
 /*
 ** Request space in line
 *  Return number of spaces actually written

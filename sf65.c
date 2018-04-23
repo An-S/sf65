@@ -287,8 +287,10 @@ int main ( int argc, char *argv[] ) {
             // possible with switch contruct
             if ( currentExpr.exprType == SF65_COMMENT ) {  /* Comment */
                 // Get x position for output of comment
-                ParserData -> request =
-                    getCommentSpacing ( p, p1, ParserData );
+                sf65_SetOutputXPositionInLine (
+                    ParserData,
+                    getCommentSpacing ( p, p1, ParserData )
+                );
 
                 // Indent by level times nesting space/tab width
                 if ( ParserData -> request == CMDOptions -> start_mnemonic ) {
@@ -340,14 +342,14 @@ int main ( int argc, char *argv[] ) {
             case SF65_IDENTIFIER:
                 switch ( ParserData->prev_expr.exprType ) {
                 case SF65_ASSIGNMENT:
-                    ParserData -> request = 0;
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 );
                     ParserData -> force_separating_space = true;
                     break;
                 case SF65_MNEMONIC:
-                    ParserData -> request = CMDOptions->start_operand;
+                    sf65_SetOutputXPositionInLine ( ParserData, CMDOptions->start_operand );
                     break;
                 default:
-                    ParserData -> request = 0; // Do not put identifier at special position
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 ); // Do not put identifier at special position
                     break;
                 }
 
@@ -357,7 +359,7 @@ int main ( int argc, char *argv[] ) {
             case SF65_LABEL:
                 ParserData -> force_separating_space = true;
                 // Leave label at start of line
-                ParserData -> request = 0;
+                sf65_SetOutputXPositionInLine ( ParserData, 0 );
 
                 // Detect oversized labels.
                 // Check, if p2 already at end of line
@@ -380,7 +382,7 @@ int main ( int argc, char *argv[] ) {
                     // The sense of this to indent nested labels with code
                     // The behaviour can be overritten by removing the colon after the label
                     // and placing it at the start of the line
-                    ParserData -> request = CMDOptions -> start_mnemonic;
+                    sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_mnemonic );
                     ParserData -> flags = LEVEL_MINUS;
                 } else {
                     ParserData -> flags = DONT_RELOCATE;
@@ -393,7 +395,7 @@ int main ( int argc, char *argv[] ) {
 
             case SF65_ASSIGNMENT:
                 ParserData -> force_separating_space = true;
-                ParserData -> request = CMDOptions -> start_mnemonic;
+                sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_mnemonic );
                 break;
 
             default:
@@ -401,11 +403,13 @@ int main ( int argc, char *argv[] ) {
                 switch ( ParserData -> prev_expr.exprType ) {
                 case SF65_COMMASEP:
                     // Align comma separated list of values
-                    ParserData -> request =
+                    sf65_SetOutputXPositionInLine (
+                        ParserData,
                         sf65_align (
                             ParserData -> current_column,
                             CMDOptions -> nesting_space
-                        );
+                        )
+                    );
                     ParserData -> flags = DONT_RELOCATE;
                     break;
 
@@ -422,10 +426,10 @@ int main ( int argc, char *argv[] ) {
                     // Detect line continuation character and eventually indent line accordingly
                     if ( ParserData -> first_expression && ParserData -> line_continuation ) {
                         ParserData -> line_continuation = 0;
-                        ParserData -> request = CMDOptions -> start_operand;
+                        sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_operand );
                     } else {
                         // Standard output
-                        ParserData -> request = 0;
+                        sf65_SetOutputXPositionInLine ( ParserData, 0 );
                     }
                     break;
                 }

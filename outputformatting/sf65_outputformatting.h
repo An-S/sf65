@@ -1,6 +1,13 @@
 #ifndef __SF65_OUTPUTFORM_H__
 #define __SF65_OUTPUTFORM_H__
 
+/* This function requests a certain xposition in output
+ * It wraps access to request variable in parsing data.
+ */
+int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos );
+int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData );
+int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add );
+
 /*
  * These functions help with empty padding lines before and after indented sections of code
  */
