@@ -14,6 +14,17 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
     return pData->request;
 }
 
+int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
+    pData->request +=
+        pData -> current_level *
+        nestingSpace;
+    return pData->request;
+}
+
+sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
+
+}
+
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
     switch ( flag ) {
 #   define PF(x,y) case SF65_##y: pData -> x=1; break;
@@ -78,12 +89,6 @@ sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
     return SF65_NULLPTR;
 }
 
-int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
-    pData->request +=
-        pData -> current_level *
-        nestingSpace;
-    return pData->request;
-}
 /*
 ** Request space in line
 *  Return number of spaces actually written

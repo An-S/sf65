@@ -463,9 +463,9 @@ int main ( int argc, char *argv[] ) {
             sf65_correctOutputColumnForFlags ( ParserData, CMDOptions );
 
             // Indent sections of code according to nesting depth
-            if ( ParserData -> flags != DONT_RELOCATE )
-                ParserData -> request += ParserData -> current_level *
-                                         CMDOptions -> nesting_space;
+            if ( ParserData -> flags != DONT_RELOCATE ) {
+                sf65_IncOutputXPositionByNestingLevel ( ParserData, CMDOptions -> nesting_space );
+            }
 
             // Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
