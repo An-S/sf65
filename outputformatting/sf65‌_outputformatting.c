@@ -14,18 +14,71 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
     return pData->request;
 }
 
-sf65ParserFlags_t sf65_SetParserFlag ( sf65ParserFlags_t flag, sf65ParsingData_t *pData ) {
+sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
     switch ( flag ) {
-#   define PF(x,y) case SF65_##y: pData -> x=1;
+#   define PF(x,y) case SF65_##y: pData -> x=1; break;
         SF65_PARSERFLAGS
 #   undef PF
     default:
-        return SF65_NOT_A_PARSERFLAG;
+        return SF65_INVALIDARG;
     }
-    return flag;
+    return SF65_NOERR;
 }
 
-int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace ) {
+sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
+    if ( pData ) {
+        va_list va;
+        va_start ( va, flag1 );
+
+        while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            sf65_SetParserFlag ( pData, flag1 );
+            flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
+        }
+        va_end ( va );
+        return SF65_NOERR;
+    }
+    return SF65_NULLPTR;
+}
+
+sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
+    if ( pData ) {
+        switch ( flag ) {
+#       define PF(x,y) case SF65_##y: pData -> x=0;
+            SF65_PARSERFLAGS
+#       undef PF
+        default:
+            return SF65_NOT_A_PARSERFLAG;
+        }
+        return SF65_NOERR;
+    }
+    return SF65_NULLPTR;
+}
+
+sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
+    if ( pData ) {
+        va_list va;
+        va_start ( va, flag1 );
+
+        while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            sf65_ClearParserFlag ( pData, flag1 );
+            flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
+        }
+        va_end ( va );
+        return SF65_NOERR;
+    }
+    return SF65_NULLPTR;
+}
+
+sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
+    if ( pData ) {
+        pData -> allParserFlags = 0;
+
+        return SF65_NOERR;
+    }
+    return SF65_NULLPTR;
+}
+
+int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
     pData->request +=
         pData -> current_level *
         nestingSpace;
@@ -35,7 +88,7 @@ int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestin
 ** Request space in line
 *  Return number of spaces actually written
 */
-int request_space ( FILE *output, int *current, int new, int force, int tabs ) {
+int request_space ( FILE * output, int * current, int new, int force, int tabs ) {
 
     /*
     ** If already exceeded space...
@@ -92,7 +145,7 @@ int request_space ( FILE *output, int *current, int new, int force, int tabs ) {
 }
 
 
-int getCommentSpacing ( char *p /*linestart*/, char *p1 /*commentstart*/, sf65ParsingData_t *pData ) {
+int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65ParsingData_t * pData ) {
     /*
     ** Try to keep comments horizontally aligned (only works
     ** if spaces were used in source file)
@@ -133,7 +186,7 @@ int getCommentSpacing ( char *p /*linestart*/, char *p1 /*commentstart*/, sf65Pa
     return request;
 }
 
-void conditionallyAddPaddingLineBeforeSection ( sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData ) {
+void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN ) {
         if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE ) {
             sf65_fputc ( '\n', output );
@@ -141,20 +194,20 @@ void conditionallyAddPaddingLineBeforeSection ( sf65Options_t *CMDOptions, sf65P
     }
 }
 
-void conditionallyAddPaddingLineAfterSection ( sf65Options_t *CMDOptions, sf65ParsingData_t *ParserData ) {
+void conditionallyAddPaddingLineAfterSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_OUT ) {
         ParserData -> additional_linefeed = true;
     }
 }
 
-void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t *ParserData ) {
+void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
     if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE &&
             ParserData -> additional_linefeed ) {
         sf65_fputc ( '\n', output );
     }
 }
 
-void sf65_correctOutputColumnForFlags ( sf65ParsingData_t *ParserData, const sf65Options_t *CMDOptions ) {
+void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf65Options_t * CMDOptions ) {
     if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
         sf65_fputc ( '\n', output );
 
@@ -186,36 +239,31 @@ void sf65_correctOutputColumnForFlags ( sf65ParsingData_t *ParserData, const sf6
  * This function sets correct case for mnemonic and sets requested x position to start_mnemonic
  * It also indicates that a mnemonic was found and clears the directive found flag
  */
-void sf65_PlaceMnemonicInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                                sf65ParsingData_t *ParserData ) {
+void sf65_PlaceMnemonicInLine ( char * p1, char * p2, sf65Options_t * CMDOptions,
+                                sf65ParsingData_t * ParserData ) {
     changeCase ( p1, p2, CMDOptions -> mnemonics_case );
     ParserData -> request = CMDOptions -> start_mnemonic;
-    ParserData -> directive_detected = 0;
-    ParserData -> mnemonic_detected = true;
 }
 
 /*
  * This function sets correct case for directive and sets requested x position to start_directive
  * It also indicates that a directive was found and clears the mnemonic found flag
  */
-void sf65_PlaceDirectiveInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                                 sf65ParsingData_t *ParserData ) {
+void sf65_PlaceDirectiveInLine ( char * p1, char * p2, sf65Options_t * CMDOptions,
+                                 sf65ParsingData_t * ParserData ) {
     changeCase ( p1, p2, CMDOptions -> directives_case );
     ParserData -> request = CMDOptions -> start_directive;
-    ParserData -> directive_detected = 1;
-    ParserData -> mnemonic_detected = 0;
 }
 
 /*
  * This function sets correct case for directive and sets requested x position to start_directive
  * It also indicates that a directive was found and clears the mnemonic found flag
  */
-void sf65_PlaceOperandInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
-                               sf65ParsingData_t *ParserData ) {
+void sf65_PlaceOperandInLine ( char * p1, char * p2, sf65Options_t * CMDOptions,
+                               sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> style != 0 ) {
         ParserData -> request = 0;
     } else {
         ParserData -> request = CMDOptions -> start_operand;
     }
-    ParserData -> mnemonic_detected = 0;
 }

@@ -9,6 +9,9 @@
 #include <string.h>
 #include <stdarg.h>
 #include <ctype.h>
+#include <assert.h>
+
+#define NOT_NULL(arg) if( (arg) == NULL ){} else
 
 #include "sf65_types.h"
 #include "stringfunctions/sf65_stringfunctions.h"

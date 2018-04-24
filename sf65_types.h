@@ -1,6 +1,14 @@
 #ifndef __SF65_TYPES_H__
 #define __SF65_TYPES_H__
 
+#define SF65_ERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARG)
+
+#define ER(x) SF65_##x
+typedef enum {
+    SF65_ERRLIST
+} sf65Err_t;
+#undef ER
+
 typedef enum {
     SF65_KEEPCASE, SF65_LOWERC, SF65_UPPERC
 } sf65Case_t;
@@ -89,9 +97,6 @@ typedef struct {
 } sf65Expression_t;
 
 #define SF65_PARSERFLAGS PF(label_detected, LABEL_DETECTED)\
-    PF(mnemonic_detected, MNEMONIC_DETECTED)\
-    PF(directive_detected, DIRECTIVE_DETECTED)\
-    PF(operand_detected, OPERAND_DETECTED)\
     PF(first_expression, FIRST_EXPRESSION)\
     PF(beginning_of_line, BEGINNING_OF_LINE)\
     PF(additional_linefeed, ADDITIONAL_LINEFEED)\
@@ -103,16 +108,24 @@ typedef struct {
 typedef enum {
     SF65_PARSERFLAGS
     SF65_PARSERFLAGCNT, SF65_NOT_A_PARSERFLAG
-} sf65ParserFlags_t;
+} sf65ParserFlagsEnum_t;
 #undef PF
 
 /*
  * Struct to hold variables needed for parsing of unformatted source
  */
 typedef struct {
-#   define PF(x,y) unsigned int x: 1;
-    SF65_PARSERFLAGS
-#   undef PF
+    union {
+        struct {
+#           define PF(x,y) unsigned int x: 1;
+            SF65_PARSERFLAGS
+#           undef PF
+        };
+        struct {
+            unsigned int allParserFlags;
+        };
+    };
+
 
     int current_column;
     int last_column;

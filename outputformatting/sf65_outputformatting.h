@@ -10,6 +10,13 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add );
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace );
 
+sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
+
+sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
+sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData );
+
 /*
  * These functions help with empty padding lines before and after indented sections of code
  */

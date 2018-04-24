@@ -125,6 +125,7 @@ sf65ParsingData_t *ParserData = &_sf65ParsingData;
 */
 int main ( int argc, char *argv[] ) {
     int line = 0;   // Line counter for the current line of input to be processed
+    sf65Err_t currentErr = SF65_NOERR;
 
     char linebuf[1000]; // Input file is read line by line into this buffer
 
@@ -217,19 +218,32 @@ int main ( int argc, char *argv[] ) {
         // empty line in the input, additional linefeed is suppressed
         conditionallyInsertAdditionalLinefeed ( ParserData );
 
+        // Start with column at left
+        ParserData -> current_column = 0;
+
         // Reset flags for detected expression types from last line of input
-        ParserData -> directive_detected =
-            ParserData -> mnemonic_detected =
-                ParserData -> current_column =
-                    ParserData -> label_detected =
-                        ParserData -> operand_detected =
-                            ParserData -> additional_linefeed = false;
+        currentErr =
+            sf65_ClearParserFlags (
+                ParserData,
+                SF65_LABEL_DETECTED,
+                SF65_ADDITIONAL_LINEFEED,
+                SF65_FORCE_SEPARATING_SPACE,
+                SF65_NOT_A_PARSERFLAG
+            );
+        assert ( currentErr == SF65_NOERR );
 
         // Indicate, that we are at
         // the beginning of a line by setting first_expression flag.
-        // Enforce separating space after parts of expressions as a default
-        ParserData -> first_expression =
-            ParserData -> beginning_of_line = true;
+        // Do not enforce separating space after parts of expressions as a default
+        currentErr =
+            sf65_SetParserFlags (
+                ParserData,
+                SF65_FIRST_EXPRESSION, SF65_BEGINNING_OF_LINE,
+                SF65_NOT_A_PARSERFLAG
+            );
+
+        assert ( currentErr == SF65_NOERR );
+
         /*
          * PARSING NOTES
          *

@@ -109,30 +109,20 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
         case -1:
             expr.exprType = SF65_MNEMONIC;
             expr.index = c;
-            pData -> mnemonic_detected = 1;
             break;
         case 1:
             expr.exprType = SF65_DIRECTIVE;
             expr.index = c;
-            pData -> directive_detected = 1;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> directive_detected = 0;
                 break;
 
             case SF65_MNEMONIC:
                 expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> mnemonic_detected = 0;
                 break;
-
-                //case SF65_LABEL:
-                //  expr.exprType = SF65_OTHEREXPR;
-                //break;
 
             default:
                 // Here, no matching mnemonic or directive was found
@@ -192,15 +182,11 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> directive_detected = 0;
                 break;
 
             case SF65_MNEMONIC:
                 expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> mnemonic_detected = 0;
-
+ 
                 break;
             default:
                 if ( *p1 == '\\' && *p2 == '\n' ) {
