@@ -89,31 +89,30 @@ typedef struct {
 } sf65Expression_t;
 
 #define SF65_PARSERFLAGS PF(label_detected, LABEL_DETECTED)\
-    PF(mnemonic_detected, MNEMONIC_DETECTED),\
-    PF(directive_detected, DIRECTIVE_DETECTED),\
-    PF(operand_detected, OPERAND_DETECTED),\
-    PF(first_expression, FIRST_EXPRESSION),\
-    PF(beginning_of_line, BEGINNING_OF_LINE),\
-    PF(additional_linefeed, ADDITIONAL_LINEFEED),\
-    PF(instant_additional_linefeed, INSTANT_ADDITIONAL_LINEFEED),\
-    PF(force_separating_space, FORCE_SEPARATING_SPACE),\
+    PF(mnemonic_detected, MNEMONIC_DETECTED)\
+    PF(directive_detected, DIRECTIVE_DETECTED)\
+    PF(operand_detected, OPERAND_DETECTED)\
+    PF(first_expression, FIRST_EXPRESSION)\
+    PF(beginning_of_line, BEGINNING_OF_LINE)\
+    PF(additional_linefeed, ADDITIONAL_LINEFEED)\
+    PF(instant_additional_linefeed, INSTANT_ADDITIONAL_LINEFEED)\
+    PF(force_separating_space, FORCE_SEPARATING_SPACE)\
     PF(line_continuation, LINE_CONTINUATION)
+
+#define PF(x,y) SF65_##y,
+typedef enum {
+    SF65_PARSERFLAGS
+    SF65_PARSERFLAGCNT, SF65_NOT_A_PARSERFLAG
+} sf65ParserFlags_t;
+#undef PF
 
 /*
  * Struct to hold variables needed for parsing of unformatted source
  */
 typedef struct {
-
-    unsigned int label_detected: 1;
-    unsigned int mnemonic_detected: 1;
-    unsigned int directive_detected: 1;
-    unsigned int operand_detected: 1;
-    unsigned int first_expression: 1;
-    unsigned int beginning_of_line: 1;
-    unsigned int additional_linefeed: 1;
-    unsigned int instant_additional_linefeed: 1;
-    unsigned int force_separating_space: 1;
-    unsigned int line_continuation: 1;
+#   define PF(x,y) unsigned int x: 1;
+    SF65_PARSERFLAGS
+#   undef PF
 
     int current_column;
     int last_column;

@@ -14,6 +14,17 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
     return pData->request;
 }
 
+sf65ParserFlags_t sf65_SetParserFlag ( sf65ParserFlags_t flag, sf65ParsingData_t *pData ) {
+    switch ( flag ) {
+#   define PF(x,y) case SF65_##y: pData -> x=1;
+        SF65_PARSERFLAGS
+#   undef PF
+    default:
+        return SF65_NOT_A_PARSERFLAG;
+    }
+    return flag;
+}
+
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace ) {
     pData->request +=
         pData -> current_level *
