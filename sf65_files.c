@@ -111,3 +111,14 @@ size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file ) {
     sf65_conditionallyPrintFError ( file );
     return bytesWritten;
 }
+
+char *sf65_fgets ( FILE *file, char *buf, size_t sz ) {
+    char *ptr = fgets ( buf, sz, file );
+
+    // EOF must be passed back to caller,
+    // so that "he" knows when it's time to terminate sf65
+    if ( !feof ( file ) ) {
+        sf65_conditionallyPrintFError ( file );
+    }
+    return ptr;
+}

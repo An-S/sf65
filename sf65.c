@@ -161,12 +161,12 @@ int main ( int argc, char *argv[] ) {
     // Start with debug output (Line number of 0)
     sf65_printfUserInfo ( "%4d:", line );
 
-    sf65_initializeParser ( ParserData );
+    sf65_InitializeParser ( ParserData );
 
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     do {
-        fgets ( linebuf, sizeof ( linebuf ), input );
+        sf65_fgets ( input, linebuf, sizeof ( linebuf ) );
         if ( !feof ( input ) ) {
             if ( ferror ( input ) ) {
                 sf65_printfUserInfo ( "Error reading line\n" );
@@ -219,7 +219,7 @@ int main ( int argc, char *argv[] ) {
         conditionallyInsertAdditionalLinefeed ( ParserData );
 
         // Start with column at left
-        ParserData -> current_column = 0;
+        sf65_ResetCurrentColumnCounter ( ParserData );
 
         // Reset flags for detected expression types from last line of input
         currentErr =
@@ -265,7 +265,7 @@ int main ( int argc, char *argv[] ) {
             // Check termination condition for current line by comparing running pointers
             // with total length of current line
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
-                fputc ( '\n', output );
+                sf65_fputc ( '\n', output );
                 sf65_fputc (  '\n', logoutput );
 
                 break;
@@ -487,8 +487,8 @@ int main ( int argc, char *argv[] ) {
 
             // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
-                fputc ( '\n', output );
-                ParserData -> current_column = 0;
+                sf65_fputc ( '\n', output );
+                sf65_ResetCurrentColumnCounter ( ParserData );
             }
 
             // Set pointer p1 to the end of the expression+1 to proceed further

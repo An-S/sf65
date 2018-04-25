@@ -42,6 +42,13 @@ int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
     return -1;
 }
 
+int sf65_ResetCurrentColumnCounter ( sf65ParsingData_t *pData ) {
+    if ( pData ) {
+        return pData -> current_column = 0;
+    }
+    return -1;
+}
+
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
     if ( pData ) {
         switch ( flag ) {

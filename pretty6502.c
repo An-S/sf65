@@ -42,8 +42,8 @@ char *mnemonics_6502[] = {
 #define LEVEL_MINUS		0x08
 
 /*
-** DASM directives
-*/
+ * DASM directives
+ */
 struct {
     char *directive;
     int flags;
@@ -89,8 +89,8 @@ struct {
 };
 
 /*
-** Comparison without case
-*/
+ * Comparison without case
+ */
 int memcmpcase ( char *p1, char *p2, int size ) {
     while ( size-- ) {
         if ( tolower ( *p1 ) != tolower ( *p2 ) )
@@ -102,8 +102,8 @@ int memcmpcase ( char *p1, char *p2, int size ) {
 }
 
 /*
-** Check for opcode or directive
-*/
+ * Check for opcode or directive
+ */
 int check_opcode ( char *p1, char *p2 ) {
     int c;
     int length;

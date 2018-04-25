@@ -6,13 +6,46 @@ char *sf65StrExprTypes[] = {EXPRTYPES};
 
 extern sf65Options_t *CMDOptions;
 
-void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
+void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> request = 0;
     ParserData -> prev_comment_original_location = 0;
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
 
     ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
+}
+
+void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
+    sf65Err_t currentErr = SF65_NOERR;
+
+    // Reset determined expression type
+    pData -> prev_expr.exprType = SF65_OTHEREXPR;
+
+    // Start with column at left
+    sf65_ResetCurrentColumnCounter ( pData );
+
+    // Reset parser flags for labels, spaces, linefeeds from state of previous line
+    currentErr =
+        sf65_ClearParserFlags (
+            pData,
+            SF65_LABEL_DETECTED,
+            SF65_ADDITIONAL_LINEFEED,
+            SF65_FORCE_SEPARATING_SPACE,
+            SF65_NOT_A_PARSERFLAG
+        );
+    assert ( currentErr == SF65_NOERR );
+
+    // Indicate, that we are at
+    // the beginning of a line by setting first_expression flag.
+    // Do not enforce separating space after parts of expressions as a default
+    currentErr =
+        sf65_SetParserFlags (
+            pData,
+            SF65_FIRST_EXPRESSION, SF65_BEGINNING_OF_LINE,
+            SF65_NOT_A_PARSERFLAG
+        );
+
+    assert ( currentErr == SF65_NOERR );
 }
 
 /*
@@ -186,7 +219,7 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
             case SF65_MNEMONIC:
                 expr.exprType = SF65_OPERAND;
- 
+
                 break;
             default:
                 if ( *p1 == '\\' && *p2 == '\n' ) {

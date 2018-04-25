@@ -21,17 +21,16 @@
   <Dependencies/>
   <VirtualDirectory Name="pretty6502">
     <File Name="sf65.h"/>
-    <File Name="pretty6502.c" ExcludeProjConfig="Debug"/>
     <File Name="sf65_types.h"/>
     <File Name="sf65_mnemonics.c"/>
-    <File Name="sf65_helpers.c"/>
-    <File Name="sf65_directives.c"/>
     <VirtualDirectory Name="StringFunctions">
       <File Name="stringfunctions/sf65_stringfunctions.h"/>
       <File Name="stringfunctions/sf65_stringfunctions.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ExpressionParsing">
       <File Name="expressionparsing/sf65_expressionparsing.c"/>
+      <File Name="sf65_directives.c"/>
+      <File Name="expressionparsing/sf65_expressionparsing.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="CommandLineParsing">
       <File Name="sf65_CMDArgs.c"/>
@@ -40,11 +39,11 @@
     <VirtualDirectory Name="FileIO">
       <File Name="sf65_files.c"/>
       <File Name="fileio/fileio.h"/>
+      <File Name="sf65_helpers.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="MathFunctions">
       <File Name="sf65_math.c"/>
       <File Name="mathfunctions/sf65_math.h"/>
-      <File Name="expressionparsing/sf65_expressionparsing.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ErrorHandling">
       <File Name="errorhandling/sf65_error.c"/>
@@ -60,7 +59,6 @@
       <File Name="circcycv1.out"/>
       <File Name="testfiles/scope_padding_test.out"/>
       <File Name="testfiles/hexvariable_test.txt"/>
-      <File Name="testfiles/hexvariable_test.out"/>
       <File Name="circcycv1.txt"/>
       <File Name="testfiles/scope_padding_test.txt"/>
       <File Name="testfiles/hexvariable_test.log"/>
@@ -68,8 +66,9 @@
       <File Name="testfiles/label_test.txt"/>
       <File Name="testfiles/label_test.log"/>
       <File Name="test.log"/>
-      <File Name="sf65.c"/>
     </VirtualDirectory>
+    <File Name="testfiles/hexvariable_test.out"/>
+    <File Name="sf65.c"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

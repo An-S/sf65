@@ -22,9 +22,13 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add );
  */
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace );
 
-/* Adds an increment to the current volum counter
+/* Adds an increment to the current column counter
  */
 int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc );
+
+/* Sets the current column counter back to zero
+ */
+int sf65_ResetCurrentColumnCounter ( sf65ParsingData_t *pData );
 
 /* Clears a parser flag specified by an enumeration of parser flags
  */

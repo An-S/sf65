@@ -17,7 +17,16 @@ extern directives_t directives_dasm[];
  * ************************************************************
  */
 
-void sf65_initializeParser ( sf65ParsingData_t *ParserData );
+/*
+ * Sets default values for parser, before entering reading of lines
+ */
+void sf65_InitializeParser ( sf65ParsingData_t *ParserData );
+
+/*
+ * Sets default values for parser, but only those which have to be reset at
+ * the start of a line
+ */
+void sf65_StartParsingNewLine ( sf65ParsingData_t *pData );
 
 /*
  * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
