@@ -19,7 +19,7 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     sf65Err_t currentErr = SF65_NOERR;
 
     // Reset determined expression type
-    pData -> prev_expr.exprType = SF65_OTHEREXPR;
+    pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
 
     // Start with column at left
     sf65_ResetCurrentColumnCounter ( pData );

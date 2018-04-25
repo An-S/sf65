@@ -1,89 +1,111 @@
 #include "sf65.h"
 
 void sf65_conditionallyPrintFError ( FILE *file ) {
-    if ( ferror ( file ) ) {
-        sf65_pError ( strerror ( ferror ( file ) ) );
-        clearerr ( file );
+    NOT_NULL ( file ) {
+        if ( ferror ( file ) ) {
+            sf65_pError ( strerror ( ferror ( file ) ) );
+            clearerr ( file );
+        }
     }
 }
 
 FILE *sf65_openFile ( char *filename, char *mode ) {
-    FILE *aFile = fopen ( filename, mode );
-    if ( aFile == NULL ) {
-        fprintf ( stderr, "Unable to open file \"%s\" as "
-                  "\"%s\"\n", filename, mode );
-        exit ( 1 );
+    NOT_NULL ( filename  ) {
+        NOT_NULL ( mode ) {
+            FILE *aFile = fopen ( filename, mode );
+            if ( aFile == NULL ) {
+                fprintf ( stderr, "Unable to open file \"%s\" as "
+                          "\"%s\"\n", filename, mode );
+                exit ( 1 );
+            }
+            return aFile;
+        }
+        return NULL;
     }
-    return aFile;
 }
 
-char *sf65_addReplaceFileExt ( char *filename, char *ext ) {
-    // add 2 to size, because we need place for the basename/ext separator "." and the "\0" str term
-    char *generatedFName = calloc ( strlen ( filename ) + strlen ( ext ) + 2 , sizeof ( char ) );
-    size_t separatorPos = strcspn ( filename, "." );
+char *sf65_addReplaceFileExt ( char * filename, char * ext ) {
+    NOT_NULL ( filename ); NOT_NULL ( ext ) {
+        // add 2 to size, because we need place for the basename/ext separator "." and the "\0" str term
+        char *generatedFName = calloc ( strlen ( filename ) + strlen ( ext ) + 2 , sizeof ( char ) );
+        size_t separatorPos = strcspn ( filename, "." );
 
-    strcpy ( generatedFName, filename );
-    if ( separatorPos == strlen ( filename ) ) {
-        generatedFName[separatorPos] = '.';
+        strcpy ( generatedFName, filename );
+        if ( separatorPos == strlen ( filename ) ) {
+            generatedFName[separatorPos] = '.';
+        }
+        ++separatorPos;
+
+        strcpy ( generatedFName + separatorPos, ext );
+        return generatedFName;
     }
-    ++separatorPos;
-
-    strcpy ( generatedFName + separatorPos, ext );
-    return generatedFName;
+    return NULL;
 }
 
 /*
  * Open input file, check error
  */
-FILE *sf65_openInputFile ( char *filename ) {
-    FILE *input = NULL;
+FILE *sf65_openInputFile ( char * filename ) {
+    NOT_NULL ( filename ) {
+        FILE *input = NULL;
 
-    sf65_fprintf ( stdout, "Trying to open input file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open input file: \"%s\"", filename );
 
-    // This call includes error checking
-    input = sf65_openFile ( filename, "rb" );
+        // This call includes error checking
+        input = sf65_openFile ( filename, "rb" );
 
-    return input;
+        return input;
+    }
+    return NULL;
 }
 
 /*
  * Open output file, check error
  */
-FILE *sf65_openOutputFile ( char *filename ) {
-    FILE *output = NULL;
+FILE *sf65_openOutputFile ( char * filename ) {
+    NOT_NULL ( filename ) {
+        FILE *output = NULL;
 
-    sf65_fprintf ( stdout, "Trying to open output file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open output file: \"%s\"", filename );
 
-    // This call includes error checking
-    output = sf65_openFile ( filename, "w" );
-    return output;
+        // This call includes error checking
+        output = sf65_openFile ( filename, "w" );
+        return output;
+    }
+    return NULL;
 }
 
-FILE *sf65_openLogFile ( char *basefilename ) {
-    FILE *output = NULL;
-    char *logfilename = sf65_addReplaceFileExt ( basefilename, "log" );
+FILE *sf65_openLogFile ( char * basefilename ) {
+    NOT_NULL ( basefilename ) {
+        FILE *output = NULL;
+        char *logfilename = sf65_addReplaceFileExt ( basefilename, "log" );
 
-    sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"", logfilename );
+        sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"", logfilename );
 
 
-    // This call includes error checking
-    output = sf65_openFile ( logfilename, "w" );
-    free ( logfilename );
-    return output;
+        // This call includes error checking
+        output = sf65_openFile ( logfilename, "w" );
+        free ( logfilename );
+        return output;
+    }
+    return NULL;
 }
 
-int sf65_fprintf ( FILE *file, const char *format, ... ) {
-    va_list va;
-    int fprintfErr;
+int sf65_fprintf ( FILE * file, const char * format, ... ) {
+    NOT_NULL ( file ); NOT_NULL ( format ) {
+        va_list va;
+        int fprintfErr;
 
-    va_start ( va, format );
-    fprintfErr = vfprintf ( file, format, va );
-    sf65_conditionallyPrintFError ( file );
-    va_end ( va );
-    return fprintfErr;
+        va_start ( va, format );
+        fprintfErr = vfprintf ( file, format, va );
+        sf65_conditionallyPrintFError ( file );
+        va_end ( va );
+        return fprintfErr;
+    }
+    return -1;
 }
 
-int sf65_printfUserInfo ( const char *format, ... ) {
+int sf65_printfUserInfo ( const char * format, ... ) {
     va_list va;
     int printfErr;
 
@@ -94,31 +116,72 @@ int sf65_printfUserInfo ( const char *format, ... ) {
     return printfErr;
 }
 
-size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file ) {
-    size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), endPtr - startPtr, file );
-    sf65_conditionallyPrintFError ( file );
-    return bytesWritten;
-}
-
-size_t sf65_fputc ( char ch, FILE *file ) {
-    fputc ( ch, file );
-    sf65_conditionallyPrintFError ( file );
-    return 1;
-}
-
-size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file ) {
-    size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), count, file );
-    sf65_conditionallyPrintFError ( file );
-    return bytesWritten;
-}
-
-char *sf65_fgets ( FILE *file, char *buf, size_t sz ) {
-    char *ptr = fgets ( buf, sz, file );
-
-    // EOF must be passed back to caller,
-    // so that "he" knows when it's time to terminate sf65
-    if ( !feof ( file ) ) {
+size_t sf65_fwrite ( char * startPtr, char * endPtr, FILE * file ) {
+    NOT_NULL ( file ) {
+        size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), endPtr - startPtr, file );
         sf65_conditionallyPrintFError ( file );
+        return bytesWritten;
     }
-    return ptr;
+    return -1;
+}
+
+size_t sf65_fputc ( char ch, FILE * file ) {
+    NOT_NULL ( file ) {
+        fputc ( ch, file );
+        sf65_conditionallyPrintFError ( file );
+        return 1;
+    }
+    return -1;
+}
+
+size_t sf65_fwriteCountChars ( char * startPtr, size_t count, FILE * file ) {
+    NOT_NULL ( file ); NOT_NULL ( startPtr ) {
+        size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), count, file );
+        sf65_conditionallyPrintFError ( file );
+        return bytesWritten;
+    }
+    return -1;
+}
+
+char *sf65_fgets ( FILE * file, char * buf, size_t sz ) {
+
+    // Use binary or instead of logical or, because we really want to get bitor
+    NOT_NULL ( file ); NOT_NULL ( buf ) {
+        char *ptr = fgets ( buf, sz, file );
+
+        // EOF must be passed back to caller,
+        // so that "he" knows when it's time to terminate sf65
+        if ( !feof ( file ) ) {
+            sf65_conditionallyPrintFError ( file );
+        }
+        return ptr;
+    }
+    return NULL;
+}
+
+size_t sf65_fputnl ( FILE * file ) {
+    NOT_NULL ( file ) {
+        fputc ( '\n', file );
+        sf65_conditionallyPrintFError ( file );
+        return 1;
+    }
+    return -1;
+}
+
+size_t sf65_fputnspc ( FILE * file, int n ) {
+    NOT_NULL ( file ) {
+        int i;
+
+        for ( i = n; i > 0; --i ) {
+            fputc ( ' ', file );
+            sf65_conditionallyPrintFError ( file );
+        }
+
+        return n;
+    }
+    return -1;
+}
+
+size_t sf65_fputspc ( FILE * file ) {
+    return sf65_fputnspc ( file, 1 );
 }

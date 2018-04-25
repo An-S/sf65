@@ -137,6 +137,6 @@ typedef struct {
     int prev_comment_original_location;
     int prev_comment_final_location;
 
-    sf65Expression_t prev_expr;
+    sf65Expression_t current_expr, prev_expr;
 } sf65ParsingData_t;
 #endif

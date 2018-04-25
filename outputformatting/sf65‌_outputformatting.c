@@ -1,7 +1,7 @@
 #include "sf65.h"
 
 int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         pData->request = xpos;
         return xpos;
     }
@@ -9,14 +9,14 @@ int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
 }
 
 int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         return pData->request;
     }
     return -1;
 }
 
 int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
 
         pData->request += add;
         return pData->request;
@@ -25,7 +25,7 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
 }
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
 
         pData->request +=
             pData -> current_level *
@@ -36,21 +36,41 @@ int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nesti
 }
 
 int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         return pData -> current_column += inc;
     }
     return -1;
 }
 
+int sf65_GetCurrentColumnCounter ( sf65ParsingData_t *pData ) {
+    NOT_NULL ( pData ) {
+        return pData -> current_column;
+    }
+    return -1;
+}
+
 int sf65_ResetCurrentColumnCounter ( sf65ParsingData_t *pData ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         return pData -> current_column = 0;
     }
     return -1;
 }
 
+int sf65_SetCurrentColumnCounter ( sf65ParsingData_t *pData, int col ) {
+    NOT_NULL ( pData ) {
+        return pData -> current_column = col;
+    }
+    return -1;
+}
+
+int sf65_AlignCurrentColumnByTabWidth ( sf65ParsingData_t *pData, sf65Options_t *cmdOpt ) {
+    int tabs = cmdOpt -> tabs;
+    int currentColumn = sf65_GetCurrentColumnCounter ( pData );
+    return sf65_SetCurrentColumnCounter ( pData, ( currentColumn + tabs ) / tabs * tabs );
+}
+
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         switch ( flag ) {
 #   define PF(x,y) case SF65_##y: pData -> x=1; break;
             SF65_PARSERFLAGS
@@ -63,8 +83,21 @@ sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t f
     return SF65_NULLPTR;
 }
 
+int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
+    NOT_NULL ( pData ) {
+        switch ( flag ) {
+#   define PF(x,y) case SF65_##y: return pData -> x;
+            SF65_PARSERFLAGS
+#   undef PF
+        default:
+            break;
+        }
+    }
+    return -1;
+}
+
 sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         va_list va;
         va_start ( va, flag1 );
 
@@ -79,7 +112,7 @@ sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t 
 }
 
 sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         switch ( flag ) {
 #       define PF(x,y) case SF65_##y: pData -> x=0;
             SF65_PARSERFLAGS
@@ -93,7 +126,7 @@ sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t
 }
 
 sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         va_list va;
         va_start ( va, flag1 );
 
@@ -108,7 +141,7 @@ sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_
 }
 
 sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
-    if ( pData ) {
+    NOT_NULL ( pData ) {
         pData -> allParserFlags = 0;
 
         return SF65_NOERR;
@@ -176,6 +209,60 @@ int request_space ( FILE * output, int * current, int new, int force, int tabs )
     return 0;
 }
 
+int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, sf65Options_t *cmdOpt, int new ) {
+    /*
+    ** If already exceeded space...
+    */
+    if ( sf65_GetCurrentColumnCounter ( pData ) > new ) {
+        // If force is true, a single space is always written to output
+        if ( sf65_GetParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE ) ) {
+            sf65_fputc ( ' ', output );
+            sf65_IncCurrentColumnCounter ( pData, 1 ) ;
+            return 1;
+        }
+        return 0;
+    } else {
+        // From here on, *current < new
+
+        /*
+        ** Advance one step at a time
+        */
+        if ( new ) {
+            int tabs = cmdOpt -> tabs;
+
+            // Write spaces to output, only if new != 0
+            // Assume, new is non negative
+
+            if ( tabs == 0 ) {
+                // Calculate number of spaces to output
+                int n = new - sf65_GetCurrentColumnCounter ( pData );
+
+                // Use spaces instead of tabs
+                // Write number of spaces calculated from the
+                // difference between *current and new
+                sf65_fputnspc ( output, n );
+
+                // Update the current_column variable to the new x position
+                sf65_IncCurrentColumnCounter ( pData, n );
+
+                return n;
+            } else {
+                while ( sf65_GetCurrentColumnCounter ( pData ) < new ) {
+                    // Use tabs, not spaces. Assume tab has a width of <<tabs>>
+                    sf65_fputc ( '\t', output );
+
+                    // Quantize current output column to value of <<tabs>>
+                    // int sf65_align ( int val, int align )
+                    sf65_AlignCurrentColumnByTabWidth ( pData, cmdOpt );
+                }
+            }
+        }
+
+        return 0;
+    }
+
+    return 0;
+}
 
 int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65ParsingData_t * pData ) {
     /*

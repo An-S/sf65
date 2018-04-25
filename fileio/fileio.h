@@ -44,5 +44,7 @@ size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file );
 size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file );
 size_t sf65_fputc ( char ch, FILE *file );
 char *sf65_fgets ( FILE *file, char *buf, size_t sz );
-
+size_t sf65_fputnl ( FILE * file );
+size_t sf65_fputnspc ( FILE * file, int n );
+size_t sf65_fputspc ( FILE * file );
 #endif

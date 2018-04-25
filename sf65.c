@@ -125,7 +125,6 @@ sf65ParsingData_t *ParserData = &_sf65ParsingData;
 */
 int main ( int argc, char *argv[] ) {
     int line = 0;   // Line counter for the current line of input to be processed
-    sf65Err_t currentErr = SF65_NOERR;
 
     char linebuf[1000]; // Input file is read line by line into this buffer
 
@@ -187,19 +186,7 @@ int main ( int argc, char *argv[] ) {
         // Get length of current line, just read
         allocation = strlen ( linebuf );
 
-        currentExpr.exprType = ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
-
-        // If linebuf contains not more than a newline and a termination character, process next line
-        if ( allocation < 2 ) {
-            sf65_fputc ( '\n', output );
-            sf65_fprintf ( logoutput, "%s\n", sf65StrExprTypes[SF65_EMPTYLINE] );
-
-            ParserData -> prev_expr.exprType = SF65_EMPTYLINE;
-            ParserData -> additional_linefeed = 0;
-
-            ++line;
-            continue;
-        }
+        currentExpr.exprType = SF65_OTHEREXPR;
 
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
@@ -218,31 +205,9 @@ int main ( int argc, char *argv[] ) {
         // empty line in the input, additional linefeed is suppressed
         conditionallyInsertAdditionalLinefeed ( ParserData );
 
-        // Start with column at left
-        sf65_ResetCurrentColumnCounter ( ParserData );
-
-        // Reset flags for detected expression types from last line of input
-        currentErr =
-            sf65_ClearParserFlags (
-                ParserData,
-                SF65_LABEL_DETECTED,
-                SF65_ADDITIONAL_LINEFEED,
-                SF65_FORCE_SEPARATING_SPACE,
-                SF65_NOT_A_PARSERFLAG
-            );
-        assert ( currentErr == SF65_NOERR );
-
-        // Indicate, that we are at
-        // the beginning of a line by setting first_expression flag.
-        // Do not enforce separating space after parts of expressions as a default
-        currentErr =
-            sf65_SetParserFlags (
-                ParserData,
-                SF65_FIRST_EXPRESSION, SF65_BEGINNING_OF_LINE,
-                SF65_NOT_A_PARSERFLAG
-            );
-
-        assert ( currentErr == SF65_NOERR );
+        // Must be inserted after call to conditionallyInsertAdditionalLinefeed(...), because
+        // this function needs ADDITIONAL_LINEFEED flag from prev line
+        sf65_StartParsingNewLine ( ParserData );
 
         /*
          * PARSING NOTES
@@ -266,7 +231,7 @@ int main ( int argc, char *argv[] ) {
             // with total length of current line
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
                 sf65_fputc ( '\n', output );
-                sf65_fputc (  '\n', logoutput );
+                sf65_fputc ( '\n', logoutput );
 
                 break;
             }
@@ -350,7 +315,7 @@ int main ( int argc, char *argv[] ) {
             case SF65_OPERAND:
                 sf65_PlaceOperandInLine ( p1, p2, CMDOptions, ParserData );
 
-                // Is operand does not start with a variable or label character or a number
+                // If operand does not start with a variable or label character or a number
                 // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
                 // "lda #$00". However, "lda label1" or "sta 1" is ok.
                 if ( !isExpressionCharacter ( *p1 ) ) ParserData -> force_separating_space = 0;
@@ -371,11 +336,11 @@ int main ( int argc, char *argv[] ) {
                     break;
                 }
 
-
                 break;
 
             case SF65_LABEL:
                 ParserData -> force_separating_space = true;
+
                 // Leave label at start of line
                 sf65_SetOutputXPositionInLine ( ParserData, 0 );
 
@@ -424,7 +389,7 @@ int main ( int argc, char *argv[] ) {
                     sf65_SetOutputXPositionInLine (
                         ParserData,
                         sf65_align (
-                            ParserData -> current_column,
+                            sf65_GetCurrentColumnCounter ( ParserData ),
                             CMDOptions -> nesting_space
                         )
                     );
