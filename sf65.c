@@ -284,8 +284,7 @@ int main ( int argc, char *argv[] ) {
 
                 // Align output by filling up with spaces
                 sf65_PadOutputWithSpaces (
-                    output, ParserData, CMDOptions -> tabs,
-                    sf65_GetOutputXPositionInLine ( ParserData )
+                    output, ParserData, CMDOptions -> tabs
                 );
 
                 // Store formatted expression into output
@@ -408,20 +407,19 @@ int main ( int argc, char *argv[] ) {
                             isExpressionCharacter ( ParserData->prev_expr.rightmostChar ) ) {
                         ParserData -> force_separating_space = true;
                     }
-                    // Detect line continuation character and eventually indent line accordingly
-                    if ( ParserData -> first_expression && ParserData -> line_continuation ) {
-                        ParserData -> line_continuation = 0;
-                        sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_operand );
-                    } else {
-                        // Standard output
-                        sf65_SetOutputXPositionInLine ( ParserData, 0 );
-                    }
+                    // Standard output
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 );
                     break;
                 }
 
                 break;
             }
 
+            // Detect line continuation character and eventually indent line accordingly
+            if ( ParserData -> first_expression && ParserData -> line_continuation ) {
+                ParserData -> line_continuation = 0;
+                sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_operand );
+            }
 
             // For scope enclosing directives, add padding lines if requested by cmd options
             conditionallyAddPaddingLineBeforeSection ( CMDOptions, ParserData );
@@ -437,8 +435,7 @@ int main ( int argc, char *argv[] ) {
             // Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
                 sf65_PadOutputWithSpaces (
-                    output, ParserData, CMDOptions -> tabs,
-                    sf65_GetOutputXPositionInLine ( ParserData )
+                    output, ParserData, CMDOptions -> tabs
                 );
 
             ParserData -> force_separating_space = false;

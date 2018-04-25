@@ -117,7 +117,7 @@ void sf65_PlaceOperandInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
 ** Request space in line
 */
 int request_space ( FILE *output, int *current, int new, int force, int tabs );
-int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs, int new );
+int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs );
 /*
  * Place comment in line according to scanning position and pData parameters
  */

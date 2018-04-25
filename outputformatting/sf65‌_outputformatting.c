@@ -208,7 +208,9 @@ int request_space ( FILE * output, int * current, int new, int force, int tabs )
     return 0;
 }
 
-int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs, int new ) {
+int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs ) {
+    int new = sf65_GetOutputXPositionInLine ( pData );
+
     /*
     ** If already exceeded space...
     */
