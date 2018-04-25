@@ -3,18 +3,47 @@
 
 /* This function requests a certain xposition in output
  * It wraps access to request variable in parsing data.
+ * It returns the value or -1 on error.
  */
 int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos );
+
+/* This function returns the requested x position to caller
+ * or -1 on error
+ */
 int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData );
+
+/* This function adds a relatoive offset to the requested x position
+ * and returns the new value to the caller or -1 on error
+ */
 int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add );
 
+/* This function adds a relative offset to the requested output x position
+ * and returns the new value to the caller or -1 on error
+ */
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t *pData, int nestingSpace );
 
+/* Adds an increment to the current volum counter
+ */
+int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc );
+
+/* Clears a parser flag specified by an enumeration of parser flags
+ */
 sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+
+/* Clears the parser flags specified by an va_list of enumerated parser flags
+ */
 sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
 
+/* Sets a parser flag specified by an enumeration of parser flags
+ */
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+
+/* Sets the parser flags specified by an va_list of enumerated parser flags
+ */
 sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
+
+/* Clears all the parser flags
+ */
 sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData );
 
 /*

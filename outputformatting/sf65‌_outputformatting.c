@@ -1,39 +1,59 @@
 #include "sf65.h"
 
 int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
-    pData->request = xpos;
-    return xpos;
+    if ( pData ) {
+        pData->request = xpos;
+        return xpos;
+    }
+    return -1;
 }
 
 int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData ) {
-    return pData->request;
+    if ( pData ) {
+        return pData->request;
+    }
+    return -1;
 }
 
 int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
-    pData->request += add;
-    return pData->request;
+    if ( pData ) {
+
+        pData->request += add;
+        return pData->request;
+    }
+    return -1;
 }
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
-    pData->request +=
-        pData -> current_level *
-        nestingSpace;
-    return pData->request;
+    if ( pData ) {
+
+        pData->request +=
+            pData -> current_level *
+            nestingSpace;
+        return pData->request;
+    }
+    return -1;
 }
 
-sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
-
+int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
+    if ( pData ) {
+        return pData -> current_column += inc;
+    }
+    return -1;
 }
 
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
-    switch ( flag ) {
+    if ( pData ) {
+        switch ( flag ) {
 #   define PF(x,y) case SF65_##y: pData -> x=1; break;
-        SF65_PARSERFLAGS
+            SF65_PARSERFLAGS
 #   undef PF
-    default:
-        return SF65_INVALIDARG;
+        default:
+            return SF65_INVALIDARG;
+        }
+        return SF65_NOERR;
     }
-    return SF65_NOERR;
+    return SF65_NULLPTR;
 }
 
 sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {

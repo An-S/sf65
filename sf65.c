@@ -483,7 +483,7 @@ int main ( int argc, char *argv[] ) {
             sf65_fprintf ( logoutput, " / " );
 
             // Increase current_column by length of current term
-            ParserData -> current_column += p2 - p1;
+            sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
 
             // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
