@@ -283,8 +283,10 @@ int main ( int argc, char *argv[] ) {
                 }
 
                 // Align output by filling up with spaces
-                request_space ( output, &ParserData -> current_column,
-                                ParserData -> request, 1, CMDOptions -> tabs );
+                sf65_PadOutputWithSpaces (
+                    output, ParserData, CMDOptions -> tabs,
+                    sf65_GetOutputXPositionInLine ( ParserData )
+                );
 
                 // Store formatted expression into output
                 sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
@@ -434,8 +436,10 @@ int main ( int argc, char *argv[] ) {
 
             // Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
-                request_space ( output, &ParserData -> current_column, ParserData -> request,
-                                ParserData -> force_separating_space, CMDOptions -> tabs );
+                sf65_PadOutputWithSpaces (
+                    output, ParserData, CMDOptions -> tabs,
+                    sf65_GetOutputXPositionInLine ( ParserData )
+                );
 
             ParserData -> force_separating_space = false;
 

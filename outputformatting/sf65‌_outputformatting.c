@@ -63,8 +63,7 @@ int sf65_SetCurrentColumnCounter ( sf65ParsingData_t *pData, int col ) {
     return -1;
 }
 
-int sf65_AlignCurrentColumnByTabWidth ( sf65ParsingData_t *pData, sf65Options_t *cmdOpt ) {
-    int tabs = cmdOpt -> tabs;
+int sf65_AlignCurrentColumn ( sf65ParsingData_t *pData, int tabs ) {
     int currentColumn = sf65_GetCurrentColumnCounter ( pData );
     return sf65_SetCurrentColumnCounter ( pData, ( currentColumn + tabs ) / tabs * tabs );
 }
@@ -209,14 +208,14 @@ int request_space ( FILE * output, int * current, int new, int force, int tabs )
     return 0;
 }
 
-int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, sf65Options_t *cmdOpt, int new ) {
+int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs, int new ) {
     /*
     ** If already exceeded space...
     */
     if ( sf65_GetCurrentColumnCounter ( pData ) > new ) {
         // If force is true, a single space is always written to output
         if ( sf65_GetParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE ) ) {
-            sf65_fputc ( ' ', output );
+            sf65_fputspc ( output );
             sf65_IncCurrentColumnCounter ( pData, 1 ) ;
             return 1;
         }
@@ -228,8 +227,6 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, sf65Opti
         ** Advance one step at a time
         */
         if ( new ) {
-            int tabs = cmdOpt -> tabs;
-
             // Write spaces to output, only if new != 0
             // Assume, new is non negative
 
@@ -253,7 +250,7 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, sf65Opti
 
                     // Quantize current output column to value of <<tabs>>
                     // int sf65_align ( int val, int align )
-                    sf65_AlignCurrentColumnByTabWidth ( pData, cmdOpt );
+                    sf65_AlignCurrentColumn ( pData, tabs );
                 }
             }
         }

@@ -47,7 +47,7 @@ int sf65_SetCurrentColumnCounter ( sf65ParsingData_t *pData, int col );
 /*
  * Aligns the current column by tabwidth which was specified by cmd options
  */
-int sf65_AlignCurrentColumnByTabWidth ( sf65ParsingData_t *pData, sf65Options_t *cmdOpt );
+int sf65_AlignCurrentColumn ( sf65ParsingData_t *pData, int tabs );
 
 /*
  * Clears a parser flag specified by an enumeration of parser flags
@@ -117,7 +117,7 @@ void sf65_PlaceOperandInLine ( char *p1, char *p2, sf65Options_t *CMDOptions,
 ** Request space in line
 */
 int request_space ( FILE *output, int *current, int new, int force, int tabs );
-
+int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs, int new );
 /*
  * Place comment in line according to scanning position and pData parameters
  */
