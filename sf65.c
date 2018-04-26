@@ -120,23 +120,23 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
-void sf65_PreparePointersForExprDetermination ( char *p1, char *p2 ) {
+void sf65_PreparePointersForExprDetermination ( char **p1, char **p2 ) {
     NOT_NULL ( p1 ); NOT_NULL ( p2 ) {
         // Overread white space at beginning of line
-        p1 = skipWhiteSpace ( p1 );
+        *p1 = skipWhiteSpace ( *p1 );
         // Detect quotes and return whole string at once, if quote is found
         // If no quote is found, real until eof/nl
-        if ( *p1 == '"' ) {
-            p2 = readUntilClosingQuote ( p1 );
-            ++p2; // skip closing quote
+        if ( **p1 == '"' ) {
+            *p2 = readUntilClosingQuote ( *p1 );
+            ++*p2; // skip closing quote
         } else {
             // Read a white space or special character separated section of input file
-            p2 = detectCodeWord ( p1 );
+            *p2 = detectCodeWord ( *p1 );
 
             // Sanity check to prevent lockups from pointers beeing not increased anymore
-            if ( p2 == p1 ) {
+            if ( *p2 == *p1 ) {
                 // Read rest of expression
-                ++p2; //= detectOperand ( p1 );
+                ++*p2; //= detectOperand ( p1 );
             }
         }
     }
@@ -266,7 +266,7 @@ int main ( int argc, char *argv[] ) {
             }
 
             sf65_InitExpressionDetermination ( ParserData );
-            sf65_PreparePointersForExprDetermination ( p1, p2 );
+            sf65_PreparePointersForExprDetermination ( &p1, &p2 );
 
             if ( p1 - p ) { ParserData -> beginning_of_line = false;}
 
@@ -277,8 +277,46 @@ int main ( int argc, char *argv[] ) {
 
             // Use extra if construct so that we can break inner loop, which wouldn't be
             // possible with switch contruct
-            if ( currentExpr->exprType == SF65_COMMENT ) {  /* Comment */
-                p2 = p + allocation - 1;
+//            if ( currentExpr->exprType == SF65_COMMENT ) {  /* Comment */
+//                p2 = p + allocation;
+//
+//                // Get x position for output of comment
+//                sf65_SetOutputXPositionInLine (
+//                    ParserData,
+//                    getCommentSpacing ( p, p1, ParserData )
+//                );
+//
+//                /*
+//                 * If comment is aligned with mnemonic anyway, then align
+//                 * also with indentation respected.
+//                 * Indent by level times nesting space/tab width
+//                 */
+//                if (
+//                    sf65_GetOutputXPositionInLine ( ParserData ) ==
+//                    CMDOptions -> start_mnemonic
+//                ) {
+//                    sf65_IncOutputXPositionByNestingLevel (
+//                        ParserData,
+//                        CMDOptions -> nesting_space
+//                    );
+//                }
+//
+//                // Align output by filling up with spaces
+//                sf65_PadOutputWithSpaces (
+//                    output, ParserData, CMDOptions -> tabs
+//                );
+//
+//                // Store formatted expression into output
+//                sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
+//                sf65_fprintf ( logoutput, "%s / \n", sf65StrExprTypes[SF65_COMMENT] );
+//                //When comment is found, rest of line is also comment. So proceed to next line
+//                break;
+//            }
+
+            switch ( currentExpr->exprType ) {
+            case SF65_COMMENT:
+                //Indicate that comment includes rest of line
+                p2 = ( char* ) ( p + allocation  - p1 );
 
                 // Get x position for output of comment
                 sf65_SetOutputXPositionInLine (
@@ -300,20 +338,8 @@ int main ( int argc, char *argv[] ) {
                         CMDOptions -> nesting_space
                     );
                 }
-
-                // Align output by filling up with spaces
-                sf65_PadOutputWithSpaces (
-                    output, ParserData, CMDOptions -> tabs
-                );
-
-                // Store formatted expression into output
-                sf65_fwriteCountChars ( p1, allocation - ( p1 - p ), output );
-                sf65_fprintf ( logoutput, "%s / \n", sf65StrExprTypes[SF65_COMMENT] );
-                //When comment is found, rest of line is also comment. So proceed to next line
                 break;
-            }
 
-            switch ( currentExpr->exprType ) {
             case SF65_MACRONAME:
             case SF65_MNEMONIC:
                 sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
