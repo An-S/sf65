@@ -48,6 +48,15 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     assert ( currentErr == SF65_NOERR );
 }
 
+sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData ) {
+    NOT_NULL ( pData ) {
+        pData -> flags = 0;
+        sf65_ResetLinefeedFlag ( pData, SF65_INSTANT_ADD_LF );
+        sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
+
+        return SF65_NOERR;
+    }
+}
 /*
 ** Check for opcode or directive
 * c > 0 -> directive detected
@@ -115,20 +124,20 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 
 
 
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
+sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
         sf65Options_t *pOpt ) {
 
-    sf65Expression_t expr;
+    sf65Expression_t *expr = & ( pData->current_expr );
     int c = 0;
 
-    expr.exprType = SF65_INVALIDEXPR;
+    expr->exprType = SF65_INVALIDEXPR;
 
-    expr.index = 0;
+    expr->index = 0;
 
     if ( p2 > p1 ) {
-        expr.rightmostChar = * ( p2 - 1 );
+        expr->rightmostChar = * ( p2 - 1 );
     } else {
-        expr.rightmostChar = *p1;
+        expr->rightmostChar = *p1;
     }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
@@ -140,32 +149,32 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
         switch ( sgn ( c ) ) {
         case -1:
-            expr.exprType = SF65_MNEMONIC;
-            expr.index = c;
+            expr->exprType = SF65_MNEMONIC;
+            expr->index = c;
             break;
         case 1:
-            expr.exprType = SF65_DIRECTIVE;
-            expr.index = c;
+            expr->exprType = SF65_DIRECTIVE;
+            expr->index = c;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
-                expr.exprType = SF65_OPERAND;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             case SF65_MNEMONIC:
-                expr.exprType = SF65_OPERAND;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             default:
                 // Here, no matching mnemonic or directive was found
                 if ( pData -> first_expression ) {
                     if ( *p1 == '.' ) {
-                        expr.exprType = SF65_DIRECTIVE;
+                        expr->exprType = SF65_DIRECTIVE;
                     }
                     //Check for equation character
                     else if ( *p2 == '=' ) {
-                        expr.exprType = SF65_IDENTIFIER;
+                        expr->exprType = SF65_IDENTIFIER;
                     }
                     //No equation character found, but may be after whitespace
                     //so check for blank characters
@@ -173,22 +182,22 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
                         char *p3 = skipWhiteSpace ( p2 );
                         //Ok, found equation in the second run
                         if ( *p3 == '=' ) {
-                            expr.exprType = SF65_IDENTIFIER;
+                            expr->exprType = SF65_IDENTIFIER;
                         }
                         //Did not find equation.
                         else {
-                            expr.exprType = SF65_LABEL;
+                            expr->exprType = SF65_LABEL;
                         }
                     } else {
                         if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {
-                            expr.exprType = SF65_LABEL;
+                            expr->exprType = SF65_LABEL;
                             pData -> label_detected = 1;
                         } else {
-                            expr.exprType = SF65_MACRONAME; //maybe macro name
+                            expr->exprType = SF65_MACRONAME; //maybe macro name
                         }
                     }
                 } else {
-                    expr.exprType = SF65_IDENTIFIER;
+                    expr->exprType = SF65_IDENTIFIER;
                 }
                 break;
             }
@@ -197,35 +206,35 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
         switch ( *p1 ) {
             // Comments always start with ';' and proceed until rest of line
         case ';':
-            expr.exprType = SF65_COMMENT;
+            expr->exprType = SF65_COMMENT;
             break;
         case ',' :
-            expr.exprType = SF65_COMMASEP;
+            expr->exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
         case '\n':
             if ( pData -> first_expression ) {
-                expr.exprType = SF65_EMPTYLINE;
+                expr->exprType = SF65_EMPTYLINE;
             }
             break;
         case '=':
-            expr.exprType = SF65_ASSIGNMENT;
+            expr->exprType = SF65_ASSIGNMENT;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
-                expr.exprType = SF65_OPERAND;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             case SF65_MNEMONIC:
-                expr.exprType = SF65_OPERAND;
+                expr->exprType = SF65_OPERAND;
 
                 break;
             default:
                 if ( *p1 == '\\' && *p2 == '\n' ) {
                     pData -> line_continuation = 1;
                 }
-                expr.exprType = SF65_OTHEREXPR;
+                expr->exprType = SF65_OTHEREXPR;
                 break;
             }
         }

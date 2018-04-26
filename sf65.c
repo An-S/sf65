@@ -136,7 +136,7 @@ int main ( int argc, char *argv[] ) {
     int allocation; // Holds the length the currently processed line of the input file
     // counted from start to a '\n' or EOF
 
-    sf65Expression_t currentExpr = {};
+    sf65Expression_t *currentExpr;
 
     // Parse command line options and set corresponding variables in CMDOptions struct
     processCMDArgs ( argc, argv, CMDOptions );
@@ -186,7 +186,7 @@ int main ( int argc, char *argv[] ) {
         // Get length of current line, just read
         allocation = strlen ( linebuf );
 
-        currentExpr.exprType = SF65_OTHEREXPR;
+        //currentExpr.exprType = SF65_OTHEREXPR;
 
         // Check, if termination end of line character is read. If not,
         // the input buffer is too small to hold the complete line and was therefor
@@ -229,9 +229,10 @@ int main ( int argc, char *argv[] ) {
 
             // Check termination condition for current line by comparing running pointers
             // with total length of current line
+
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
-                sf65_fputc ( '\n', output );
-                sf65_fputc ( '\n', logoutput );
+                sf65_fputnl ( output );
+                sf65_fputnl ( logoutput );
 
                 break;
             }
@@ -255,23 +256,29 @@ int main ( int argc, char *argv[] ) {
                 }
             }
 
-            ParserData -> flags = 0;
-            ParserData -> instant_additional_linefeed = false;
+            //ParserData -> flags = 0;
+            //sf65_ResetLinefeedFlag ( ParserData, SF65_INSTANT_ADD_LF );
+
+            sf65_InitExpressionDetermination ( ParserData );
 
             // Analyze expression determined by the start and end pointers p1 and p2
             // Except for currentExpr all values are returned in ParserData struct
-            currentExpr  = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
+            currentExpr = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
 
             // Use extra if construct so that we can break inner loop, which wouldn't be
             // possible with switch contruct
-            if ( currentExpr.exprType == SF65_COMMENT ) {  /* Comment */
+            if ( currentExpr->exprType == SF65_COMMENT ) {  /* Comment */
                 // Get x position for output of comment
                 sf65_SetOutputXPositionInLine (
                     ParserData,
                     getCommentSpacing ( p, p1, ParserData )
                 );
 
-                // Indent by level times nesting space/tab width
+                /*
+                 * If comment is aligned with mnemonic anyway, then align
+                 * also with indentation respected.
+                 * Indent by level times nesting space/tab width
+                 */
                 if (
                     sf65_GetOutputXPositionInLine ( ParserData ) ==
                     CMDOptions -> start_mnemonic
@@ -294,7 +301,7 @@ int main ( int argc, char *argv[] ) {
                 break;
             }
 
-            switch ( currentExpr.exprType ) {
+            switch ( currentExpr->exprType ) {
             case SF65_MACRONAME:
             case SF65_MNEMONIC:
                 sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
@@ -351,11 +358,11 @@ int main ( int argc, char *argv[] ) {
                 if ( allocation > p2 - p1 ) {
                     if ( CMDOptions -> oversized_labels_own_line ) {
                         if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
-                            ParserData -> instant_additional_linefeed = true;
+                            sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
                         }
                     }
                     if ( CMDOptions -> labels_own_line ) {
-                        ParserData -> instant_additional_linefeed = true;
+                        sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
                     }
                 }
 
@@ -374,7 +381,7 @@ int main ( int argc, char *argv[] ) {
                 break;
 
             case SF65_EMPTYLINE:
-                ParserData -> additional_linefeed = false;
+                sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
                 break;
 
             case SF65_ASSIGNMENT:
@@ -438,14 +445,14 @@ int main ( int argc, char *argv[] ) {
                     output, ParserData, CMDOptions -> tabs
                 );
 
-            ParserData -> force_separating_space = false;
+            //ParserData -> force_separating_space = false;
 
             // Write current term to output file
             sf65_fwrite ( p1, p2, output );
             //sf65_fwrite ( p1, p2, logoutput );
 
-            sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr.exprType],
-                                    strlen ( sf65StrExprTypes[currentExpr.exprType] ), logoutput );
+            sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
+                                    strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
             sf65_fprintf ( logoutput, " / " );
 
             // Increase current_column by length of current term
@@ -453,7 +460,7 @@ int main ( int argc, char *argv[] ) {
 
             // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
-                sf65_fputc ( '\n', output );
+                sf65_fputnl ( output );
                 sf65_ResetCurrentColumnCounter ( ParserData );
             }
 
@@ -465,7 +472,7 @@ int main ( int argc, char *argv[] ) {
             ParserData -> first_expression = false;
 
             // Propagate current values from last run to the variables holding prev values
-            ParserData -> prev_expr = currentExpr;
+            ParserData -> prev_expr = *currentExpr;
             ParserData -> last_column = ParserData -> current_column;
         }
 

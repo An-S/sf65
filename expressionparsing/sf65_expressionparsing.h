@@ -32,8 +32,8 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData );
  * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
  * directive list where appropriate. Else index will be set to 0
  */
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
-
+sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
+sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
 
 
 

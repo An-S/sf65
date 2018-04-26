@@ -1,7 +1,24 @@
 #ifndef __SF65_TYPES_H__
 #define __SF65_TYPES_H__
 
-#define SF65_ERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARG)
+/*
+ * This typedef is used for
+ * 1. padding empty lines before and after certain directives, if wished.
+ * 2. Breaking oversized labels, if wished
+ */
+typedef enum {
+    SF65_DEFAULT_LF,
+    SF65_ADD_LF,
+    SF65_INSTANT_ADD_LF,
+    SF65_NOT_A_LF_CONST
+} sf65LinefeedEnum_t;
+
+/*
+ * Define a list of errors which may occur during parsing.
+ * The idea is of ERROR is that some functions may indicate errornous condition but
+ * if caller needs more info he has to call sf65_GetError function or such.
+ */
+#define SF65_ERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARGERR)
 
 #define ER(x) SF65_##x
 typedef enum {

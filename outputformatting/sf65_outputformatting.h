@@ -123,4 +123,7 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs
  */
 int getCommentSpacing ( char *linestart, char *commentstart, sf65ParsingData_t *pData );
 
+sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+
 #endif

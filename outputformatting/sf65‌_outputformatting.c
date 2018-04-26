@@ -75,7 +75,7 @@ sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t f
             SF65_PARSERFLAGS
 #   undef PF
         default:
-            return SF65_INVALIDARG;
+            return SF65_INVALIDARGERR;
         }
         return SF65_NOERR;
     }
@@ -302,6 +302,57 @@ int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65
     }
 
     return request;
+}
+
+sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
+    NOT_NULL ( pData ) {
+        sf65_ClearParserFlags (
+            pData, SF65_INSTANT_ADDITIONAL_LINEFEED, SF65_ADDITIONAL_LINEFEED,
+            SF65_NOT_A_PARSERFLAG
+        );
+
+        switch ( lf_type ) {
+
+        case SF65_ADD_LF:
+            sf65_SetParserFlag ( pData, SF65_ADDITIONAL_LINEFEED );
+            break;
+
+        case SF65_INSTANT_ADD_LF:
+            sf65_SetParserFlag ( pData, SF65_ADDITIONAL_LINEFEED );
+            break;
+
+        default:
+            if ( lf_type >= SF65_NOT_A_LF_CONST ) {
+                return SF65_INVALIDARGERR;
+            }
+            break;
+        }
+
+        return SF65_NOERR;
+    }
+}
+
+sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
+    NOT_NULL ( pData ) {
+        switch ( lf_type ) {
+
+        case SF65_ADD_LF:
+            sf65_ClearParserFlag ( pData, SF65_ADDITIONAL_LINEFEED );
+            break;
+
+        case SF65_INSTANT_ADD_LF:
+            sf65_ClearParserFlag ( pData, SF65_INSTANT_ADDITIONAL_LINEFEED );
+            break;
+
+        default:
+            if ( lf_type >= SF65_NOT_A_LF_CONST ) {
+                return SF65_INVALIDARGERR;
+            }
+            break;
+        }
+        return SF65_NOERR;
+    }
+    return SF65_NULLPTR;
 }
 
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
