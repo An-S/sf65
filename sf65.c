@@ -120,6 +120,32 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
+void sf65_PreparePointersForExprDetermination ( char *p1, char *p2 ) {
+    NOT_NULL ( p1 ); NOT_NULL ( p2 ) {
+        // Overread white space at beginning of line
+        p1 = skipWhiteSpace ( p1 );
+        // Detect quotes and return whole string at once, if quote is found
+        // If no quote is found, real until eof/nl
+        if ( *p1 == '"' ) {
+            p2 = readUntilClosingQuote ( p1 );
+            ++p2; // skip closing quote
+        } else {
+            // Read a white space or special character separated section of input file
+            p2 = detectCodeWord ( p1 );
+
+            // Sanity check to prevent lockups from pointers beeing not increased anymore
+            if ( p2 == p1 ) {
+                // Read rest of expression
+                ++p2; //= detectOperand ( p1 );
+            }
+        }
+    }
+}
+
+//void sf65_PreparePointersForExprDetermination ( char *p1, char*p2 ) {
+
+//}
+
 /*
 ** Main program
 */
@@ -181,7 +207,7 @@ int main ( int argc, char *argv[] ) {
         sf65_fprintf ( logoutput, "%04d:__", line );
 
         // Set pointer p1 to start of line
-        p1 = p = linebuf;
+        p1 = p2 = p = linebuf;
 
         // Get length of current line, just read
         allocation = strlen ( linebuf );
@@ -230,6 +256,8 @@ int main ( int argc, char *argv[] ) {
             // Check termination condition for current line by comparing running pointers
             // with total length of current line
 
+            //sf65_TestLineEvaluationTerminationCondition();
+
             if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
                 sf65_fputnl ( output );
                 sf65_fputnl ( logoutput );
@@ -237,37 +265,21 @@ int main ( int argc, char *argv[] ) {
                 break;
             }
 
-            // Overread white space at beginning of line
-            p1 = skipWhiteSpace ( p1 );
-            if ( p1 - p ) { ParserData -> beginning_of_line = false;}
-
-            // Detect quotes and return whole string at once, if quote is found
-            if ( *p1 == '"' ) {
-                p2 = readUntilClosingQuote ( p1 );
-                ++p2; // skip closing quote
-            } else {
-                // Read a white space or special character separated section of input file
-                p2 = detectCodeWord ( p1 );
-
-                // Sanity check to prevent lockups from pointers beeing not increased anymore
-                if ( p2 == p1 ) {
-                    // Read rest of expression
-                    ++p2; //= detectOperand ( p1 );
-                }
-            }
-
-            //ParserData -> flags = 0;
-            //sf65_ResetLinefeedFlag ( ParserData, SF65_INSTANT_ADD_LF );
-
             sf65_InitExpressionDetermination ( ParserData );
+            sf65_PreparePointersForExprDetermination ( p1, p2 );
+
+            if ( p1 - p ) { ParserData -> beginning_of_line = false;}
 
             // Analyze expression determined by the start and end pointers p1 and p2
             // Except for currentExpr all values are returned in ParserData struct
             currentExpr = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
+            //sf65EvaluateExpression ( ParserData, CMDOptions, p, p1, p2 );
 
             // Use extra if construct so that we can break inner loop, which wouldn't be
             // possible with switch contruct
             if ( currentExpr->exprType == SF65_COMMENT ) {  /* Comment */
+                p2 = p + allocation - 1;
+
                 // Get x position for output of comment
                 sf65_SetOutputXPositionInLine (
                     ParserData,
