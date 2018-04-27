@@ -66,6 +66,15 @@
       <File Name="testfiles/label_test.txt"/>
       <File Name="testfiles/label_test.log"/>
       <File Name="test.log"/>
+      <File Name="testfiles/expressions_test.log"/>
+      <File Name="testfiles/expressions_test.out"/>
+      <File Name="testfiles/expressions_test.txt"/>
+      <File Name="testfiles/mnemonics_test.log"/>
+      <File Name="testfiles/mnemonics_test.out"/>
+      <File Name="testfiles/mnemonics_test.txt"/>
+      <File Name="testfiles/comment_test.txt"/>
+      <File Name="testfiles/comment_test.log"/>
+      <File Name="testfiles/comment_test.out"/>
     </VirtualDirectory>
     <File Name="testfiles/hexvariable_test.out"/>
     <File Name="sf65.c"/>
