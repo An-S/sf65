@@ -11,7 +11,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-#define NOT_NULL(arg) assert( (arg) != NULL ); if( 1 )
+#define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );return errorCode;} else
 
 #include "sf65_types.h"
 #include "stringfunctions/sf65_stringfunctions.h"

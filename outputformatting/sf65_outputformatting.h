@@ -125,5 +125,7 @@ int getCommentSpacing ( char *linestart, char *commentstart, sf65ParsingData_t *
 
 sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
 sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+sf65Err_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData );
+sf65Err_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData );
 
 #endif

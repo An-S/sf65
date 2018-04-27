@@ -1,7 +1,7 @@
 #include "sf65.h"
 
 int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         pData->request = xpos;
         return xpos;
     }
@@ -9,14 +9,14 @@ int sf65_SetOutputXPositionInLine ( sf65ParsingData_t *pData, int xpos ) {
 }
 
 int sf65_GetOutputXPositionInLine ( sf65ParsingData_t *pData ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         return pData->request;
     }
     return -1;
 }
 
 int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
 
         pData->request += add;
         return pData->request;
@@ -25,7 +25,7 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
 }
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
 
         pData->request +=
             pData -> current_level *
@@ -36,28 +36,28 @@ int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nesti
 }
 
 int sf65_IncCurrentColumnCounter ( sf65ParsingData_t *pData, int inc ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         return pData -> current_column += inc;
     }
     return -1;
 }
 
 int sf65_GetCurrentColumnCounter ( sf65ParsingData_t *pData ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         return pData -> current_column;
     }
     return -1;
 }
 
 int sf65_ResetCurrentColumnCounter ( sf65ParsingData_t *pData ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         return pData -> current_column = 0;
     }
     return -1;
 }
 
 int sf65_SetCurrentColumnCounter ( sf65ParsingData_t *pData, int col ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, -1 ) {
         return pData -> current_column = col;
     }
     return -1;
@@ -69,7 +69,7 @@ int sf65_AlignCurrentColumn ( sf65ParsingData_t *pData, int tabs ) {
 }
 
 sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
 #   define PF(x,y) case SF65_##y: pData -> x=1; break;
             SF65_PARSERFLAGS
@@ -83,7 +83,7 @@ sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t f
 }
 
 int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
 #   define PF(x,y) case SF65_##y: return pData -> x;
             SF65_PARSERFLAGS
@@ -96,7 +96,7 @@ int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) 
 }
 
 sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         va_list va;
         va_start ( va, flag1 );
 
@@ -111,7 +111,7 @@ sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t 
 }
 
 sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
 #       define PF(x,y) case SF65_##y: pData -> x=0;
             SF65_PARSERFLAGS
@@ -125,7 +125,7 @@ sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t
 }
 
 sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         va_list va;
         va_start ( va, flag1 );
 
@@ -140,7 +140,7 @@ sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_
 }
 
 sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         pData -> allParserFlags = 0;
 
         return SF65_NOERR;
@@ -305,7 +305,7 @@ int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65
 }
 
 sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         sf65_ClearParserFlags (
             pData, SF65_INSTANT_ADDITIONAL_LINEFEED, SF65_ADDITIONAL_LINEFEED,
             SF65_NOT_A_PARSERFLAG
@@ -333,7 +333,7 @@ sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf
 }
 
 sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
-    NOT_NULL ( pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( lf_type ) {
 
         case SF65_ADD_LF:
@@ -353,6 +353,14 @@ sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t 
         return SF65_NOERR;
     }
     return SF65_NULLPTR;
+}
+
+sf65Err_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
+    return sf65_SetParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
+}
+
+sf65Err_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
+    return sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
 }
 
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {

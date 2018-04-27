@@ -143,6 +143,8 @@ typedef struct {
         };
     };
 
+    char linebuf[1000]; // Input file is read line by line into this buffer
+    int linesize;
 
     int current_column;
     int last_column;

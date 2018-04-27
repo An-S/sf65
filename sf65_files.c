@@ -1,7 +1,7 @@
 #include "sf65.h"
 
 void sf65_conditionallyPrintFError ( FILE *file ) {
-    NOT_NULL ( file ) {
+    NOT_NULL ( file, ) {
         if ( ferror ( file ) ) {
             sf65_pError ( strerror ( ferror ( file ) ) );
             clearerr ( file );
@@ -10,8 +10,8 @@ void sf65_conditionallyPrintFError ( FILE *file ) {
 }
 
 FILE *sf65_openFile ( char *filename, char *mode ) {
-    NOT_NULL ( filename  ) {
-        NOT_NULL ( mode ) {
+    NOT_NULL ( filename, NULL  ) {
+        NOT_NULL ( mode, NULL ) {
             FILE *aFile = fopen ( filename, mode );
             if ( aFile == NULL ) {
                 fprintf ( stderr, "Unable to open file \"%s\" as "
@@ -25,7 +25,7 @@ FILE *sf65_openFile ( char *filename, char *mode ) {
 }
 
 char *sf65_addReplaceFileExt ( char * filename, char * ext ) {
-    NOT_NULL ( filename ); NOT_NULL ( ext ) {
+    NOT_NULL ( filename, NULL ); NOT_NULL ( ext, NULL ) {
         // add 2 to size, because we need place for the basename/ext separator "." and the "\0" str term
         char *generatedFName = calloc ( strlen ( filename ) + strlen ( ext ) + 2 , sizeof ( char ) );
         size_t separatorPos = strcspn ( filename, "." );
@@ -46,7 +46,7 @@ char *sf65_addReplaceFileExt ( char * filename, char * ext ) {
  * Open input file, check error
  */
 FILE *sf65_openInputFile ( char * filename ) {
-    NOT_NULL ( filename ) {
+    NOT_NULL ( filename, NULL ) {
         FILE *input = NULL;
 
         sf65_fprintf ( stdout, "Trying to open input file: \"%s\"", filename );
@@ -63,7 +63,7 @@ FILE *sf65_openInputFile ( char * filename ) {
  * Open output file, check error
  */
 FILE *sf65_openOutputFile ( char * filename ) {
-    NOT_NULL ( filename ) {
+    NOT_NULL ( filename, NULL ) {
         FILE *output = NULL;
 
         sf65_fprintf ( stdout, "Trying to open output file: \"%s\"", filename );
@@ -76,7 +76,7 @@ FILE *sf65_openOutputFile ( char * filename ) {
 }
 
 FILE *sf65_openLogFile ( char * basefilename ) {
-    NOT_NULL ( basefilename ) {
+    NOT_NULL ( basefilename, NULL ) {
         FILE *output = NULL;
         char *logfilename = sf65_addReplaceFileExt ( basefilename, "log" );
 
@@ -92,7 +92,7 @@ FILE *sf65_openLogFile ( char * basefilename ) {
 }
 
 int sf65_fprintf ( FILE * file, const char * format, ... ) {
-    NOT_NULL ( file ); NOT_NULL ( format ) {
+    NOT_NULL ( file, -1 ); NOT_NULL ( format, -1 ) {
         va_list va;
         int fprintfErr;
 
@@ -117,7 +117,7 @@ int sf65_printfUserInfo ( const char * format, ... ) {
 }
 
 size_t sf65_fwrite ( char * startPtr, char * endPtr, FILE * file ) {
-    NOT_NULL ( file ) {
+    NOT_NULL ( file, -1 ) {
         size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), endPtr - startPtr, file );
         sf65_conditionallyPrintFError ( file );
         return bytesWritten;
@@ -126,7 +126,7 @@ size_t sf65_fwrite ( char * startPtr, char * endPtr, FILE * file ) {
 }
 
 size_t sf65_fputc ( char ch, FILE * file ) {
-    NOT_NULL ( file ) {
+    NOT_NULL ( file, 0 ) {
         fputc ( ch, file );
         sf65_conditionallyPrintFError ( file );
         return 1;
@@ -135,7 +135,7 @@ size_t sf65_fputc ( char ch, FILE * file ) {
 }
 
 size_t sf65_fwriteCountChars ( char * startPtr, size_t count, FILE * file ) {
-    NOT_NULL ( file ); NOT_NULL ( startPtr ) {
+    NOT_NULL ( file, 0 ); NOT_NULL ( startPtr, 0 ) {
         size_t bytesWritten = fwrite ( startPtr, sizeof ( char ), count, file );
         sf65_conditionallyPrintFError ( file );
         return bytesWritten;
@@ -146,7 +146,7 @@ size_t sf65_fwriteCountChars ( char * startPtr, size_t count, FILE * file ) {
 char *sf65_fgets ( FILE * file, char * buf, size_t sz ) {
 
     // Use binary or instead of logical or, because we really want to get bitor
-    NOT_NULL ( file ); NOT_NULL ( buf ) {
+    NOT_NULL ( file, NULL ); NOT_NULL ( buf, NULL ) {
         char *ptr = fgets ( buf, sz, file );
 
         // EOF must be passed back to caller,
@@ -160,7 +160,7 @@ char *sf65_fgets ( FILE * file, char * buf, size_t sz ) {
 }
 
 size_t sf65_fputnl ( FILE * file ) {
-    NOT_NULL ( file ) {
+    NOT_NULL ( file, 0 ) {
         fputc ( '\n', file );
         sf65_conditionallyPrintFError ( file );
         return 1;
@@ -169,7 +169,7 @@ size_t sf65_fputnl ( FILE * file ) {
 }
 
 size_t sf65_fputnspc ( FILE * file, int n ) {
-    NOT_NULL ( file ) {
+    NOT_NULL ( file, 0 ) {
         int i;
 
         for ( i = n; i > 0; --i ) {
