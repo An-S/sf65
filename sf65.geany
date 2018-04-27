@@ -28,12 +28,9 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=0
-FILE_NAME_0=12456;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fsf65.c;0;4
-FILE_NAME_1=529;Conf;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest.src;0;4
-FILE_NAME_2=444;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest.out;0;4
-FILE_NAME_3=453;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fsf65.h;0;4
-FILE_NAME_4=76;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2FprocessCMDArgs.c;0;4
+current_page=1
+FILE_NAME_0=0;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest_strcspn.c;0;4
+FILE_NAME_1=1178;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fva_arg_test.c;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;

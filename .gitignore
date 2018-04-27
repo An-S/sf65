@@ -19,3 +19,8 @@ sf65
 Debug/
 sf65.mk
 sf65.txt
+*.orig
+*.layout
+*.log
+test_strcspn
+va_arg_test

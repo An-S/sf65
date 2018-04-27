@@ -4,7 +4,7 @@
 ** DASM directives
 */
 directives_t directives_dasm[] = {
-    //{"=", DONT_RELOCATE},
+    {"=", 0},
     {"a16",  0},
     {"a8",  0},
     {"addr",  ALIGN_MNEMONIC},

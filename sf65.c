@@ -41,7 +41,7 @@
  * (However, comments are correctly recignized and aligned with mnemonics)
  *         -> 19./20.03.2018
  * Labels are indented with section(.proc, .scope ...) directives
- *      -> Fixed in the way that labels or only indented with section when they are aligned with mnemonics
+ *      -> Fixed in the way that labels are only indented with section when they are aligned with mnemonics
  *          -> 21.03.2018
  * Missing spaces after directives
  *      -> Fixed by remembering a found directive and issuing a space before processing the next term
@@ -56,14 +56,25 @@
  *      -> Problem persists after directives in prev line -> Fixed 21.03.2018
  * If unformatted source contains mnemonics which reference to variables
  * then operands are separated by space instead of using start_operand column
- *      ->
+ *      -> fixed, by remembering found mnemonic and formatting following statement
+ *         at start_operand column
+ *
+ * When variables are assigned to an hexadecimal value, sf65 outputs space between $ and xdigits,
+ * which cause syntax error
+ *      -> Fixed, 14.04.2018
  *
  * Missing command line options
  *
  * Reintegrated possibility to choose between extra operand column and
  * operand separated by single space -> 23.03.2018
  *
+ * In mode which breaks long labels and rest of line into each one line, also variable assignments
+ * are beeing broken into two lines. However, this does not make sense.
+ *
  * The flag that specifies alignment of comments to nearest column is ignored
+ *
+ * Labels starting in first line of source are aligned with mnemonics
+ *
  */
 
 /* MISSING FEATURES
@@ -85,8 +96,15 @@
 #include "sf65.h"
 
 
+typedef struct {
+    FILE *input;
+    FILE *output;
+    FILE *logoutput;
+} sf65FileDescr_t;
+
 FILE *input;
 FILE *output;
+FILE *logoutput;
 
 //Create instance of sf65Options_t, but do not use directly
 //(Avoid replacement of -> by . or -> by .)
@@ -102,20 +120,59 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
+char *sf65_GetStartOfExpressionString ( char *p ) {
+    NOT_NULL ( p, NULL ) {
+        return sf65_SkipWhiteSpace ( p );
+    }
+}
+
+char *sf65_GetEndOfExpressionString ( char *p ) {
+    NOT_NULL ( p, NULL ) {
+        // Detect quotes and return whole string at once, if quote is found
+        // If no quote is found, real until eof/nl
+        if ( *p == '"' ) {
+            p = sf65_ReadUntilClosingQuote ( p );
+            ++p; // skip closing quote
+            return p;
+        } else {
+            char *p2 = NULL;
+
+            // Read a white space or special character separated section of input file
+            p2 = sf65_DetectCodeWord ( p );
+
+            // Sanity check to prevent lockups from pointers beeing not increased anymore
+            if ( p2 == p ) {
+                // Read rest of expression
+                ++p2; //= detectOperand ( p1 );
+            }
+            return p2;
+        }
+    }
+}
+
+void sf65_IndicateBeginningOfLineState ( sf65ParsingData_t *pData, char *p1 ) {
+    NOT_NULL ( pData, ) {
+        pData -> beginning_of_line = ! ( p1 - pData -> linebuf );
+    }
+}
+
 /*
 ** Main program
 */
 int main ( int argc, char *argv[] ) {
-    int line = 0;
+    int line = 0;   // Line counter for the current line of input to be processed
 
-    char linebuf[1000];
+    char *p;        // Pointer for line start
+    char *p1;       // Pointer for start of expression
+    char *p2;       // Pointer for end of expression
+    //char *p3;       // Pointer for forward peeks
 
-    char *p;
-    char *p1;
-    char *p2;
-    int allocation;
-    sf65Expression_t currentExpr = {};
+    int allocation; // Holds the length the currently processed line of the input file
+    // counted from start to a '\n' or EOF
 
+    sf65Expression_t *currentExpr;
+
+    // Parse command line options and set corresponding variables in CMDOptions struct
     processCMDArgs ( argc, argv, CMDOptions );
 
     // Try to open input file. Procedure exits in case of error.
@@ -123,7 +180,7 @@ int main ( int argc, char *argv[] ) {
     input = sf65_openInputFile ( CMDOptions -> infilename );
 
     // Tell user that processing of input file is about to be started
-    fprintf ( stderr, "Processing %s...\n", CMDOptions -> infilename );
+    sf65_printfUserInfo ( "Processing %s...\n", CMDOptions -> infilename );
 
     /*
     ** Now generate output file
@@ -132,55 +189,64 @@ int main ( int argc, char *argv[] ) {
     // Try to open output file. Procedure exits in case of error.
     // No further err checking necessary
     output = sf65_openOutputFile ( CMDOptions -> outfilename );
+    logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
 
     // Start with debug output (Line number of 0)
-    fprintf ( stdout, "%4d:", line );
+    sf65_printfUserInfo ( "%4d:", line );
 
-    ParserData -> request = 0;
-    ParserData -> prev_comment_original_location = 0;
-    ParserData -> prev_comment_final_location = 0;
-    ParserData -> current_level = 0;
+    sf65_InitializeParser ( ParserData );
 
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
-    while ( fgets ( linebuf, sizeof ( linebuf ), input ), !feof ( input ) ) {
-        // Set pointer p1 to start of line
-        p1 = p = linebuf;
-
-        // Get length of current line, just read
-        allocation = strlen ( linebuf );
-
-        // If linebuf contains not more than a newline and a termination character, process next line
-        if ( allocation < 2 ) {
-            fputc ( '\n', output );
-            ParserData -> prev_expr.exprType = SF65_EMPTYLINE;
-            continue;
+    do {
+        sf65_fgets ( input, ParserData -> linebuf, sizeof ( ParserData -> linebuf ) );
+        if ( !feof ( input ) ) {
+            if ( ferror ( input ) ) {
+                sf65_printfUserInfo ( "Error reading line\n" );
+                exit ( 1 );
+            }
         }
 
-        if ( linebuf[allocation - 1] != '\n' ) {
-            fprintf ( stdout, "Error: Line %d too long: %s", line, linebuf );
+        // Output linebuf so we see if there's a line which causes parser to lockup
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", ParserData -> linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
+        sf65_fprintf ( logoutput, ParserData -> linebuf );
+        sf65_fprintf ( logoutput, "%04d:__", line );
+
+        // Set pointer p1 to start of line
+        p1 = p2 = p = ParserData -> linebuf;
+
+        // Get length of current line, just read
+        allocation = ParserData -> linesize = strlen ( ParserData -> linebuf );
+
+        //currentExpr.exprType = SF65_OTHEREXPR;
+
+        // Check, if termination end of line character is read. If not,
+        // the input buffer is too small to hold the complete line and was therefor
+        // truncated upon reading
+        if ( ParserData -> linebuf[allocation - 1] != '\n' && !feof ( input ) ) {
+            sf65_printfUserInfo ( "Error: Line %d too long: %s", line, ParserData -> linebuf );
             exit ( 1 );
         }
 
         // Output linebuf so we see if there's a line which causes parser to lockup
-        fprintf ( stdout, "%04d:__", line );
-        fprintf ( stdout, "%s", linebuf );
+        sf65_printfUserInfo ( "%04d:__", line );
+        sf65_printfUserInfo ( "%s", ParserData -> linebuf );
 
-
+        // If parser requested additional linefeed on parsing prev line, then insert
+        // the requested additional linefeed. However, if there is already an
+        // empty line in the input, additional linefeed is suppressed
         conditionallyInsertAdditionalLinefeed ( ParserData );
 
-        ParserData -> directive_detected =
-            ParserData -> mnemonic_detected =
-                ParserData -> current_column =
-                    ParserData -> label_detected =
-                        ParserData -> additional_linefeed = 0;
+        // Must be inserted after call to conditionallyInsertAdditionalLinefeed(...), because
+        // this function needs ADDITIONAL_LINEFEED flag from prev line
+        sf65_StartParsingNewLine ( ParserData );
 
-        ParserData -> first_expression =
-            ParserData -> force_separating_space = 1;
         /*
          * PARSING NOTES
          *
-         * Labels always at first in line but must not be at first character
+         * Labels always at first in line but need not to be at first character
          * Labels always have '_' or 'a-zA-Z' as first char
          * First term after linestart may also be mnemonic or directive or comment
          * Mnemonics are recognized by their name
@@ -195,154 +261,235 @@ int main ( int argc, char *argv[] ) {
         while ( true ) {
             // Allocation >= 2, here
 
-            if ( *p1 == 0 || ( p1 - linebuf ) >= allocation - 1 ) {
-                fputc ( '\n', output );
+            // Check termination condition for current line by comparing running pointers
+            // with total length of current line
+
+            //sf65_TestLineEvaluationTerminationCondition();
+
+            if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 ) {
+                sf65_fputnl ( output );
+                sf65_fputnl ( logoutput );
+
                 break;
             }
 
-            p1 = skipWhiteSpace ( p1 );
+            sf65_InitExpressionDetermination ( ParserData );
+            p1 = sf65_GetStartOfExpressionString ( p1 );
+            p2 = sf65_GetEndOfExpressionString ( p1 );
+            sf65_IndicateBeginningOfLineState ( ParserData, p1 );
 
-            if ( *p1 == '"' ) {
-                p2 = readUntilClosingQuote ( p1 );
-                ++p2; // skip closing quote
-            } else {
-                p2 = detectCodeWord ( p1 );
-                if ( p2 == p1 ) {
-                    p2 = detectOperand ( p1 );
-                    //p2 = skipWhiteSpace ( p2 );
-                }
-            }
+            // Analyze expression determined by the start and end pointers p1 and p2
+            // Except for currentExpr all values are returned in ParserData struct
+            currentExpr = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
+            //sf65EvaluateExpression ( ParserData, CMDOptions, p, p1, p2 );
 
-            ParserData -> flags = 0;
-            ParserData -> prev_expr = currentExpr;
-            ParserData -> instant_additional_linefeed = false;
-            ParserData -> last_column = ParserData -> current_column;
+            switch ( currentExpr->exprType ) {
+            case SF65_COMMENT:
+                //Indicate that comment includes rest of line
+                p2 = ( char* ) ( p + allocation  - 1 );
 
-            currentExpr  = sf65DetermineExpression ( p1, p2, ParserData, CMDOptions );
-
-            if ( currentExpr.exprType == SF65_COMMENT ) {  /* Comment */
                 // Get x position for output of comment
-                ParserData -> request =
-                    getCommentSpacing ( p, p1, ParserData );
+                sf65_SetOutputXPositionInLine (
+                    ParserData,
+                    getCommentSpacing ( p, p1, ParserData )
+                );
 
-                // Indent by level times tab width
-                if ( ParserData -> request == CMDOptions -> start_mnemonic ) {
-                    ParserData -> request +=
-                        ParserData -> current_level *
-                        CMDOptions -> nesting_space;
+                /*
+                 * If comment is aligned with mnemonic anyway, then align
+                 * also with indentation respected.
+                 * Indent by level times nesting space/tab width
+                 */
+                if (
+                    sf65_GetOutputXPositionInLine ( ParserData ) ==
+                    CMDOptions -> start_mnemonic
+                ) {
+                    sf65_IncOutputXPositionByNestingLevel (
+                        ParserData,
+                        CMDOptions -> nesting_space
+                    );
+                }
+                break;
+
+            case SF65_MACRONAME:
+            case SF65_MNEMONIC:
+                sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
+                switch ( ParserData -> prev_expr.exprType ) {
+                case SF65_LABEL:
+                    sf65_SetPaddingSpaceFlag ( ParserData );
+                    break;
+                default:
+                    break;
+                }
+                break;
+
+            case SF65_DIRECTIVE:
+                sf65_PlaceDirectiveInLine ( p1, p2, CMDOptions, ParserData );
+                conditionallyAddPaddingLineAfterSection ( CMDOptions, ParserData );
+
+                break;
+
+            case SF65_OPERAND:
+                sf65_PlaceOperandInLine ( p1, p2, CMDOptions, ParserData );
+
+                // If operand does not start with a variable or label character or a number
+                // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
+                // "lda #$00". However, "lda label1" or "sta 1" is ok.
+                if ( !isExpressionCharacter ( *p1 ) ) sf65_ClearPaddingSpaceFlag ( ParserData );
+
+                break;
+
+            case SF65_IDENTIFIER:
+                switch ( ParserData->prev_expr.exprType ) {
+                case SF65_ASSIGNMENT:
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 );
+                    sf65_SetPaddingSpaceFlag ( ParserData );
+                    break;
+                case SF65_MNEMONIC:
+                    sf65_SetOutputXPositionInLine ( ParserData, CMDOptions->start_operand );
+                    break;
+                default:
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 ); // Do not put identifier at special position
+                    break;
                 }
 
-                request_space ( output, &ParserData -> current_column,
-                                ParserData -> request, 1, CMDOptions -> tabs );
+                break;
 
-                fwrite ( p1, sizeof ( char ), allocation - ( p1 - p ), output );
+            case SF65_LABEL:
+                sf65_SetPaddingSpaceFlag ( ParserData );
 
-                //When comment if found, rest of line is also comment. So proceed to next line
+                // Leave label at start of line
+                sf65_SetOutputXPositionInLine ( ParserData, 0 );
+
+                // Detect oversized labels.
+                // Check, if p2 already at end of line
+                // Then additional cr is not needed
+                if ( allocation > p2 - p1 ) {
+                    if ( CMDOptions -> oversized_labels_own_line ) {
+                        if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
+                            sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
+                        }
+                    }
+                    if ( CMDOptions -> labels_own_line ) {
+                        sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
+                    }
+                }
+
+                // Separately position labels which are not at
+                // beginning of line and terminated by colon
+                if ( !ParserData -> beginning_of_line ) {
+                    // Place label in same column as directives
+                    // The sense of this to indent nested labels with code
+                    // The behaviour can be overritten by removing the colon after the label
+                    // and placing it at the start of the line
+                    sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_mnemonic );
+                    ParserData -> flags = LEVEL_MINUS;
+                } else {
+                    ParserData -> flags = DONT_RELOCATE;
+                }
+                break;
+
+            case SF65_EMPTYLINE:
+                sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+                break;
+
+            case SF65_ASSIGNMENT:
+                sf65_SetPaddingSpaceFlag ( ParserData );
+                sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_mnemonic );
+                break;
+
+            default:
+                // Detect separator for comma separated list of values
+                switch ( ParserData -> prev_expr.exprType ) {
+                case SF65_COMMASEP:
+                    // Align comma separated list of values
+                    sf65_SetOutputXPositionInLine (
+                        ParserData,
+                        sf65_align (
+                            sf65_GetCurrentColumnCounter ( ParserData ),
+                            CMDOptions -> nesting_space
+                        )
+                    );
+                    ParserData -> flags = DONT_RELOCATE;
+                    break;
+
+                case SF65_ASSIGNMENT:
+                    sf65_SetPaddingSpaceFlag ( ParserData );
+                    break;
+
+                default:
+                    // No comma separated list of values.
+                    if ( isExpressionCharacter ( *p1 ) &&
+                            isExpressionCharacter ( ParserData->prev_expr.rightmostChar ) ) {
+                        sf65_SetPaddingSpaceFlag ( ParserData );
+                    }
+                    // Standard output
+                    sf65_SetOutputXPositionInLine ( ParserData, 0 );
+                    break;
+                }
+
                 break;
             }
 
-            switch ( currentExpr.exprType ) {
-            case SF65_MNEMONIC: {
-                    sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
-                    break;
-                }
-            case SF65_DIRECTIVE: {
-                    sf65_PlaceDirectiveInLine ( p1, p2, CMDOptions, ParserData );
-                    conditionallyAddPaddingLineAfterSection ( CMDOptions, ParserData );
-
-                    break;
-                }
-            case SF65_OPERAND: {
-                    // int alignoffset = sf65ParsingData -> current_column - sf65ParsingData -> last_column;
-
-                    sf65_PlaceOperandInLine ( p1, p2, CMDOptions, ParserData );
-                    ParserData -> operand_detected = 1;
-                    if ( !isalnum ( *p1 ) ) ParserData -> force_separating_space = 0;
-
-                    /*sf65ParsingData -> request =
-                         alignoffset % sf65Options -> nesting_space == 0 ?
-                            sf65ParsingData -> current_column:
-                            sf65ParsingData -> current_column + sf65Options -> nesting_space - alignoffset;
-                    ; */
-                    break;
-                }
-            case SF65_LABEL: {
-                    ParserData -> request = 0;
-                    ParserData -> flags = DONT_RELOCATE;
-
-                    //Check, if p2 already at end of line
-                    //Then additional cr is not needed
-                    if ( allocation > p2 - p1 ) {
-                        if ( CMDOptions -> oversized_labels_own_line ) {
-                            if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
-                                ParserData -> instant_additional_linefeed = true;
-                            }
-                        }
-                        if ( CMDOptions -> labels_own_line ) {
-                            ParserData -> instant_additional_linefeed = true;
-                        }
-                    }
-                    break;
-                }
-            default: {
-                    if ( *p1 == ',' ) {
-                        currentExpr.exprType = SF65_COMMASEP;
-                        ParserData -> request = 0;
-                    } else if ( ParserData -> prev_expr.exprType == SF65_COMMASEP ) {
-                        ParserData -> request =
-                            sf65_align (
-                                ParserData -> current_column,
-                                CMDOptions -> nesting_space
-                            );
-                        ParserData -> flags = DONT_RELOCATE;
-                    } else {
-                        if ( ParserData -> first_expression && ParserData -> line_continuation ) {
-                            ParserData -> line_continuation = 0;
-                            ParserData -> request = CMDOptions -> start_operand;
-                        } else {
-                            ParserData -> request = 0;
-
-                        }
-                    }
-
-                    break;
-                }
+            // Detect line continuation character and eventually indent line accordingly
+            if ( ParserData -> first_expression && ParserData -> line_continuation ) {
+                ParserData -> line_continuation = 0;
+                sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_operand );
             }
 
+            // For scope enclosing directives, add padding lines if requested by cmd options
             conditionallyAddPaddingLineBeforeSection ( CMDOptions, ParserData );
+
+            // Evaluate flags given for certain directives and correct output column accordingly
             sf65_correctOutputColumnForFlags ( ParserData, CMDOptions );
 
-            // Indent by level times tab width
-            if ( ParserData -> flags != DONT_RELOCATE )
-                ParserData -> request += ParserData -> current_level *
-                                         CMDOptions -> nesting_space;
+            // Indent sections of code according to nesting depth
+            if ( ParserData -> flags != DONT_RELOCATE ) {
+                sf65_IncOutputXPositionByNestingLevel ( ParserData, CMDOptions -> nesting_space );
+            }
 
-            // Add filling spaces for alignment
+            // Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
-                request_space ( output, &ParserData -> current_column, ParserData -> request,
-                                ParserData -> force_separating_space, CMDOptions -> tabs );
+                sf65_PadOutputWithSpaces (
+                    output, ParserData, CMDOptions -> tabs
+                );
 
             // Write current term to output file
-            fwrite ( p1, sizeof ( char ), p2 - p1, output );
-            //conditionallyAddPaddingLineAfterSection(sf65Options, sf65ParsingData);
-            // Increase current_column by length of current term
-            ParserData -> current_column += p2 - p1;
+            sf65_fwrite ( p1, p2, output );
+            //sf65_fwrite ( p1, p2, logoutput );
 
+            sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
+                                    strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
+            sf65_fprintf ( logoutput, " / " );
+
+            // Increase current_column by length of current term
+            sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
+
+            // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
-                fputc ( '\n', output );
-                ParserData -> current_column = 0;
+                sf65_fputnl ( output );
+                sf65_ResetCurrentColumnCounter ( ParserData );
             }
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
 
+            // If come here, at least one expression has been evaluated so unset
+            // first_expression flag
             ParserData -> first_expression = false;
+
+            // Propagate current values from last run to the variables holding prev values
+            ParserData -> prev_expr = *currentExpr;
+            ParserData -> last_column = ParserData -> current_column;
         }
 
         ++line;
-    }
+    } while ( !feof ( input ) );
+    sf65_printfUserInfo ( "\n" );
+    sf65_fprintf ( logoutput, "\n" );
 
     fclose ( input );
     fclose ( output );
+    fclose ( logoutput );
+
     exit ( 0 );
 }
