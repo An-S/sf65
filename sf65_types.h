@@ -1,6 +1,31 @@
 #ifndef __SF65_TYPES_H__
 #define __SF65_TYPES_H__
 
+/*
+ * This typedef is used for
+ * 1. padding empty lines before and after certain directives, if wished.
+ * 2. Breaking oversized labels, if wished
+ */
+typedef enum {
+    SF65_DEFAULT_LF,
+    SF65_ADD_LF,
+    SF65_INSTANT_ADD_LF,
+    SF65_NOT_A_LF_CONST
+} sf65LinefeedEnum_t;
+
+/*
+ * Define a list of errors which may occur during parsing.
+ * The idea is of ERROR is that some functions may indicate errornous condition but
+ * if caller needs more info he has to call sf65_GetError function or such.
+ */
+#define SF65_ERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARGERR)
+
+#define ER(x) SF65_##x
+typedef enum {
+    SF65_ERRLIST
+} sf65Err_t;
+#undef ER
+
 typedef enum {
     SF65_KEEPCASE, SF65_LOWERC, SF65_UPPERC
 } sf65Case_t;
@@ -45,7 +70,8 @@ typedef struct {
 #define EXPRTYPES \
     ET(MNEMONIC), ET(DIRECTIVE), ET(OPERAND), ET(LABEL), ET(COMMENT),\
     ET(EMPTYLINE), ET(MACRONAME), ET(COMMASEP), ET(ASSIGNMENT),\
-    ET(OTHEREXPR), ET(IDENTIFIER), ET(STRLITERAL), ET(INVALIDEXPR)
+    ET(OTHEREXPR), ET(IDENTIFIER), ET(STRLITERAL),\
+    ET(HEXSPECIFIER), ET(BINSPECIFIER), ET(INVALIDEXPR)
 
 #define ET(x) SF65_##x
 
@@ -87,21 +113,38 @@ typedef struct {
     char rightmostChar;
 } sf65Expression_t;
 
+#define SF65_PARSERFLAGS PF(label_detected, LABEL_DETECTED)\
+    PF(first_expression, FIRST_EXPRESSION)\
+    PF(beginning_of_line, BEGINNING_OF_LINE)\
+    PF(additional_linefeed, ADDITIONAL_LINEFEED)\
+    PF(instant_additional_linefeed, INSTANT_ADDITIONAL_LINEFEED)\
+    PF(force_separating_space, FORCE_SEPARATING_SPACE)\
+    PF(line_continuation, LINE_CONTINUATION)
+
+#define PF(x,y) SF65_##y,
+typedef enum {
+    SF65_PARSERFLAGS
+    SF65_PARSERFLAGCNT, SF65_NOT_A_PARSERFLAG
+} sf65ParserFlagsEnum_t;
+#undef PF
+
 /*
  * Struct to hold variables needed for parsing of unformatted source
  */
 typedef struct {
+    union {
+        struct {
+#           define PF(x,y) unsigned int x: 1;
+            SF65_PARSERFLAGS
+#           undef PF
+        };
+        struct {
+            unsigned int allParserFlags;
+        };
+    };
 
-    unsigned int label_detected: 1;
-    unsigned int mnemonic_detected: 1;
-    unsigned int directive_detected: 1;
-    unsigned int operand_detected: 1;
-    unsigned int first_expression: 1;
-    unsigned int beginning_of_line: 1;
-    unsigned int additional_linefeed: 1;
-    unsigned int instant_additional_linefeed: 1;
-    unsigned int force_separating_space: 1;
-    unsigned int line_continuation: 1;
+    char linebuf[1000]; // Input file is read line by line into this buffer
+    int linesize;
 
     int current_column;
     int last_column;
@@ -113,6 +156,6 @@ typedef struct {
     int prev_comment_original_location;
     int prev_comment_final_location;
 
-    sf65Expression_t prev_expr;
+    sf65Expression_t current_expr, prev_expr;
 } sf65ParsingData_t;
 #endif

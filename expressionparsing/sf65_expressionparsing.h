@@ -17,14 +17,23 @@ extern directives_t directives_dasm[];
  * ************************************************************
  */
 
-void sf65_initializeParser ( sf65ParsingData_t *ParserData );
+/*
+ * Sets default values for parser, before entering reading of lines
+ */
+void sf65_InitializeParser ( sf65ParsingData_t *ParserData );
+
+/*
+ * Sets default values for parser, but only those which have to be reset at
+ * the start of a line
+ */
+void sf65_StartParsingNewLine ( sf65ParsingData_t *pData );
 
 /*
  * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
  * directive list where appropriate. Else index will be set to 0
  */
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
-
+sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
+sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
 
 
 
@@ -48,7 +57,7 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
  */
-char *detectCodeWord ( char *p );
+char *sf65_DetectCodeWord ( char *p );
 
 char *detectOperand ( char *p );
 

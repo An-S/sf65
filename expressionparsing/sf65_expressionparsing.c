@@ -6,7 +6,7 @@ char *sf65StrExprTypes[] = {EXPRTYPES};
 
 extern sf65Options_t *CMDOptions;
 
-void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
+void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> request = 0;
     ParserData -> prev_comment_original_location = 0;
     ParserData -> prev_comment_final_location = 0;
@@ -15,6 +15,48 @@ void sf65_initializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
 }
 
+void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
+    sf65Err_t currentErr = SF65_NOERR;
+
+    // Reset determined expression type
+    pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+
+    // Start with column at left
+    sf65_ResetCurrentColumnCounter ( pData );
+
+    // Reset parser flags for labels, spaces, linefeeds from state of previous line
+    currentErr =
+        sf65_ClearParserFlags (
+            pData,
+            SF65_LABEL_DETECTED,
+            SF65_ADDITIONAL_LINEFEED,
+            SF65_FORCE_SEPARATING_SPACE,
+            SF65_NOT_A_PARSERFLAG
+        );
+    assert ( currentErr == SF65_NOERR );
+
+    // Indicate, that we are at
+    // the beginning of a line by setting first_expression flag.
+    // Do not enforce separating space after parts of expressions as a default
+    currentErr =
+        sf65_SetParserFlags (
+            pData,
+            SF65_FIRST_EXPRESSION, SF65_BEGINNING_OF_LINE,
+            SF65_NOT_A_PARSERFLAG
+        );
+
+    assert ( currentErr == SF65_NOERR );
+}
+
+sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
+        pData -> flags = 0;
+        sf65_ResetLinefeedFlag ( pData, SF65_INSTANT_ADD_LF );
+        sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
+
+        return SF65_NOERR;
+    }
+}
 /*
 ** Check for opcode or directive
 * c > 0 -> directive detected
@@ -82,20 +124,20 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 
 
 
-sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
+sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData,
         sf65Options_t *pOpt ) {
 
-    sf65Expression_t expr;
+    sf65Expression_t *expr = & ( pData->current_expr );
     int c = 0;
 
-    expr.exprType = SF65_INVALIDEXPR;
+    expr->exprType = SF65_INVALIDEXPR;
 
-    expr.index = 0;
+    expr->index = 0;
 
     if ( p2 > p1 ) {
-        expr.rightmostChar = * ( p2 - 1 );
+        expr->rightmostChar = * ( p2 - 1 );
     } else {
-        expr.rightmostChar = *p1;
+        expr->rightmostChar = *p1;
     }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
@@ -107,65 +149,55 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
 
         switch ( sgn ( c ) ) {
         case -1:
-            expr.exprType = SF65_MNEMONIC;
-            expr.index = c;
-            pData -> mnemonic_detected = 1;
+            expr->exprType = SF65_MNEMONIC;
+            expr->index = c;
             break;
         case 1:
-            expr.exprType = SF65_DIRECTIVE;
-            expr.index = c;
-            pData -> directive_detected = 1;
+            expr->exprType = SF65_DIRECTIVE;
+            expr->index = c;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
-                expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> directive_detected = 0;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             case SF65_MNEMONIC:
-                expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> mnemonic_detected = 0;
-                break;
-
-            case SF65_LABEL:
-                expr.exprType = SF65_OTHEREXPR;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             default:
                 // Here, no matching mnemonic or directive was found
                 if ( pData -> first_expression ) {
                     if ( *p1 == '.' ) {
-                        expr.exprType = SF65_DIRECTIVE;
+                        expr->exprType = SF65_DIRECTIVE;
                     }
                     //Check for equation character
                     else if ( *p2 == '=' ) {
-                        expr.exprType = SF65_IDENTIFIER;
+                        expr->exprType = SF65_IDENTIFIER;
                     }
                     //No equation character found, but may be after whitespace
                     //so check for blank characters
                     else if ( isblank ( *p2 ) ) {
-                        char *p3 = skipWhiteSpace ( p2 );
+                        char *p3 = sf65_SkipWhiteSpace ( p2 );
                         //Ok, found equation in the second run
                         if ( *p3 == '=' ) {
-                            expr.exprType = SF65_IDENTIFIER;
+                            expr->exprType = SF65_IDENTIFIER;
                         }
                         //Did not find equation.
                         else {
-                            expr.exprType = SF65_MACRONAME;
+                            expr->exprType = SF65_LABEL;
                         }
                     } else {
                         if ( pData -> beginning_of_line || * ( p2 - 1 ) == ':' ) {
-                            expr.exprType = SF65_LABEL;
+                            expr->exprType = SF65_LABEL;
                             pData -> label_detected = 1;
                         } else {
-                            expr.exprType = SF65_MACRONAME; //maybe macro name
+                            expr->exprType = SF65_MACRONAME; //maybe macro name
                         }
                     }
                 } else {
-                    expr.exprType = SF65_IDENTIFIER;
+                    expr->exprType = SF65_IDENTIFIER;
                 }
                 break;
             }
@@ -174,39 +206,35 @@ sf65Expression_t sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t
         switch ( *p1 ) {
             // Comments always start with ';' and proceed until rest of line
         case ';':
-            expr.exprType = SF65_COMMENT;
+            expr->exprType = SF65_COMMENT;
             break;
         case ',' :
-            expr.exprType = SF65_COMMASEP;
+            expr->exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
         case '\n':
             if ( pData -> first_expression ) {
-                expr.exprType = SF65_EMPTYLINE;
+                expr->exprType = SF65_EMPTYLINE;
             }
             break;
         case '=':
-            expr.exprType = SF65_ASSIGNMENT;
+            expr->exprType = SF65_ASSIGNMENT;
             break;
         default:
             switch ( pData -> prev_expr.exprType ) {
             case SF65_DIRECTIVE:
-                expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> directive_detected = 0;
+                expr->exprType = SF65_OPERAND;
                 break;
 
             case SF65_MNEMONIC:
-                expr.exprType = SF65_OPERAND;
-                pData -> operand_detected = 1;
-                pData -> mnemonic_detected = 0;
+                expr->exprType = SF65_OPERAND;
 
                 break;
             default:
                 if ( *p1 == '\\' && *p2 == '\n' ) {
                     pData -> line_continuation = 1;
                 }
-                expr.exprType = SF65_OTHEREXPR;
+                expr->exprType = SF65_OTHEREXPR;
                 break;
             }
         }
@@ -232,7 +260,7 @@ bool isExpressionCharacter ( char ch ) {
     return flag;
 }
 
-char *detectCodeWord ( char *p ) {
+char *sf65_DetectCodeWord ( char *p ) {
     char ch;
     //p += strcspn ( p, ";'\"#$%,\\= \t\v\0" );
     while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
