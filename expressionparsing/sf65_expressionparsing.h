@@ -57,7 +57,7 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
  */
-char *detectCodeWord ( char *p );
+char *sf65_DetectCodeWord ( char *p );
 
 char *detectOperand ( char *p );
 

@@ -120,24 +120,32 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
-void sf65_PreparePointersForExprDetermination ( char **p1, char **p2 ) {
-    NOT_NULL ( p1 ); NOT_NULL ( p2 ) {
-        // Overread white space at beginning of line
-        *p1 = skipWhiteSpace ( *p1 );
+char *sf65_GetStartOfExpressionString ( char *p1 ) {
+    NOT_NULL ( p1 ) {
+        return sf65_SkipWhiteSpace ( p1 );
+    }
+}
+
+char *sf65_GetEndOfExpressionString ( char *p1 ) {
+    NOT_NULL ( p1 ) {
         // Detect quotes and return whole string at once, if quote is found
         // If no quote is found, real until eof/nl
-        if ( **p1 == '"' ) {
-            *p2 = readUntilClosingQuote ( *p1 );
-            ++*p2; // skip closing quote
+        if ( *p1 == '"' ) {
+            p1 = sf65_ReadUntilClosingQuote ( p1 );
+            ++p1; // skip closing quote
+            return p1;
         } else {
+            char *p2 = NULL;
+
             // Read a white space or special character separated section of input file
-            *p2 = detectCodeWord ( *p1 );
+            p2 = sf65_DetectCodeWord ( p1 );
 
             // Sanity check to prevent lockups from pointers beeing not increased anymore
-            if ( *p2 == *p1 ) {
+            if ( p2 == p1 ) {
                 // Read rest of expression
-                ++*p2; //= detectOperand ( p1 );
+                ++p2; //= detectOperand ( p1 );
             }
+            return p2;
         }
     }
 }
@@ -266,7 +274,8 @@ int main ( int argc, char *argv[] ) {
             }
 
             sf65_InitExpressionDetermination ( ParserData );
-            sf65_PreparePointersForExprDetermination ( &p1, &p2 );
+            p1 = sf65_GetStartOfExpressionString ( p1 );
+            p2 = sf65_GetEndOfExpressionString ( p1 );
 
             if ( p1 - p ) { ParserData -> beginning_of_line = false;}
 
@@ -316,7 +325,7 @@ int main ( int argc, char *argv[] ) {
             switch ( currentExpr->exprType ) {
             case SF65_COMMENT:
                 //Indicate that comment includes rest of line
-                p2 = ( char* ) ( p + allocation  - p1 );
+                p2 = ( char* ) ( p + allocation  - 1 );
 
                 // Get x position for output of comment
                 sf65_SetOutputXPositionInLine (

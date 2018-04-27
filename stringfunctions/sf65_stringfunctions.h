@@ -5,13 +5,13 @@
  * Reads characters from input string until a terminating quote is found
  * Returns pointer to the terminating quote
  */
-char *readUntilClosingQuote ( char *p );
+char *sf65_ReadUntilClosingQuote ( char *p );
 
 /*
  * Read array pointed to by p as long as whitespace is found.
  * Stop at first non whitespace character or string terminator
  */
-char *skipWhiteSpace ( char *p );
+char *sf65_SkipWhiteSpace ( char *p );
 
 /*
  * Iterate over char array from p1 to p2.

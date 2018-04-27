@@ -4,7 +4,7 @@
  * Reads characters from input string until a non white-space character or line-end or '\0'
  * is found. Returns pointer to first non-whitespace char or '\n' or '\0'
  */
-char *skipWhiteSpace ( char *p ) {
+char *sf65_SkipWhiteSpace ( char *p ) {
     int n = strspn ( p, " \t\f\v" );
     return p + n;
 }
@@ -13,7 +13,7 @@ char *skipWhiteSpace ( char *p ) {
  * Reads characters from input string until a terminating quote is found
  * Returns pointer to the terminating quote
  */
-char *readUntilClosingQuote ( char *p ) {
+char *sf65_ReadUntilClosingQuote ( char *p ) {
     // Skip quote at p. Find closing quote
     return strpbrk ( p + 1, "\"" );
 }

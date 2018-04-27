@@ -179,7 +179,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
                     //No equation character found, but may be after whitespace
                     //so check for blank characters
                     else if ( isblank ( *p2 ) ) {
-                        char *p3 = skipWhiteSpace ( p2 );
+                        char *p3 = sf65_SkipWhiteSpace ( p2 );
                         //Ok, found equation in the second run
                         if ( *p3 == '=' ) {
                             expr->exprType = SF65_IDENTIFIER;
@@ -260,7 +260,7 @@ bool isExpressionCharacter ( char ch ) {
     return flag;
 }
 
-char *detectCodeWord ( char *p ) {
+char *sf65_DetectCodeWord ( char *p ) {
     char ch;
     //p += strcspn ( p, ";'\"#$%,\\= \t\v\0" );
     while ( ch = *p, ch && !isspace ( ch ) && isExpressionCharacter ( ch ) ) {
