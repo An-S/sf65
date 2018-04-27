@@ -21,7 +21,7 @@
 #include "fileio/fileio.h"
 #include "outputformatting/sf65_outputformatting.h"
 #include "expressionparsing/sf65_expressionparsing.h"
-
+#include "expressioneval/sf65_expression_eval.h"
 
 char echoChar ( char ch );
 

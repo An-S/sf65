@@ -78,6 +78,10 @@
     </VirtualDirectory>
     <File Name="testfiles/hexvariable_test.out"/>
     <File Name="sf65.c"/>
+    <VirtualDirectory Name="ExpressionEvaluation">
+      <File Name="expressioneval/sf65_expression_eval.c"/>
+      <File Name="expressioneval/sf65_expression_eval.h"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>
