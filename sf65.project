@@ -54,34 +54,14 @@
       <File Name="outputformatting/sf65‌_outputformatting.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="Testfiles">
-      <File Name="test.out"/>
-      <File Name="test.src"/>
-      <File Name="circcycv1.out"/>
-      <File Name="testfiles/scope_padding_test.out"/>
-      <File Name="testfiles/hexvariable_test.txt"/>
       <File Name="circcycv1.txt"/>
-      <File Name="testfiles/scope_padding_test.txt"/>
-      <File Name="testfiles/hexvariable_test.log"/>
-      <File Name="testfiles/label_test.out"/>
-      <File Name="testfiles/label_test.txt"/>
-      <File Name="testfiles/label_test.log"/>
-      <File Name="test.log"/>
-      <File Name="testfiles/expressions_test.log"/>
-      <File Name="testfiles/expressions_test.out"/>
-      <File Name="testfiles/expressions_test.txt"/>
-      <File Name="testfiles/mnemonics_test.log"/>
-      <File Name="testfiles/mnemonics_test.out"/>
-      <File Name="testfiles/mnemonics_test.txt"/>
-      <File Name="testfiles/comment_test.txt"/>
-      <File Name="testfiles/comment_test.log"/>
-      <File Name="testfiles/comment_test.out"/>
     </VirtualDirectory>
-    <File Name="testfiles/hexvariable_test.out"/>
     <File Name="sf65.c"/>
     <VirtualDirectory Name="ExpressionEvaluation">
       <File Name="expressioneval/sf65_expression_eval.c"/>
       <File Name="expressioneval/sf65_expression_eval.h"/>
     </VirtualDirectory>
+    <File Name="mkTests.sh"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

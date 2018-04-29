@@ -385,11 +385,6 @@ void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
 }
 
 void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf65Options_t * CMDOptions ) {
-    if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
-        sf65_fputc ( '\n', output );
-
-        ParserData -> current_column = 0;
-    }
 
     if ( ParserData -> flags & LEVEL_IN ) {
         ParserData -> current_level++;

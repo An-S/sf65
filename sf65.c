@@ -310,18 +310,18 @@ int main ( int argc, char *argv[] ) {
             sf65_fwrite ( p1, p2, output );
             //sf65_fwrite ( p1, p2, logoutput );
 
+            // For breaking oversized labels, insert instant additional linefeed
+            if ( ParserData -> instant_additional_linefeed ) {
+                sf65_fputnl ( output );
+                sf65_ResetCurrentColumnCounter ( ParserData );
+            }
+
             sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
                                     strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
             sf65_fprintf ( logoutput, " / " );
 
             // Increase current_column by length of current term
             sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
-
-            // For breaking oversized labels, insert instant additional linefeed
-            if ( ParserData -> instant_additional_linefeed ) {
-                sf65_fputnl ( output );
-                sf65_ResetCurrentColumnCounter ( ParserData );
-            }
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;

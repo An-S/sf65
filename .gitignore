@@ -24,3 +24,5 @@ sf65.txt
 *.log
 test_strcspn
 va_arg_test
+testfiles/!(*.txt)
+

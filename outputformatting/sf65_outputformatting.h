@@ -123,8 +123,17 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs
  */
 int getCommentSpacing ( char *linestart, char *commentstart, sf65ParsingData_t *pData );
 
+/*
+ * These functions set/reset requested line feed type in output.
+ * Linefeed can be DEFAULT, INSTANT_ADDITIONAL, ADDITIONAL
+ */
 sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
 sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+
+/*
+ * These functions set/reset flag for space padding in output, f.e. between
+ * mnemonic and operand.
+ */
 sf65Err_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData );
 sf65Err_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData );
 

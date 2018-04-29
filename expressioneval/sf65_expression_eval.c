@@ -78,6 +78,14 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         sf65_SetPaddingSpaceFlag ( ParserData );
 
         // Leave label at start of line
+        //
+        /* COde should not be needed anymore
+        if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
+            sf65_fputc ( '\n', output );
+
+            sf65_SetCurrentColumnCounter ( ParserData, 0 );
+        }*/
+
         sf65_SetOutputXPositionInLine ( ParserData, 0 );
 
         // Detect oversized labels.
