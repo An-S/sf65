@@ -140,6 +140,8 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
             ParserData -> flags = DONT_RELOCATE;
             break;
 
+        case SF65_MNEMONIC:
+        case SF65_LABEL:
         case SF65_ASSIGNMENT:
             sf65_SetPaddingSpaceFlag ( ParserData );
             break;

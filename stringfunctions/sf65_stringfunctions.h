@@ -18,18 +18,18 @@ char *sf65_SkipWhiteSpace ( char *p );
  * Call modificator function for each of the chars of the array
  * and write back modificated char.
  */
-char *modifyChars ( char *p1, char *p2, int func ( int ) );
+char *sf65_ModifyChars ( char *p1, char *p2, int func ( int ) );
 
 /*
  * Iterate over char array from p1 to p2.
  * Dependent on the value of the _case parameter
  * leave array as is(0), change to uppercase(2), change to lowercase(1)
  */
-char *changeCase ( char *p1, char *p2, sf65Case_t _case );
+char *sf65_ChangeCase ( char *p1, char *p2, sf65Case_t _case );
 
 /*
  * Comparison without case
  */
-sf65StrEq_t memcmpcase ( char *p1, char *p2, int size );
+sf65StrEq_t sf65_Memcmpcase ( char *p1, char *p2, int size );
 
 #endif

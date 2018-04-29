@@ -23,7 +23,7 @@ typedef enum {
 #define ER(x) SF65_##x
 typedef enum {
     SF65_ERRLIST
-} sf65Err_t;
+} sf65ErrCode_t;
 #undef ER
 
 typedef enum {

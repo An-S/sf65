@@ -1,6 +1,11 @@
 #ifndef __SF65ERRHANDL_H__
 #define __SF65ERRHANDL_H__
 
+typedef struct sf65ErrorDesc_tag {
+    sf65_ErrCode_t errcode;
+    char *msg;
+} sf65ErrorDesc_t;
+
 /*
  * Prints a formatted string to the stderr taking a variable number of args
  */

@@ -39,7 +39,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
  * several variables have to be initialized to avoid memory effects from the
  * result of the previous expression. This function inits those variables
  */
-sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
+sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
 
 
 
