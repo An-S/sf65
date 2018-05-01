@@ -3,7 +3,7 @@
 
 typedef struct sf65ErrorDesc_tag {
     sf65_ErrCode_t errcode;
-    char *msg;
+    char msg[80];
 } sf65ErrorDesc_t;
 
 /*
