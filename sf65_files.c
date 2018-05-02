@@ -49,7 +49,7 @@ FILE *sf65_openInputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *input = NULL;
 
-        sf65_fprintf ( stdout, "Trying to open input file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open input file: \"%s\"\n", filename );
 
         // This call includes error checking
         input = sf65_openFile ( filename, "rb" );
@@ -66,7 +66,7 @@ FILE *sf65_openOutputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *output = NULL;
 
-        sf65_fprintf ( stdout, "Trying to open output file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open output file: \"%s\"\n", filename );
 
         // This call includes error checking
         output = sf65_openFile ( filename, "w" );
@@ -80,7 +80,7 @@ FILE *sf65_openLogFile ( char * basefilename ) {
         FILE *output = NULL;
         char *logfilename = sf65_addReplaceFileExt ( basefilename, "log" );
 
-        sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"", logfilename );
+        sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"\n", logfilename );
 
 
         // This call includes error checking
