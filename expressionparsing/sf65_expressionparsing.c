@@ -49,7 +49,7 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
 }
 
 sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData ) {
-    NOT_NULL ( pData, SF65_NULLPTR ) {
+    NOT_NULL ( pData, SF65_SETERR(SF65_NULLPTR) ) {
         pData -> flags = 0;
         sf65_ResetLinefeedFlag ( pData, SF65_INSTANT_ADD_LF );
         sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );

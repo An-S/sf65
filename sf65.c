@@ -120,6 +120,13 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
+sf65_CloseFiles ( void ) {
+    sf65_CloseErrLog();
+    fclose ( input );
+    fclose ( output );
+    fclose ( logoutput );
+}
+
 char *sf65_GetStartOfExpressionString ( char *p ) {
     NOT_NULL ( p, NULL ) {
         return sf65_SkipWhiteSpace ( p );
@@ -172,6 +179,8 @@ int main ( int argc, char *argv[] ) {
 
     sf65Expression_t *currentExpr;
 
+    atexit ( sf65_CloseFiles );
+
     // Parse command line options and set corresponding variables in CMDOptions struct
     processCMDArgs ( argc, argv, CMDOptions );
 
@@ -190,6 +199,7 @@ int main ( int argc, char *argv[] ) {
     // No further err checking necessary
     output = sf65_openOutputFile ( CMDOptions -> outfilename );
     logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
+    sf65_OpenErrLog ( CMDOptions -> outfilename );
 
     // Start with debug output (Line number of 0)
     sf65_printfUserInfo ( "%4d:", line );
@@ -340,9 +350,6 @@ int main ( int argc, char *argv[] ) {
     sf65_printfUserInfo ( "\n" );
     sf65_fprintf ( logoutput, "\n" );
 
-    fclose ( input );
-    fclose ( output );
-    fclose ( logoutput );
 
     exit ( 0 );
 }

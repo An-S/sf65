@@ -29,8 +29,13 @@ void sf65_pError ( char *format, ... );
  */
 void sf65_vpError ( char *format, va_list va );
 
-sf65ErrCode_t sf65_SetError ( sf65ErrCode_t code, const char* const msg );
+#define SF65_SETERR_MSG(code, msg) _sf65_SetError(code, msg, __FILE__, __LINE)
+#define SF65_SETERR(code) _sf65_SetError(code, "N/A", __FILE__, __LINE__)
+
+sf65ErrCode_t _sf65_SetError ( sf65ErrCode_t code, const char* const msg, char *file, unsigned long int line );
 sf65ErrCode_t sf65_GetLastError ( void );
 bool sf65_ErrorOccured ( void );
+FILE *sf65_OpenErrLog ( char *filename );
+sf65ErrCode_t sf65_CloseErrLog ( void );
 
 #endif
