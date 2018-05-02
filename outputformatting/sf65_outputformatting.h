@@ -52,32 +52,32 @@ int sf65_AlignCurrentColumn ( sf65ParsingData_t *pData, int tabs );
 /*
  * Clears a parser flag specified by an enumeration of parser flags
  */
-sf65Err_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+sf65ErrCode_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
 
 /*
  * Clears the parser flags specified by an va_list of enumerated parser flags
  */
-sf65Err_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
+sf65ErrCode_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
 
 /*
  * Sets a parser flag specified by an enumeration of parser flags
  */
-sf65Err_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+sf65ErrCode_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
 
 /*
  * Gets a parser flag state or return -1 on error
  */
-int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
+unsigned int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag );
 
 /*
  * Sets the parser flags specified by an va_list of enumerated parser flags
  */
-sf65Err_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
+sf65ErrCode_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... );
 
 /*
  * Clears all the parser flags
  */
-sf65Err_t sf65_ResetParserFlags ( sf65ParsingData_t * pData );
+sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData );
 
 /*
  * These functions help with empty padding lines before and after indented sections of code
@@ -123,9 +123,18 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs
  */
 int getCommentSpacing ( char *linestart, char *commentstart, sf65ParsingData_t *pData );
 
-sf65Err_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
-sf65Err_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
-sf65Err_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData );
-sf65Err_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData );
+/*
+ * These functions set/reset requested line feed type in output.
+ * Linefeed can be DEFAULT, INSTANT_ADDITIONAL, ADDITIONAL
+ */
+sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+sf65ErrCode_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type );
+
+/*
+ * These functions set/reset flag for space padding in output, f.e. between
+ * mnemonic and operand.
+ */
+sf65ErrCode_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData );
+sf65ErrCode_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData );
 
 #endif

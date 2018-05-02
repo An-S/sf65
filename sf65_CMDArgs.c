@@ -201,7 +201,7 @@ char *getOpt ( int argc, char ** argv ) {
     ++arg;
 
     if ( *arg ) {
-        changeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
+        sf65_ChangeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
 
         return arg;//skipWhiteSpace ( arg );
 

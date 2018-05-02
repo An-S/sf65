@@ -33,7 +33,13 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData );
  * directive list where appropriate. Else index will be set to 0
  */
 sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
-sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
+
+/*
+ * Expressions within a line are determined subsequently. For each expression
+ * several variables have to be initialized to avoid memory effects from the
+ * result of the previous expression. This function inits those variables
+ */
+sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
 
 
 
@@ -59,9 +65,20 @@ int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *fl
  */
 char *sf65_DetectCodeWord ( char *p );
 
+/*
+ * Detects a sequence of characters with is complementary to a code word.
+ * f.e. with in an assembly statement several non alnum chars appear: lda >>#$<<00
+ */
 char *detectOperand ( char *p );
 
+/*
+ * Returns, if a character belongs to the mnemonic, directive,
+ * label, identifier character class
+ */
 bool isExpressionCharacter ( char ch );
 
+/*
+ * Prototype for expression type strings used in logging
+ */
 extern char *sf65StrExprTypes[];
 #endif

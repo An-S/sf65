@@ -16,7 +16,7 @@ void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
 }
 
 void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
-    sf65Err_t currentErr = SF65_NOERR;
+    sf65ErrCode_t currentErr = SF65_NOERR;
 
     // Reset determined expression type
     pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
@@ -48,8 +48,8 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     assert ( currentErr == SF65_NOERR );
 }
 
-sf65Err_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData ) {
-    NOT_NULL ( pData, SF65_NULLPTR ) {
+sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData ) {
+    NOT_NULL ( pData, SF65_SETERR(SF65_NULLPTR) ) {
         pData -> flags = 0;
         sf65_ResetLinefeedFlag ( pData, SF65_INSTANT_ADD_LF );
         sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
@@ -70,10 +70,10 @@ int check_opcode ( char *p1, char *p2 ) {
         length = strlen ( directives_dasm[c].directive );
         if ( ( *p1 == '.' &&
                 length == p2 - p1 - 1 &&
-                memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) == 0
+                sf65_Memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) == 0
              ) ||
                 ( length == p2 - p1     &&
-                  memcmpcase ( p1,     directives_dasm[c].directive, p2 - p1 )     == 0
+                  sf65_Memcmpcase ( p1,     directives_dasm[c].directive, p2 - p1 )     == 0
                 )
            ) {
 
@@ -84,7 +84,7 @@ int check_opcode ( char *p1, char *p2 ) {
     //Maybe this would be a good point to check for mnemonics which have operands not separated by space
     for ( c = 0; mnemonics_6502[c] != NULL; c++ ) {
         length = strlen ( mnemonics_6502[c] );
-        if ( length == p2 - p1 && memcmpcase ( p1, mnemonics_6502[c], p2 - p1 ) == 0 )
+        if ( length == p2 - p1 && sf65_Memcmpcase ( p1, mnemonics_6502[c], p2 - p1 ) == 0 )
             return - ( c + 1 );
     }
     return 0;

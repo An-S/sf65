@@ -13,19 +13,6 @@ typedef enum {
     SF65_NOT_A_LF_CONST
 } sf65LinefeedEnum_t;
 
-/*
- * Define a list of errors which may occur during parsing.
- * The idea is of ERROR is that some functions may indicate errornous condition but
- * if caller needs more info he has to call sf65_GetError function or such.
- */
-#define SF65_ERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARGERR)
-
-#define ER(x) SF65_##x
-typedef enum {
-    SF65_ERRLIST
-} sf65Err_t;
-#undef ER
-
 typedef enum {
     SF65_KEEPCASE, SF65_LOWERC, SF65_UPPERC
 } sf65Case_t;

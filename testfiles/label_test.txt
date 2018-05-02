@@ -12,4 +12,6 @@ label3:
     label5:
     .endscope
     .endscope
-    
+anoversizedlabel inc $d020
+anotheroversizedlabel:dec $d020
+
