@@ -115,7 +115,7 @@ sf65ErrCode_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnu
 sf65ErrCode_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
     NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
-#       define PF(x,y) case SF65_##y: pData -> x=0;
+#       define PF(x,y) case SF65_##y: pData -> x=0; break;
             SF65_PARSERFLAGS
 #       undef PF
         default:
