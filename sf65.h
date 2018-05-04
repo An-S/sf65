@@ -11,7 +11,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-#define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );return errorCode;} else
+#define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );SF65_SETERR(SF65_NULLPTR);return errorCode;} else
 #define _SF65_STR(x) #x
 #define SF65_MKSTR(x) _SF65_STR(x)
 

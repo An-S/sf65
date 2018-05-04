@@ -69,27 +69,27 @@ int sf65_AlignCurrentColumn ( sf65ParsingData_t *pData, int tabs ) {
 }
 
 sf65ErrCode_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag  ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_NULLPTR ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
 #   define PF(x,y) case SF65_##y: pData -> x=1; break;
             SF65_PARSERFLAGS
 #   undef PF
         default:
             assert ( flag < SF65_NOT_A_PARSERFLAG );
-            return SF65_INVALIDARGERR;
+            return SF65_SETERR ( SF65_INVALIDARGERR );
         }
         return SF65_NOERR;
     }
-    return SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) );
 }
 
 unsigned int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
 #   define PF(x,y) case SF65_##y: return pData -> x;
             SF65_PARSERFLAGS
 #   undef PF
         default:
+            SF65_SETERR ( SF65_INVALIDARGERR );
             assert ( flag < SF65_NOT_A_PARSERFLAG );
             break;
         }
@@ -98,41 +98,41 @@ unsigned int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_
 }
 
 sf65ErrCode_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         va_list va;
         va_start ( va, flag1 );
 
         while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            assert ( flag1 < SF65_NOT_A_PARSERFLAG );
             sf65_SetParserFlag ( pData, flag1 );
             flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
         }
         va_end ( va );
         return SF65_NOERR;
     }
-    return SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) );
 }
 
 sf65ErrCode_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
-#       define PF(x,y) case SF65_##y: pData -> x=0;
+#       define PF(x,y) case SF65_##y: pData -> x=0; break;
             SF65_PARSERFLAGS
 #       undef PF
         default:
-            assert ( flag < SF65_NOT_A_PARSERFLAG );
-            return SF65_NOT_A_PARSERFLAG;
+            assert ( flag < SF65_PARSERFLAGCNT );
+            return SF65_SETERR ( SF65_INVALIDARGERR );
         }
         return SF65_NOERR;
     }
-    return SF65_SETERR ( SF65_SETERR ( SF65_NULLPTR ) );
 }
 
 sf65ErrCode_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_NULLPTR ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         va_list va;
         va_start ( va, flag1 );
 
         while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            assert ( flag1 < SF65_PARSERFLAGCNT );
             sf65_ClearParserFlag ( pData, flag1 );
             flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
         }
@@ -142,7 +142,7 @@ sf65ErrCode_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsE
 }
 
 sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_NULLPTR ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         pData -> allParserFlags = 0;
 
         return SF65_NOERR;
@@ -307,7 +307,7 @@ int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65
 }
 
 sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_NULLPTR ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         sf65_ClearParserFlags (
             pData, SF65_INSTANT_ADDITIONAL_LINEFEED, SF65_ADDITIONAL_LINEFEED,
             SF65_NOT_A_PARSERFLAG
@@ -327,7 +327,7 @@ sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_
             assert ( lf_type < SF65_NOT_A_LF_CONST );
 
             if ( lf_type >= SF65_NOT_A_LF_CONST ) {
-                return SF65_INVALIDARGERR;
+                return SF65_SETERR ( SF65_INVALIDARGERR );
             }
             break;
         }
@@ -337,7 +337,7 @@ sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_
 }
 
 sf65ErrCode_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
-    NOT_NULL ( pData, SF65_SETERR ( SF65_NULLPTR ) ) {
+    NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( lf_type ) {
 
         case SF65_ADD_LF:
@@ -352,13 +352,12 @@ sf65ErrCode_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnu
             assert ( lf_type < SF65_NOT_A_LF_CONST );
 
             if ( lf_type >= SF65_NOT_A_LF_CONST ) {
-                return SF65_INVALIDARGERR;
+                return SF65_SETERR ( SF65_INVALIDARGERR );
             }
             break;
         }
         return SF65_NOERR;
     }
-    return SF65_SETERR ( SF65_NULLPTR );
 }
 
 sf65ErrCode_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData ) {

@@ -120,7 +120,7 @@ sf65ParsingData_t _sf65ParsingData;
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
 sf65ParsingData_t *ParserData = &_sf65ParsingData;
 
-sf65_CloseFiles ( void ) {
+void sf65_CloseFiles ( void ) {
     sf65_CloseErrLog();
     fclose ( input );
     fclose ( output );

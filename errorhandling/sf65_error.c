@@ -28,10 +28,13 @@ void sf65_pError ( char *format, ... ) {
 }
 
 sf65ErrCode_t _sf65_SetError ( sf65ErrCode_t err, const char *const msg, char *file, unsigned long int line ) {
+    static unsigned int count = 0;
+
     sf65_Error.errcode = err;
     strncpy ( sf65_Error.msg, msg, sizeof ( sf65_Error.msg ) );
     if ( errLog ) {
-        sf65_fprintf ( errLog, "%d, %s with msg: %s in %u, %s", errStrings[err], msg, line, file );
+        sf65_fprintf ( errLog, "%04d: Err. #%d, %s with msg: %s in line %lu, %s\n", count, err, errStrings[err], msg, line, file );
+        ++count;
     }
     return err;
 }
@@ -51,7 +54,7 @@ FILE *sf65_OpenErrLog ( char *basefilename ) {
         FILE *file = NULL;
         char *errLogFName = sf65_addReplaceFileExt ( basefilename, "err" );
 
-        sf65_fprintf ( stdout, "Trying to open error logfile: \"%s\"", errLogFName );
+        sf65_fprintf ( stdout, "Trying to open error logfile: \"%s\"\n", errLogFName );
 
         // This call includes error checking
         file = sf65_openFile ( errLogFName, "w" );
