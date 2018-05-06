@@ -34,7 +34,18 @@ for f in $dir/*.out
 do
     echo $f
     f_base=`basename $f .out`
-    if [`diff $f $dir/"$f_base".expected > $dir/"$f_base".diff`]; then
-        echo "test failed in $f!";
-    fi
+    if [ -f $dir/"$f_base".expected ]; then
+        rm -f $dir/"$f_base".diff
+        
+        df=$(diff -y $f $dir/"$f_base".expected)
+        if [ "$df" ]; then
+            echo $df > $dir/"$f_base".diff
+        
+            echo "test failed in $f!";
+        fi
+        
+    else
+        echo "$dir/$_f_base file with expected results missing !"
+    fi 
+    
 done
