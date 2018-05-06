@@ -75,30 +75,29 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         break;
 
     case SF65_LABEL:
+        // Tell that separating space after label is needed
         sf65_SetPaddingSpaceFlag ( ParserData );
 
-        // Leave label at start of line
-        //
-        /* COde should not be needed anymore
-        if ( ParserData -> current_column != 0 && CMDOptions -> labels_own_line != 0 && ( ParserData -> flags & DONT_RELOCATE ) == 0 ) {
-            sf65_fputc ( '\n', output );
-
-            sf65_SetCurrentColumnCounter ( ParserData, 0 );
-        }*/
-
+        // Leave label at start of line as default
         sf65_SetOutputXPositionInLine ( ParserData, 0 );
 
-        // Detect oversized labels.
+        /*
+         * Code to detect oversized labels.
+         */
+
         // Check, if p2 already at end of line
         // Then additional cr is not needed
         if ( allocation > p2 - p1 ) {
+            // Test if user requested linebreak after oversized labels on cmdline
             if ( CMDOptions -> oversized_labels_own_line ) {
+                // Label is considered oversized if is is longer than
+                // configured x pos for mnemonics
                 if ( p2 - p1 >= CMDOptions -> start_mnemonic ) {
                     sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
                 }
             }
             if ( CMDOptions -> labels_own_line ) {
-                sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
+                sf65_SetLinefeedType ( ParserData, SF65_ADD_LF );
             }
         }
 

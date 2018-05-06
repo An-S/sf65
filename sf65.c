@@ -323,7 +323,7 @@ int main ( int argc, char *argv[] ) {
             // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
                 sf65_fputnl ( output );
-                sf65_ResetCurrentColumnCounter ( ParserData );
+                //sf65_ResetCurrentColumnCounter ( ParserData );
             }
 
             sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
