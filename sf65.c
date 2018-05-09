@@ -286,6 +286,12 @@ int main ( int argc, char *argv[] ) {
             sf65_InitExpressionDetermination ( ParserData );
             p1 = sf65_GetStartOfExpressionString ( p1 );
             p2 = sf65_GetEndOfExpressionString ( p1 );
+
+            // Integrate colon into statement, if
+            if ( *p2 == ':' ) {
+                ++p2;
+            }
+
             sf65_IndicateBeginningOfLineState ( ParserData, p1 );
 
             // Analyze expression determined by the start and end pointers p1 and p2
@@ -324,14 +330,14 @@ int main ( int argc, char *argv[] ) {
             if ( ParserData -> instant_additional_linefeed ) {
                 sf65_fputnl ( output );
                 sf65_ResetCurrentColumnCounter ( ParserData );
+            } else {
+                // Increase current_column by length of current term
+                sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
             }
 
             sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
                                     strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
             sf65_fprintf ( logoutput, " / " );
-
-            // Increase current_column by length of current term
-            sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
