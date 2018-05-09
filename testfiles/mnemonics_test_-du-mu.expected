@@ -1,0 +1,17 @@
+        LDA     #$12 
+        LDA     #$12 
+        LDA     #<start 
+        LDA     #<$1234 
+lda(zp),y 
+        LDA     (zp,x) 
+        INC     $d012 
+        INX     
+        RTS     
+        INC     abcd,x 
+        INC     abcd,x 
+        INC     abcd,y 
+        INC     abcd,y 
+        LSR     a 
+        BNE     label 
+
+

@@ -243,3 +243,6 @@ testfiles/test_-du-mu.log
 testfiles/test.txt
 testfiles/test.err
 testfiles/*.err
+testfiles/*.diff
+testfiles/*.out
+testfiles/*.log

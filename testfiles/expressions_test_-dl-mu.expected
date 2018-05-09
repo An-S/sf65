@@ -1,0 +1,8 @@
+        .byte   abcd+1234 
+        .byte   $1234+$4678 
+        LDA     #<(start+3) 
+        .byte   "c"+3 
+        LDA     screen+12*$28 
+        LDA     <($1234+3)*6 
+
+

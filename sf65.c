@@ -277,9 +277,10 @@ int main ( int argc, char *argv[] ) {
             //sf65_TestLineEvaluationTerminationCondition();
 
             if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 ) {
-                sf65_fputnl ( output );
+                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE ) {
+                    sf65_fputnl ( output );
+                }
                 sf65_fputnl ( logoutput );
-
                 break;
             }
 
