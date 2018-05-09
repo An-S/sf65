@@ -32,15 +32,15 @@ echo "-----------------"
 
 for f in $dir/*.out
 do
-    echo $f
+    #echo $f
     f_base=`basename $f .out`
     if [ -f $dir/"$f_base".expected ]; then
         rm -f $dir/"$f_base".diff
         
-        df=$(diff -y $f $dir/"$f_base".expected)
-        if [ "$df" ]; then
-            echo $df > $dir/"$f_base".diff
-        
+        df=$(diff -y --left-column $f $dir/"$f_base".expected)
+        if [[ $? != 0 ]]; then
+            printf "$df\n"  > $dir/"$f_base".diff
+            
             echo "test failed in $f!";
         fi
         

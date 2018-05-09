@@ -323,15 +323,15 @@ int main ( int argc, char *argv[] ) {
             // For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
                 sf65_fputnl ( output );
-                //sf65_ResetCurrentColumnCounter ( ParserData );
+                sf65_ResetCurrentColumnCounter ( ParserData );
+            } else {
+                // Increase current_column by length of current term
+                sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
             }
 
             sf65_fwriteCountChars ( sf65StrExprTypes[currentExpr->exprType],
                                     strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
             sf65_fprintf ( logoutput, " / " );
-
-            // Increase current_column by length of current term
-            sf65_IncCurrentColumnCounter ( ParserData, p2 - p1 );
 
             // Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
