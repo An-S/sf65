@@ -286,6 +286,12 @@ int main ( int argc, char *argv[] ) {
             sf65_InitExpressionDetermination ( ParserData );
             p1 = sf65_GetStartOfExpressionString ( p1 );
             p2 = sf65_GetEndOfExpressionString ( p1 );
+
+            // Integrate colon into statement, if
+            if ( *p2 == ':' ) {
+                ++p2;
+            }
+
             sf65_IndicateBeginningOfLineState ( ParserData, p1 );
 
             // Analyze expression determined by the start and end pointers p1 and p2

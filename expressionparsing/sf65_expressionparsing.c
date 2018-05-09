@@ -248,7 +248,8 @@ bool isExpressionCharacter ( char ch ) {
     if ( ch == '.' || ch == '_' ) {
         flag = true;
     } else {
-        flag = ( ch != ';' &&
+        flag = ( ch != ':' &&
+                 ch != ';' &&
                  ch != '\'' && ch != '"' &&
                  ch != '#' &&
                  ch != '$' &&
