@@ -244,11 +244,6 @@ int main ( int argc, char *argv[] ) {
         sf65_printfUserInfo ( "%04d:__", line );
         sf65_printfUserInfo ( "%s", ParserData -> linebuf );
 
-        // If parser requested additional linefeed on parsing prev line, then insert
-        // the requested additional linefeed. However, if there is already an
-        // empty line in the input, additional linefeed is suppressed
-        conditionallyInsertAdditionalLinefeed ( ParserData );
-
         // Must be inserted after call to conditionallyInsertAdditionalLinefeed(...), because
         // this function needs ADDITIONAL_LINEFEED flag from prev line
         sf65_StartParsingNewLine ( ParserData );
@@ -271,24 +266,11 @@ int main ( int argc, char *argv[] ) {
         while ( true ) {
             // Allocation >= 2, here
 
-            // Check termination condition for current line by comparing running pointers
-            // with total length of current line
-
-            //sf65_TestLineEvaluationTerminationCondition();
-
-            if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 ) {
-                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE ) {
-                    sf65_fputnl ( output );
-                }
-                sf65_fputnl ( logoutput );
-                break;
-            }
-
             sf65_InitExpressionDetermination ( ParserData );
             p1 = sf65_GetStartOfExpressionString ( p1 );
             p2 = sf65_GetEndOfExpressionString ( p1 );
 
-            // Integrate colon into statement, if
+            // Integrate colon into statement, if present
             if ( *p2 == ':' ) {
                 ++p2;
             }
@@ -350,7 +332,25 @@ int main ( int argc, char *argv[] ) {
             // Propagate current values from last run to the variables holding prev values
             ParserData -> prev_expr = *currentExpr;
             ParserData -> last_column = ParserData -> current_column;
+
+            // Check termination condition for current line by comparing running pointers
+            // with total length of current line
+
+            //sf65_TestLineEvaluationTerminationCondition();
+
+            if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 || *p1 == '\n' ) {
+                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE ) {
+                    sf65_fputnl ( output );
+                }
+                sf65_fputnl ( logoutput );
+                break;
+            }
+
         }
+        // If parser requested additional linefeed on parsing prev line, then insert
+        // the requested additional linefeed. However, if there is already an
+        // empty line in the input, additional linefeed is suppressed
+        conditionallyInsertAdditionalLinefeed ( ParserData );
 
         ++line;
     } while ( !feof ( input ) );

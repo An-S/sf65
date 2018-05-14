@@ -45,6 +45,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
     case SF65_DIRECTIVE:
         sf65_PlaceDirectiveInLine ( p1, p2, CMDOptions, ParserData );
         conditionallyAddPaddingLineAfterSection ( CMDOptions, ParserData );
+        sf65_SetPaddingSpaceFlag ( ParserData );
 
         break;
 
@@ -97,7 +98,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
                 }
             }
             if ( CMDOptions -> labels_own_line ) {
-                sf65_SetLinefeedType ( ParserData, SF65_ADD_LF );
+                sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
             }
         }
 
@@ -117,7 +118,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
 
     case SF65_EMPTYLINE:
         sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
-        
+
         break;
 
     case SF65_ASSIGNMENT:

@@ -19,7 +19,11 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     sf65ErrCode_t currentErr = SF65_NOERR;
 
     // Reset determined expression type
-    pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+    if ( pData -> current_expr.exprType != SF65_EMPTYLINE ) {
+        pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+    } else {
+        pData -> current_expr.exprType = SF65_OTHEREXPR;
+    }
 
     // Start with column at left
     sf65_ResetCurrentColumnCounter ( pData );
@@ -212,9 +216,12 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
+        case '\0':
         case '\n':
             if ( pData -> first_expression ) {
                 expr->exprType = SF65_EMPTYLINE;
+            } else {
+                expr->exprType = SF65_OTHEREXPR;
             }
             break;
         case '=':

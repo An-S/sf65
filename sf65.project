@@ -59,36 +59,6 @@
       <File Name="testfiles/test.txt"/>
       <File Name="testfiles/label_test.txt"/>
       <File Name="testfiles/comment_test.txt"/>
-      <File Name="testfiles/test_def.log"/>
-      <File Name="testfiles/test_def.out"/>
-      <File Name="testfiles/test_-dl-ml.log"/>
-      <File Name="testfiles/test_-dl-ml.out"/>
-      <File Name="testfiles/test_-dl-mu.log"/>
-      <File Name="testfiles/test_-dl-mu.out"/>
-      <File Name="testfiles/test_-dl-mu-n2.log"/>
-      <File Name="testfiles/test_-dl-mu-n2.out"/>
-      <File Name="testfiles/test_-du-ml.log"/>
-      <File Name="testfiles/test_-du-ml.out"/>
-      <File Name="testfiles/test_-du-ml-c40.log"/>
-      <File Name="testfiles/test_-du-ml-c40.out"/>
-      <File Name="testfiles/test_-du-ml-e0.log"/>
-      <File Name="testfiles/test_-du-ml-e0.out"/>
-      <File Name="testfiles/test_-du-ml-e1.log"/>
-      <File Name="testfiles/test_-du-ml-e1.out"/>
-      <File Name="testfiles/test_-du-ml-l0.log"/>
-      <File Name="testfiles/test_-du-ml-l0.out"/>
-      <File Name="testfiles/test_-du-ml-l1.log"/>
-      <File Name="testfiles/test_-du-ml-l1.out"/>
-      <File Name="testfiles/test_-du-ml-l2.log"/>
-      <File Name="testfiles/test_-du-ml-l2.out"/>
-      <File Name="testfiles/test_-du-ml-m16.log"/>
-      <File Name="testfiles/test_-du-ml-m16.out"/>
-      <File Name="testfiles/test_-du-ml-o16.log"/>
-      <File Name="testfiles/test_-du-ml-o16.out"/>
-      <File Name="testfiles/test_-du-ml-s1.log"/>
-      <File Name="testfiles/test_-du-ml-s1.out"/>
-      <File Name="testfiles/test_-du-mu.log"/>
-      <File Name="testfiles/test_-du-mu.out"/>
       <File Name="testfiles/test.out"/>
       <VirtualDirectory Name="automatic tests">
         <File Name="testfiles/comment_test_-dl-ml.log"/>
@@ -271,7 +241,39 @@
         <File Name="testfiles/scope_padding_test_-du-mu.out"/>
         <File Name="testfiles/scope_padding_test_def.log"/>
         <File Name="testfiles/scope_padding_test_def.out"/>
+        <File Name="testfiles/test_-dl-ml.log"/>
+        <File Name="testfiles/test_-dl-ml.out"/>
+        <File Name="testfiles/test_-dl-mu-n2.log"/>
+        <File Name="testfiles/test_-dl-mu-n2.out"/>
+        <File Name="testfiles/test_-dl-mu.log"/>
+        <File Name="testfiles/test_-dl-mu.out"/>
+        <File Name="testfiles/test_-du-ml-c40.log"/>
+        <File Name="testfiles/test_-du-ml-c40.out"/>
+        <File Name="testfiles/test_-du-ml-e0.log"/>
+        <File Name="testfiles/test_-du-ml-e0.out"/>
+        <File Name="testfiles/test_-du-ml-e1.log"/>
+        <File Name="testfiles/test_-du-ml-e1.out"/>
+        <File Name="testfiles/test_-du-ml-l0.log"/>
+        <File Name="testfiles/test_-du-ml-l0.out"/>
+        <File Name="testfiles/test_-du-ml-l1.log"/>
+        <File Name="testfiles/test_-du-ml-l1.out"/>
+        <File Name="testfiles/test_-du-ml-l2.log"/>
+        <File Name="testfiles/test_-du-ml-l2.out"/>
+        <File Name="testfiles/test_-du-ml-m16.log"/>
+        <File Name="testfiles/test_-du-ml-m16.out"/>
+        <File Name="testfiles/test_-du-ml-o16.log"/>
+        <File Name="testfiles/test_-du-ml-o16.out"/>
+        <File Name="testfiles/test_-du-ml-s1.log"/>
+        <File Name="testfiles/test_-du-ml-s1.out"/>
+        <File Name="testfiles/test_-du-ml.log"/>
+        <File Name="testfiles/test_-du-ml.out"/>
+        <File Name="testfiles/test_-du-mu.log"/>
+        <File Name="testfiles/test_-du-mu.out"/>
+        <File Name="testfiles/test_def.log"/>
+        <File Name="testfiles/test_def.out"/>
       </VirtualDirectory>
+      <File Name="testfiles/test.log"/>
+      <File Name="testfiles/emptyline_test.txt"/>
     </VirtualDirectory>
     <File Name="sf65.c"/>
     <VirtualDirectory Name="ExpressionEvaluation">
@@ -372,4 +374,7 @@
       </Completion>
     </Configuration>
   </Settings>
+  <VirtualDirectory Name="Doc">
+    <File Name="docs/doc.md"/>
+  </VirtualDirectory>
 </CodeLite_Project>
