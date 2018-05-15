@@ -386,12 +386,21 @@ void conditionallyAddPaddingLineAfterSection ( sf65Options_t * CMDOptions, sf65P
 }
 
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
-    if ( ParserData -> current_expr.exprType != SF65_EMPTYLINE &&
-            ParserData -> additional_linefeed ) {
-        sf65_fputc ( '\n', output );
-    }
+    static bool checkedEmptyLine = false;
 
-    sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+    if ( checkedEmptyLine ) {
+        if ( ParserData -> current_expr.exprType != SF65_EMPTYLINE &&
+                ParserData -> additional_linefeed ) {
+            sf65_fputc ( '\n', output );
+        }
+
+        sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+        checkedEmptyLine = false;
+    } else {
+        if ( ParserData -> additional_linefeed ) {
+            checkedEmptyLine = true;
+        }
+    }
 }
 
 void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf65Options_t * CMDOptions ) {

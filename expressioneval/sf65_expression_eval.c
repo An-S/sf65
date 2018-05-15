@@ -31,6 +31,9 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         break;
 
     case SF65_MACRONAME:
+        sf65_SetOutputXPositionInLine ( ParserData, CMDOptions -> start_mnemonic );
+        sf65_SetPaddingSpaceFlag ( ParserData );
+        break;
     case SF65_MNEMONIC:
         sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
         switch ( ParserData -> prev_expr.exprType ) {

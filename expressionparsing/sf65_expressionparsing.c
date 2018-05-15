@@ -33,7 +33,6 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
         sf65_ClearParserFlags (
             pData,
             SF65_LABEL_DETECTED,
-            SF65_ADDITIONAL_LINEFEED,
             SF65_FORCE_SEPARATING_SPACE,
             SF65_NOT_A_PARSERFLAG
         );
