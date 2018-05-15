@@ -25,5 +25,12 @@ If such a statement is found, the flag ADDITIONAL_LINEFEED is set to request an 
 The flag is not cleared as long statements are beeing parsed within the current line.
 After the parsing of the current line has been finished, the parser continues with reading the next line. If this line is not empty, the mentioned flag is tested and then a linefeed is emitted. If this line is empty, anyway, an additional linefeed is suppressed.
 
-
+1.) Check formatting flag LEVEL_OUT. If not present, continue normally. If present goto 2
+2.) Set ADDITIONAL_LINEFEED parser flag
+3.) Parse next line
+4.) Check, if line is empty
+5.) If line is not empty and ADDITIONAL_LINEFEED is set and directive padding is enabled, 
+    then insert nl in output file before statement
+6.) If line is empty, then do not insert ADDITIONAL_LINEFEED and clear request
+7.) Proceed normally
 

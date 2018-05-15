@@ -299,6 +299,13 @@ int main ( int argc, char *argv[] ) {
                 sf65_IncOutputXPositionByNestingLevel ( ParserData, CMDOptions -> nesting_space );
             }
 
+            if ( ParserData -> first_expression ) {
+                // If parser requested additional linefeed on parsing prev line, then insert
+                // the requested additional linefeed. However, if there is already an
+                // empty line in the input, additional linefeed is suppressed
+                conditionallyInsertAdditionalLinefeed ( ParserData );
+            }
+
             // Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
                 sf65_PadOutputWithSpaces (
@@ -347,10 +354,6 @@ int main ( int argc, char *argv[] ) {
             }
 
         }
-        // If parser requested additional linefeed on parsing prev line, then insert
-        // the requested additional linefeed. However, if there is already an
-        // empty line in the input, additional linefeed is suppressed
-        conditionallyInsertAdditionalLinefeed ( ParserData );
 
         ++line;
     } while ( !feof ( input ) );
