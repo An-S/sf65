@@ -34,3 +34,6 @@ After the parsing of the current line has been finished, the parser continues wi
 6.) If line is empty, then do not insert ADDITIONAL_LINEFEED and clear request
 7.) Proceed normally
 
+.PROC (LEVEL_IN, set LEVEL_CHANGED) xyz (0, do not reset LEVEL_CHANGED)
+.proc (LEVEL IN, set LEVEL_CHANGED) abcd (0, do not reset LEVEL_CHANGED)
+    lda #$00 (0, reset LEVEL_CHANGED)

@@ -114,7 +114,7 @@ sf65Options_t _sf65Options;
 sf65Options_t *CMDOptions = &_sf65Options;
 
 //Create instance of sf65ParsingData_t, but do not use directly
-//(Avoid replacement of -> by . or -> by .)
+//(Avoid replacement of -> by . or . by ->)
 sf65ParsingData_t _sf65ParsingData;
 
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
@@ -300,23 +300,31 @@ int main ( int argc, char *argv[] ) {
             }
 
             if ( ParserData -> first_expression ) {
+
+
                 // If parser requested additional linefeed on parsing prev line, then insert
                 // the requested additional linefeed. However, if there is already an
                 // empty line in the input, additional linefeed is suppressed
                 conditionallyInsertAdditionalLinefeed ( ParserData );
+
+                if ( ! ( ParserData -> flags & LEVEL_IN  ||
+                         ParserData -> flags & LEVEL_OUT ) ) {
+
+                    sf65_ClearParserFlag ( ParserData, SF65_LEVEL_CHANGED );
+                }
             }
 
-            // Add filling spaces for alignment but not for a comma delimiter
+// Add filling spaces for alignment but not for a comma delimiter
             if ( *p1 != ',' )
                 sf65_PadOutputWithSpaces (
                     output, ParserData, CMDOptions -> tabs
                 );
 
-            // Write current term to output file
+// Write current term to output file
             sf65_fwrite ( p1, p2, output );
-            //sf65_fwrite ( p1, p2, logoutput );
+//sf65_fwrite ( p1, p2, logoutput );
 
-            // For breaking oversized labels, insert instant additional linefeed
+// For breaking oversized labels, insert instant additional linefeed
             if ( ParserData -> instant_additional_linefeed ) {
                 sf65_fputnl ( output );
                 sf65_ResetCurrentColumnCounter ( ParserData );
@@ -329,24 +337,29 @@ int main ( int argc, char *argv[] ) {
                                     strlen ( sf65StrExprTypes[currentExpr->exprType] ), logoutput );
             sf65_fprintf ( logoutput, " / " );
 
-            // Set pointer p1 to the end of the expression+1 to proceed further
+            if ( ParserData -> flags & LEVEL_IN  ||
+                    ParserData -> flags & LEVEL_OUT ) {
+                sf65_SetParserFlag ( ParserData, SF65_LEVEL_CHANGED );
+            }
+
+// Set pointer p1 to the end of the expression+1 to proceed further
             p1 = p2;
 
-            // If come here, at least one expression has been evaluated so unset
-            // first_expression flag
+// If come here, at least one expression has been evaluated so unset
+// first_expression flag
             ParserData -> first_expression = false;
 
-            // Propagate current values from last run to the variables holding prev values
+// Propagate current values from last run to the variables holding prev values
             ParserData -> prev_expr = *currentExpr;
             ParserData -> last_column = ParserData -> current_column;
 
-            // Check termination condition for current line by comparing running pointers
-            // with total length of current line
+// Check termination condition for current line by comparing running pointers
+// with total length of current line
 
-            //sf65_TestLineEvaluationTerminationCondition();
+//sf65_TestLineEvaluationTerminationCondition();
 
             if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 || *p1 == '\n' ) {
-                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE ) {
+                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE && !feof ( input ) ) {
                     sf65_fputnl ( output );
                 }
                 sf65_fputnl ( logoutput );
@@ -359,7 +372,6 @@ int main ( int argc, char *argv[] ) {
     } while ( !feof ( input ) );
     sf65_printfUserInfo ( "\n" );
     sf65_fprintf ( logoutput, "\n" );
-
 
     exit ( 0 );
 }

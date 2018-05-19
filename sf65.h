@@ -10,6 +10,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdint.h>
 
 #define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );SF65_SETERR(SF65_NULLPTR);return errorCode;} else
 #define _SF65_STR(x) #x

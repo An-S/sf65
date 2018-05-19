@@ -31,6 +31,7 @@
       <File Name="expressionparsing/sf65_expressionparsing.c"/>
       <File Name="expressionparsing/sf65_expressionparsing.h"/>
       <File Name="sf65_directives.c"/>
+      <File Name="expressionparsing/sf65_manage_parserdata.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="CommandLineParsing">
       <File Name="sf65_CMDArgs.c"/>
@@ -46,6 +47,7 @@
     </VirtualDirectory>
     <VirtualDirectory Name="ErrorHandling">
       <File Name="errorhandling/sf65_errorhandling.h"/>
+      <File Name="errorhandling/sf65_error.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="OutputFormatting">
       <File Name="outputformatting/sf65_outputformatting.h"/>
@@ -278,7 +280,6 @@
     <File Name="sf65.c"/>
     <VirtualDirectory Name="ExpressionEvaluation">
       <File Name="expressioneval/sf65_expression_eval.h"/>
-      <File Name="errorhandling/sf65_error.c"/>
       <File Name="expressioneval/sf65_expression_eval.c"/>
     </VirtualDirectory>
     <File Name="mkTests.sh"/>

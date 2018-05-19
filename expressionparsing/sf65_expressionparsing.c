@@ -34,6 +34,7 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
             pData,
             SF65_LABEL_DETECTED,
             SF65_FORCE_SEPARATING_SPACE,
+            //SF65_LEVEL_CHANGED,
             SF65_NOT_A_PARSERFLAG
         );
     assert ( currentErr == SF65_NOERR );
