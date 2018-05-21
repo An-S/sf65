@@ -115,10 +115,11 @@ sf65Options_t *CMDOptions = &_sf65Options;
 
 //Create instance of sf65ParsingData_t, but do not use directly
 //(Avoid replacement of -> by . or . by ->)
-sf65ParsingData_t _sf65ParsingData;
+//sf65ParsingData_t _sf65ParsingData;
 
 //Create pointer to instance of sf65Options_t, so we can use -> throughout
-sf65ParsingData_t *ParserData = &_sf65ParsingData;
+sf65ParsingData_t *ParserData = NULL;//&_sf65ParsingData;
+sf65ParsingData_t *OldParserData = NULL;//&_sf65ParsingData;
 
 void sf65_CloseFiles ( void ) {
     sf65_CloseErrLog();
@@ -192,7 +193,7 @@ int main ( int argc, char *argv[] ) {
     sf65_printfUserInfo ( "Processing %s...\n", CMDOptions -> infilename );
 
     /*
-    ** Now generate output file
+    ** Open or create output files
     */
 
     // Try to open output file. Procedure exits in case of error.
@@ -204,7 +205,9 @@ int main ( int argc, char *argv[] ) {
     // Start with debug output (Line number of 0)
     sf65_printfUserInfo ( "%4d:", line );
 
-    sf65_InitializeParser ( ParserData );
+    sf65_GetParserDataPointers ( &ParserData, &OldParserData );
+
+    //sf65_InitializeParser ( ParserData );
 
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
@@ -357,9 +360,10 @@ int main ( int argc, char *argv[] ) {
 // with total length of current line
 
 //sf65_TestLineEvaluationTerminationCondition();
+            sf65_ToggleParserDataPointers ( &ParserData, &OldParserData );
 
             if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 || *p1 == '\n' ) {
-                if ( ParserData->prev_expr.exprType != SF65_EMPTYLINE && !feof ( input ) ) {
+                if ( OldParserData->prev_expr.exprType != SF65_EMPTYLINE && !feof ( input ) ) {
                     sf65_fputnl ( output );
                 }
                 sf65_fputnl ( logoutput );
