@@ -28,9 +28,10 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=1
+current_page=2
 FILE_NAME_0=0;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest_strcspn.c;0;4
 FILE_NAME_1=1178;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fva_arg_test.c;0;4
+FILE_NAME_2=138;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2FDokumente%2FProgrammieren%2Fcpp%2FEigeneCPPProgramme%2Fc%2B%2BBook%2FA3K15S333_TrafficLight%2Ftrafficlight.cpp;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;

@@ -20,9 +20,14 @@ sf65ErrCode_t sf65_GetParserDataPointers ( sf65ParsingData_t **pData1, sf65Parsi
 
 sf65ErrCode_t sf65_ToggleParserDataPointers ( sf65ParsingData_t **pData1, sf65ParsingData_t **pData2 ) {
     NOT_NULL ( pData1, SF65_NULLPTR ); NOT_NULL ( pData2, SF65_NULLPTR ) {
-        sf65ParsingData_t *tmp = *pData1;
-        *pData1 = *pData2;
-        *pData2 = tmp;
+//        sf65ParsingData_t *tmp = *pData1;
+
+        //Copy actual values into previous values struct
+        **pData2 = **pData1;
+
+        /*        *pData1 = *pData2;
+                *pData2 = tmp;
+        */
 
         return SF65_NOERR;
     }

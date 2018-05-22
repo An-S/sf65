@@ -132,6 +132,7 @@ typedef enum {
 #undef PF
 
 typedef     union {
+    // These flags are assumed to be needed to be kept during expression parsing
     struct {
 #           define PF(x,y) unsigned int x: 1;
         SF65_PARSERFLAGS
@@ -143,20 +144,21 @@ typedef     union {
 } sf65Parserflags_t;
 
 typedef struct {
+    // These fields needs to be kept between expressions
     int current_column;
-    int last_column;
     int request;
     int current_level;
-
-    int flags;
-
     int prev_comment_original_location;
     int prev_comment_final_location;
+
+    // These fields are overwritten for each expression
+    int flags;
 
     sf65Expression_t current_expr;
 } sf65ParserState_t;
 
 typedef struct {
+    // Needs to be kept for whole line parsing/formatting procedure
     char linebuf[1000]; // Input file is read line by line into this buffer
     int linesize;
 } sf65Linebuffer_t;
