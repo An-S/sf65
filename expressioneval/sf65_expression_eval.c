@@ -36,7 +36,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         break;
     case SF65_MNEMONIC:
         sf65_PlaceMnemonicInLine ( p1, p2, CMDOptions, ParserData );
-        switch ( ParserData -> prev_expr.exprType ) {
+        switch ( ParserData -> prev -> current_expr.exprType ) {
         case SF65_LABEL:
             sf65_SetPaddingSpaceFlag ( ParserData );
             break;
@@ -63,7 +63,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         break;
 
     case SF65_IDENTIFIER:
-        switch ( ParserData->prev_expr.exprType ) {
+        switch ( ParserData -> prev -> current_expr.exprType ) {
         case SF65_ASSIGNMENT:
             sf65_SetOutputXPositionInLine ( ParserData, 0 );
             sf65_SetPaddingSpaceFlag ( ParserData );
@@ -131,7 +131,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
 
     default:
         // Detect separator for comma separated list of values
-        switch ( ParserData -> prev_expr.exprType ) {
+        switch ( ParserData -> prev -> current_expr.exprType ) {
         case SF65_COMMASEP:
             // Align comma separated list of values
             sf65_SetOutputXPositionInLine (
@@ -153,7 +153,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         default:
             // No comma separated list of values.
             if ( isExpressionCharacter ( *p1 ) &&
-                    isExpressionCharacter ( ParserData->prev_expr.rightmostChar ) ) {
+                    isExpressionCharacter ( ParserData -> prev -> current_expr.rightmostChar ) ) {
                 sf65_SetPaddingSpaceFlag ( ParserData );
             }
             // Standard output

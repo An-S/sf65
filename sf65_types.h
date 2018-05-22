@@ -153,7 +153,7 @@ typedef struct {
     int prev_comment_original_location;
     int prev_comment_final_location;
 
-    sf65Expression_t current_expr, prev_expr;
+    sf65Expression_t current_expr;
 } sf65ParserState_t;
 
 typedef struct {
@@ -166,11 +166,13 @@ typedef struct {
  * This struct has been broken down into smaller structs which are
  * included into the bigger struct via anonymous types
  */
-typedef struct {
+typedef struct sf65ParsingData_Tag {
     //anon structs
     sf65Linebuffer_t;  // Char array and linesize
     sf65ParserState_t; // Variables which hold state information for parser
     sf65Parserflags_t; // Flags which indicate special occurences and requests
+
+    struct sf65ParsingData_Tag *prev;
 } sf65ParsingData_t;
 
 #endif

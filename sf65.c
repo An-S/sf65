@@ -207,8 +207,6 @@ int main ( int argc, char *argv[] ) {
 
     sf65_GetParserDataPointers ( &ParserData, &OldParserData );
 
-    //sf65_InitializeParser ( ParserData );
-
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     do {
@@ -353,8 +351,6 @@ int main ( int argc, char *argv[] ) {
             ParserData -> first_expression = false;
 
 // Propagate current values from last run to the variables holding prev values
-            ParserData -> prev_expr = *currentExpr;
-            ParserData -> last_column = ParserData -> current_column;
 
 // Check termination condition for current line by comparing running pointers
 // with total length of current line
@@ -363,7 +359,7 @@ int main ( int argc, char *argv[] ) {
             sf65_ToggleParserDataPointers ( &ParserData, &OldParserData );
 
             if ( *p1 == 0 || ( p1 - p ) >= allocation - 1 || *p1 == '\n' ) {
-                if ( OldParserData->prev_expr.exprType != SF65_EMPTYLINE && !feof ( input ) ) {
+                if ( ParserData->current_expr.exprType != SF65_EMPTYLINE && !feof ( input ) ) {
                     sf65_fputnl ( output );
                 }
                 sf65_fputnl ( logoutput );

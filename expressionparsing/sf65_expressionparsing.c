@@ -12,7 +12,7 @@ void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
 
-    ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
+    ParserData -> current_expr.exprType = SF65_OTHEREXPR;
 }
 
 void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
@@ -20,7 +20,7 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
 
     // Reset determined expression type
     if ( pData -> current_expr.exprType != SF65_EMPTYLINE ) {
-        pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+        pData -> current_expr.exprType = pData -> prev -> current_expr.exprType = SF65_OTHEREXPR;
     } else {
         pData -> current_expr.exprType = SF65_OTHEREXPR;
     }
@@ -161,7 +161,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->index = c;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
@@ -228,7 +228,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->exprType = SF65_ASSIGNMENT;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
