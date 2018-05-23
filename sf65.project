@@ -276,6 +276,10 @@
       </VirtualDirectory>
       <File Name="testfiles/test.log"/>
       <File Name="testfiles/emptyline_test.txt"/>
+      <File Name="testfiles/fasttest.in"/>
+      <File Name="testfiles/fasttest.out"/>
+      <File Name="testfiles/fasttest.err"/>
+      <File Name="testfiles/fasttest.log"/>
     </VirtualDirectory>
     <File Name="sf65.c"/>
     <VirtualDirectory Name="ExpressionEvaluation">

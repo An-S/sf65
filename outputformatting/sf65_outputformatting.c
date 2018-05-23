@@ -309,9 +309,13 @@ sf65ErrCode_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
     return sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
 }
 
+// Insert padding line if,
+// - there was no empty line, before
+// - there was no changing of level, before
+// - the command line option is set
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN &&
-            ! ( sf65_GetParserFlag ( ParserData, SF65_LEVEL_CHANGED ) ) ) {
+            ! ( sf65_GetParserFlag ( ParserData -> prev, SF65_LEVEL_CHANGED ) ) ) {
         if ( ParserData -> prev -> current_expr.exprType != SF65_EMPTYLINE ) {
             //sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
             sf65_fputc ( '\n', output );
