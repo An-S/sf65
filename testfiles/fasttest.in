@@ -1,0 +1,15 @@
+.proc abc
+.proc def
+.proc hij
+.endproc
+.endproc
+.ENDPROC
+
+.proc klm
+
+.proc nop
+.proc qrs
+.endproc
+
+.endproc
+.ENDPROC

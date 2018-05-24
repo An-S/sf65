@@ -150,65 +150,6 @@ sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
     return SF65_SETERR ( SF65_NULLPTR );
 }
 
-/*
-** Request space in line
-*  Return number of spaces actually written
-*/
-int request_space ( FILE * output, int * current, int new, int force, int tabs ) {
-
-    /*
-    ** If already exceeded space...
-    */
-    if ( *current > new ) {
-
-        // If force is true, a single space is always written to output
-        if ( force ) {
-            fputc ( ' ', output );
-            ( *current ) ++;
-
-            return 1;
-        }
-        return 0;
-    }
-
-    // From here on, *current < new
-
-    /*
-    ** Advance one step at a time
-    */
-    if ( new ) {
-        // Write spaces to output, only if new != 0
-        // Assume, new is non negative
-
-        while ( *current < new ) {
-            if ( tabs == 0 ) {
-                // Use spaces instead of tabs
-
-                int i = 0;
-
-                // Write number of spaces calculated from the
-                // difference between *current and new
-                for ( ; i < new - *current; ++i ) {
-                    fputc ( ' ', output );
-                }
-
-                // Update the current_column variable to the new x position
-                *current = new;
-                return i;
-            } else {
-                // Use tabs, not spaces. Assume tab has a width of <<tabs>>
-                fputc ( '\t', output );
-
-                // Quantize current output column to value of <<tabs>>
-                *current = ( *current + tabs ) / tabs * tabs;
-            }
-        }
-
-        return 0;
-    }
-
-    return 0;
-}
 
 int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs ) {
     int new = sf65_GetOutputXPositionInLine ( pData );
@@ -368,24 +309,44 @@ sf65ErrCode_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
     return sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
 }
 
+// Insert padding line if,
+// - there was no empty line, before
+// - there was no changing of level, before
+// - the command line option is set
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
-    if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN ) {
-        if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE ) {
+    if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN &&
+            ! ( sf65_GetParserFlag ( ParserData -> prev, SF65_LEVEL_CHANGED ) ) ) {
+        if ( ParserData -> prev -> current_expr.exprType != SF65_EMPTYLINE ) {
+            //sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
             sf65_fputc ( '\n', output );
+            //ParserData -> prev -> currentExprcurrentExpr.exprType = SF65_EMPTYLINE;
         }
     }
 }
 
 void conditionallyAddPaddingLineAfterSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_OUT ) {
-        ParserData -> additional_linefeed = true;
+        //ParserData -> additional_linefeed = true;
+        sf65_SetLinefeedType ( ParserData, SF65_ADD_LF );
     }
 }
 
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
-    if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE &&
-            ParserData -> additional_linefeed ) {
-        sf65_fputc ( '\n', output );
+    static bool checkedEmptyLine = false;
+
+    if ( checkedEmptyLine ) {
+        if ( ParserData -> current_expr.exprType != SF65_EMPTYLINE &&
+                ParserData -> additional_linefeed &&
+                ! ( ParserData -> flags & LEVEL_OUT ) ) {
+            sf65_fputc ( '\n', output );
+        }
+
+        sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+        checkedEmptyLine = false;
+    } else {
+        if ( ParserData -> additional_linefeed ) {
+            checkedEmptyLine = true;
+        }
     }
 }
 

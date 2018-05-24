@@ -37,15 +37,18 @@ do
     if [ -f $dir/"$f_base".expected ]; then
         rm -f $dir/"$f_base".diff
         
-        df=$(diff -y --left-column $f $dir/"$f_base".expected)
+        df=$(diff -y --left-column $dir/"$f_base".expected $f)
         if [[ $? != 0 ]]; then
             printf "$df\n"  > $dir/"$f_base".diff
             
-            echo "test failed in $f!";
+            echo "test failed in $f!"
         fi
         
     else
-        echo "$dir/$_f_base file with expected results missing !"
+        echo "$dir/$f_base file with expected results missing !"
     fi 
-    
+    echo " "
+    echo "================================="
+    echo " "
+    echo "Total number of errors: $(i)"
 done

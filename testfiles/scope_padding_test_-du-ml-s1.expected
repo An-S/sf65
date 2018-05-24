@@ -1,0 +1,14 @@
+        lda#$00
+
+        .PROC firstProc
+    
+            .PROC secondProc
+                .PROC thirdProc
+                .ENDPROC
+            .ENDPROC
+  
+alabel:         ;a label with one empty line after .endproc
+        .ENDPROC
+
+        ;a comment directly after .endproc
+

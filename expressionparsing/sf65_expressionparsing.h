@@ -18,28 +18,42 @@ extern directives_t directives_dasm[];
  */
 
 /*
+ * Gets pointers to two instances of ParsingData_t. Initialize these two
+ * instances with default values. It is intended that one pointer is used
+ * to point to the current parsing data and
+ * one pointer to point to the parser data of the prev expression.
+ */
+sf65ErrCode_t sf65_GetParserDataPointers ( sf65ParsingData_t **pData1, sf65ParsingData_t **pData2 );
+
+/*
+ * Exchange two pointers to parsing data
+ */
+sf65ErrCode_t sf65_ToggleParserDataPointers ( sf65ParsingData_t **pData1, sf65ParsingData_t **pData2 );
+
+
+/*
  * Sets default values for parser, before entering reading of lines
  */
-void sf65_InitializeParser ( sf65ParsingData_t *ParserData );
+void sf65_InitializeParser ( sf65ParsingData_t * ParserData );
 
 /*
  * Sets default values for parser, but only those which have to be reset at
  * the start of a line
  */
-void sf65_StartParsingNewLine ( sf65ParsingData_t *pData );
+void sf65_StartParsingNewLine ( sf65ParsingData_t * pData );
 
 /*
  * Evaluate expression with start at p1 and end at p2. Return type of expression and index into mnemonic or
  * directive list where appropriate. Else index will be set to 0
  */
-sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_t *pData, sf65Options_t *pOpt );
+sf65Expression_t *sf65DetermineExpression ( char * p1, char * p2, sf65ParsingData_t * pData, sf65Options_t * pOpt );
 
 /*
  * Expressions within a line are determined subsequently. For each expression
  * several variables have to be initialized to avoid memory effects from the
  * result of the previous expression. This function inits those variables
  */
-sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
+sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t * pData );
 
 
 
@@ -51,25 +65,25 @@ sf65ErrCode_t sf65_InitExpressionDetermination ( sf65ParsingData_t *pData );
  * c > 0 -> directive detected
  * c < 0 -> opcode detected
  */
-int check_opcode ( char *p1, char *p2 );
+int check_opcode ( char * p1, char * p2 );
 
 /* Detects mnemonic or directive and returns corresponding index, in found.
  * Returns output column by ref.
  * Takes account of the processor flag and the directive flags
  */
-int detectOpcode ( char *p1, char *p2, int processor, int *outputColumn, int *flags );
+int detectOpcode ( char * p1, char * p2, int processor, int * outputColumn, int * flags );
 
 
 /*
  * Detect a word limited by whitespace but always stop at comment symbol ';'
  */
-char *sf65_DetectCodeWord ( char *p );
+char *sf65_DetectCodeWord ( char * p );
 
 /*
  * Detects a sequence of characters with is complementary to a code word.
  * f.e. with in an assembly statement several non alnum chars appear: lda >>#$<<00
  */
-char *detectOperand ( char *p );
+char *detectOperand ( char * p );
 
 /*
  * Returns, if a character belongs to the mnemonic, directive,

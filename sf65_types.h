@@ -100,10 +100,26 @@ typedef struct {
     char rightmostChar;
 } sf65Expression_t;
 
+/* There are flags which change every syntax element:
+ *
+ * first_expression
+ * force_separating_space
+ * instant_additional_linefeed
+ * beginning of line
+ *
+ *
+ * and flags which value is kept until the next line (if changed once):
+ *
+ * label_detected
+ * additional_linefeed
+ * level_changed
+ * line_continuation
+ */
 #define SF65_PARSERFLAGS PF(label_detected, LABEL_DETECTED)\
     PF(first_expression, FIRST_EXPRESSION)\
     PF(beginning_of_line, BEGINNING_OF_LINE)\
     PF(additional_linefeed, ADDITIONAL_LINEFEED)\
+    PF(level_changed, LEVEL_CHANGED)\
     PF(instant_additional_linefeed, INSTANT_ADDITIONAL_LINEFEED)\
     PF(force_separating_space, FORCE_SEPARATING_SPACE)\
     PF(line_continuation, LINE_CONTINUATION)
@@ -115,34 +131,50 @@ typedef enum {
 } sf65ParserFlagsEnum_t;
 #undef PF
 
-/*
- * Struct to hold variables needed for parsing of unformatted source
- */
-typedef struct {
-    union {
-        struct {
+typedef     union {
+    // These flags are assumed to be needed to be kept during expression parsing
+    struct {
 #           define PF(x,y) unsigned int x: 1;
-            SF65_PARSERFLAGS
+        SF65_PARSERFLAGS
 #           undef PF
-        };
-        struct {
-            unsigned int allParserFlags;
-        };
     };
+    struct {
+        unsigned int allParserFlags;
+    };
+} sf65Parserflags_t;
 
-    char linebuf[1000]; // Input file is read line by line into this buffer
-    int linesize;
-
+typedef struct {
+    // These fields needs to be kept between expressions
     int current_column;
-    int last_column;
     int request;
     int current_level;
-
-    int flags;
-
     int prev_comment_original_location;
     int prev_comment_final_location;
 
-    sf65Expression_t current_expr, prev_expr;
+    // These fields are overwritten for each expression
+    int flags;
+
+    sf65Expression_t current_expr;
+} sf65ParserState_t;
+
+typedef struct {
+    // Needs to be kept for whole line parsing/formatting procedure
+    char linebuf[1000]; // Input file is read line by line into this buffer
+    int linesize;
+} sf65Linebuffer_t;
+
+/*
+ * Struct to hold variables needed for parsing of unformatted source
+ * This struct has been broken down into smaller structs which are
+ * included into the bigger struct via anonymous types
+ */
+typedef struct sf65ParsingData_Tag {
+    //anon structs
+    sf65Linebuffer_t;  // Char array and linesize
+    sf65ParserState_t; // Variables which hold state information for parser
+    sf65Parserflags_t; // Flags which indicate special occurences and requests
+
+    struct sf65ParsingData_Tag *prev;
 } sf65ParsingData_t;
+
 #endif

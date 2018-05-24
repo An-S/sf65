@@ -1,0 +1,17 @@
+        lda#$12 
+        lda#$12 
+        lda#<start 
+        lda#<$1234 
+lda(zp),y 
+        lda(zp,x) 
+        inc$d012 
+        inx
+        rts
+        incabcd,x 
+        incabcd,x 
+        incabcd,y 
+        incabcd,y 
+        lsra 
+        bnelabel 
+
+

@@ -12,14 +12,18 @@ void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
 
-    ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
+    ParserData -> current_expr.exprType = SF65_OTHEREXPR;
 }
 
 void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     sf65ErrCode_t currentErr = SF65_NOERR;
 
     // Reset determined expression type
-    pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+    if ( pData -> current_expr.exprType != SF65_EMPTYLINE ) {
+        pData -> current_expr.exprType = pData -> prev -> current_expr.exprType = SF65_OTHEREXPR;
+    } else {
+        pData -> current_expr.exprType = SF65_OTHEREXPR;
+    }
 
     // Start with column at left
     sf65_ResetCurrentColumnCounter ( pData );
@@ -29,8 +33,8 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
         sf65_ClearParserFlags (
             pData,
             SF65_LABEL_DETECTED,
-            SF65_ADDITIONAL_LINEFEED,
             SF65_FORCE_SEPARATING_SPACE,
+            //SF65_LEVEL_CHANGED,
             SF65_NOT_A_PARSERFLAG
         );
     assert ( currentErr == SF65_NOERR );
@@ -157,7 +161,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->index = c;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
@@ -212,16 +216,19 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
+        case '\0':
         case '\n':
             if ( pData -> first_expression ) {
                 expr->exprType = SF65_EMPTYLINE;
+            } else {
+                expr->exprType = SF65_OTHEREXPR;
             }
             break;
         case '=':
             expr->exprType = SF65_ASSIGNMENT;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
