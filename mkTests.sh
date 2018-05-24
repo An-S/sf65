@@ -41,11 +41,14 @@ do
         if [[ $? != 0 ]]; then
             printf "$df\n"  > $dir/"$f_base".diff
             
-            echo "test failed in $f!";
+            echo "test failed in $f!"
         fi
         
     else
         echo "$dir/$f_base file with expected results missing !"
     fi 
-    
+    echo " "
+    echo "================================="
+    echo " "
+    echo "Total number of errors: $(i)"
 done

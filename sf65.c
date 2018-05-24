@@ -210,7 +210,11 @@ int main ( int argc, char *argv[] ) {
     // Read lines from input until EOF
     // Pointer p is set to start of line for easier parsing (using p instead of linebuf all the time)
     do {
-        sf65_fgets ( input, ParserData -> linebuf, sizeof ( ParserData -> linebuf ) );
+        if ( !sf65_fgets ( input, ParserData -> linebuf, sizeof ( ParserData -> linebuf ) ) ) {
+            // fgets read EOF so provoke EOF error to exit while loop at the end
+            sf65_fputnl ( output );
+            break;
+        }
         if ( !feof ( input ) ) {
             if ( ferror ( input ) ) {
                 sf65_printfUserInfo ( "Error reading line\n" );

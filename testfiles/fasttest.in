@@ -1,14 +1,14 @@
-.proc
-.proc
-.proc
+.proc abc
+.proc def
+.proc hij
 .endproc
 .endproc
 .ENDPROC
 
-.proc
+.proc klm
 
-.proc
-.proc
+.proc nop
+.proc qrs
 .endproc
 
 .endproc

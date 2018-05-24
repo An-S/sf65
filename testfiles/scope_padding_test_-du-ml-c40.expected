@@ -11,3 +11,4 @@ alabel:                                 ;a label with one empty line after .endp
         .ENDPROC
 
         ;a comment directly after .endproc
+
