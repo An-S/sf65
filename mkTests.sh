@@ -42,13 +42,15 @@ do
             printf "$df\n"  > $dir/"$f_base".diff
             
             echo "test failed in $f!"
+            i=$(( $i+1 ))
         fi
         
     else
         echo "$dir/$f_base file with expected results missing !"
     fi 
-    echo " "
-    echo "================================="
-    echo " "
-    echo "Total number of errors: $(i)"
 done
+
+echo " "
+echo "================================="
+echo " "
+echo "Total number of fails: $i"

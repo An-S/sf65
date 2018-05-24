@@ -26,11 +26,14 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
     NOT_NULL ( pData, -1 ) {
-
-        pData->request +=
-            pData -> current_level *
-            nestingSpace;
-        return pData->request;
+        if ( ! ( pData->current_expr.exprType == SF65_EMPTYLINE ) ) {
+            pData->request +=
+                pData -> current_level *
+                nestingSpace;
+            return pData->request;
+        } else {
+            return 0;
+        }
     }
     return -1;
 }
