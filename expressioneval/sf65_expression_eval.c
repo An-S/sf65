@@ -121,6 +121,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
 
     case SF65_EMPTYLINE:
         sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+        sf65_SetOutputXPositionInLine ( ParserData, 0 );
 
         break;
 
