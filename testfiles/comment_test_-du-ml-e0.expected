@@ -6,5 +6,4 @@
         ;comment in the middle of line
         ;comment in the middle of line
         ;comment in the middle of line
-.FEATURE        labels_without_colons;comment after directive
-.FEATURE        labels_without_colons;comment after directive
+.FEATURE        labels_without_colons ;comment after directive
