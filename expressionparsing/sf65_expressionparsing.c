@@ -263,7 +263,9 @@ bool isExpressionCharacter ( char ch ) {
                  ch != '%' &&
                  ch != ',' &&
                  ch != '\\' &&
-                 ch != '=' );
+                 ch != '=' &&
+                 ch != '(' &&
+                 ch != ')' );
     }
     return flag;
 }

@@ -406,6 +406,6 @@ void sf65_PlaceOperandInLine ( char * p1, char * p2, sf65Options_t * CMDOptions,
         ParserData -> request = 0;
     } else {
         ParserData -> request = CMDOptions -> start_operand;
-        sf65_SetPaddingSpaceFlag ( ParserData );
     }
+    sf65_SetPaddingSpaceFlag ( ParserData );
 }

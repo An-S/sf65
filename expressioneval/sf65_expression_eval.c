@@ -43,6 +43,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         default:
             break;
         }
+
         break;
 
     case SF65_DIRECTIVE:
@@ -58,7 +59,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         // If operand does not start with a variable or label character or a number
         // directly attach operand to mnemonic. f.e. "lda #$ 00" is not desired but
         // "lda #$00". However, "lda label1" or "sta 1" is ok.
-        if ( !isExpressionCharacter ( *p1 ) ) sf65_ClearPaddingSpaceFlag ( ParserData );
+        //if ( !isExpressionCharacter ( *p1 ) ) sf65_ClearPaddingSpaceFlag ( ParserData );
 
         break;
 

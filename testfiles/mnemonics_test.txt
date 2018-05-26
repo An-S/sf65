@@ -1,10 +1,10 @@
-lda#$12
+lda #$12
 lda      #    $ 12
-lda#<start
+lda #<start
 lda #< $1234
 lda(zp),y
 lda ( zp ,x)
-inc$d012
+inc $d012
 inx
 rts
 inc abcd,x
@@ -13,4 +13,3 @@ inc abcd,y
 inc      abcd,    y
 lsr a
 bne label
-
