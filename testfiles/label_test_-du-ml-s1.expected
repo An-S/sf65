@@ -13,12 +13,9 @@ label3:
             .SCOPE fghij
             label5:
             .ENDSCOPE
-
         .ENDSCOPE
 
 anoversizedlabel
         inc $d020
 anotheroversizedlabel:
         dec $d020
-
-

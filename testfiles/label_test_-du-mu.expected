@@ -19,4 +19,3 @@ anoversizedlabel
         INC     $d020
 anotheroversizedlabel:
         DEC     $d020
-

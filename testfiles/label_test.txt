@@ -14,4 +14,3 @@ label3:
     .endscope
 anoversizedlabel inc $d020
 anotheroversizedlabel:dec $d020
-

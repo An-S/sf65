@@ -4,6 +4,7 @@ label1
     label2:
         anothermacroname
 label3:
+
         .SCOPE      abcde
         label4:
             lda     #$00
@@ -13,8 +14,8 @@ label3:
             label5:
             .ENDSCOPE
         .ENDSCOPE
+
 anoversizedlabel 
         inc     $d020
 anotheroversizedlabel:
         dec     $d020
-
