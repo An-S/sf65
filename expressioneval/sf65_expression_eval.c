@@ -8,6 +8,10 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
         //Indicate that comment includes rest of line
         p2 = ( char* ) ( ParserData -> linebuf + allocation  - 1 );
 
+        //Quick hack to see if missing char in last line appears again
+        if ( *p2 != '\n' ) {
+            ++p2;
+        }
         // Get x position for output of comment
         sf65_SetOutputXPositionInLine (
             ParserData,

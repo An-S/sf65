@@ -54,7 +54,7 @@ done
 echo " "
 echo "================================="
 echo " "
-date >> $dir/resultshist.txt
+date >> $dir/resultshist.log
 tee -a <<< "Total tests: $n, expected missing: $m, fails: $i" $dir/resultshist.log
 
 echo 
