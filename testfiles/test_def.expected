@@ -18,20 +18,19 @@ label11 dec     $d021
             Sta     $d021
 
             .proc       efgh 
+                ;isolated comment in the middle of line. no empty line before .proc
+                ;the following line is empty
 
-                        ;isolated comment in the middle of line. no empty line before .proc
-                        ;the following line is empty
-
-                        ;comment after comment ; blabla ; ajkajkajk
+                ;comment after comment ; blabla ; ajkajkajk
                 inx
             label0:                     ;Comment after label0
                 INY
                 dec     $d020
                 lDA     label0
 anotheroversizedlabel:
- LDa label10      ;comment after command after overszdlabel
+                LDa label10             ;comment after command after overszdlabel
 againoversized:
-                         ;comment after overszdlabel
+                ;comment after overszdlabel
                 .byte   123,128,3,  4,  5,  6,  7,  8,  10, 20; a list of data
                 .byte   1,  4,  5,  78, 10, 2,  3,  4
                                                             
@@ -51,29 +50,20 @@ againoversized:
         iny
         sta     $d020
     label1:
-    
 
-    
 
-    
 
-    
 
-    
 
         ;there were 5 empty lines before
 label8
 label2  ;comment after label. Following line is empty
 
-
         .proc       dfkdjkfd
         label3: lda #$00
         .endproc
 
-        
-
-    label4: aDC $d020           ;comment after label and command. Prev line was empty
-                                
+    label4: adc $d020           ;comment after label and command. Prev line was empty                             
 
         .BYTe   65
         .Addr   $1234
@@ -83,14 +73,9 @@ label5  .byte   123
 label6  .byte   "Directive               lda #$00 ;after label"
 label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
-
 alengthyLabelWithMnemonicBehind
- lSR$d019
+        lsr     $d019
         ;following 4 lines are empty with different combinations of whitespace
 
-        
 
-        
-
-        
 

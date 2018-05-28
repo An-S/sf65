@@ -252,18 +252,12 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
 bool isExpressionCharacter ( char ch ) {
     bool flag;
 
-    if ( ch == '.' || ch == '_' ) {
+    // Finds out, if ch is in {'.', '_'}
+    if ( strchr ( "._", ch ) ) {
         flag = true;
     } else {
-        flag = ( ch != ':' &&
-                 ch != ';' &&
-                 ch != '\'' && ch != '"' &&
-                 ch != '#' &&
-                 ch != '$' &&
-                 ch != '%' &&
-                 ch != ',' &&
-                 ch != '\\' &&
-                 ch != '=' );
+        // Finds out, if ch is not in the following set of characters ":;'\"#$%,\\=()"
+        flag = strchr ( ":;'\"#$%,\\=()", ch ) == NULL;
     }
     return flag;
 }
