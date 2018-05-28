@@ -28,6 +28,8 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
                 CMDOptions -> nesting_space
             );
         }
+
+        sf65_SetPaddingSpaceFlag ( ParserData );
         break;
 
     case SF65_MACRONAME:

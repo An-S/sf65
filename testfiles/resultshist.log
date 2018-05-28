@@ -10,3 +10,6 @@ Mo 28. Mai 11:50:35 CEST 2018
 Total tests: 106, total number of fails: 63
 Mo 28. Mai 11:58:54 CEST 2018
 Total tests: 106, total number of fails: 50
+Total tests: 106, missing tests: 33, fails: 48
+Total tests: 106, expected missing: 33, fails: 48
+Total tests: 106, expected missing: 33, fails: 48

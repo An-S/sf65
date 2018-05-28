@@ -47,6 +47,7 @@ do
         n=$(( $n+1 ))
     else
         echo "$dir/$f_base file with expected results missing !"
+        m=$(( $m+1 ))
     fi 
 done
 
@@ -54,6 +55,6 @@ echo " "
 echo "================================="
 echo " "
 date >> $dir/resultshist.txt
-tee -a <<< "Total tests: $n, total number of fails: $i" $dir/resultshist.txt
+tee -a <<< "Total tests: $n, expected missing: $m, fails: $i" $dir/resultshist.log
 
 echo 
