@@ -4,4 +4,3 @@ lda #<(start+3)
 .byte "c"+3
 lda screen+12*$28
 lda <($1234+3)*6
-
