@@ -44,7 +44,7 @@ do
             echo "test failed in $f!"
             i=$(( $i+1 ))
         fi
-        
+        n=$(( $n+1 ))
     else
         echo "$dir/$f_base file with expected results missing !"
     fi 
@@ -53,4 +53,7 @@ done
 echo " "
 echo "================================="
 echo " "
-echo "Total number of fails: $i"
+date >> $dir/resultshist.txt
+tee -a <<< "Total tests: $n, total number of fails: $i" $dir/resultshist.txt
+
+echo 
