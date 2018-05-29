@@ -24,7 +24,7 @@ label11 dec     $d021
 
                         ;comment after comment ; blabla ; ajkajkajk
                 inx
-            label0:                             ;Comment after label0
+            label0:     ;Comment after label0
                 iny
                 dec     $d020
                 lda     label0
