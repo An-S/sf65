@@ -15,7 +15,7 @@ label11 dec         $d021
  Lda#$00
  sTa$d020 ;comment after command
   Sta $d021
-  .proc efgh 
+  .proc efgh
   ;isolated comment in the middle of line. no empty line before .proc
                   ;the following line is empty
 

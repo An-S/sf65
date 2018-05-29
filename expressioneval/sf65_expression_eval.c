@@ -23,7 +23,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
          * also with indentation respected.
          * Indent by level times nesting space/tab width
          */
-        if (
+        /*if (
             sf65_GetOutputXPositionInLine ( ParserData ) ==
             CMDOptions -> start_mnemonic
         ) {
@@ -31,7 +31,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
                 ParserData,
                 CMDOptions -> nesting_space
             );
-        }
+        }*/
 
         sf65_SetPaddingSpaceFlag ( ParserData );
         break;
