@@ -72,9 +72,11 @@ label5  .byte   123
 label6  .byte   "Directive               lda #$00 ;after label"
 label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
+
 alengthyLabelWithMnemonicBehind
         lsr     $d019
         ;following 4 lines are empty with different combinations of whitespace
+
 
 
 

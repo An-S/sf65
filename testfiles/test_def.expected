@@ -17,7 +17,7 @@ label11 dec     $d021
             sTa     $d020           ;comment after command
             Sta     $d021
 
-            .proc       efgh 
+            .proc       efgh
                 ;isolated comment in the middle of line. no empty line before .proc
                 ;the following line is empty
 
@@ -28,12 +28,11 @@ label11 dec     $d021
                 dec     $d020
                 lDA     label0
 anotheroversizedlabel:
-                LDa label10             ;comment after command after overszdlabel
+                LDa     label10         ;comment after command after overszdlabel
 againoversized:
                 ;comment after overszdlabel
-                .byte   123,128,3,  4,  5,  6,  7,  8,  10, 20; a list of data
+                .byte   123,128,3,  4,  5,  6,  7,  8,  10, 20 ; a list of data
                 .byte   1,  4,  5,  78, 10, 2,  3,  4
-                                                            
 
                 .word   1,  2,  1000,   10000,  0,  1,  5,  100,20000,  1
                 .word   1000,   1,  5,  10, 100,5000,   0,  0,  0,  0,  0,  0
@@ -63,7 +62,7 @@ label2  ;comment after label. Following line is empty
         label3: lda #$00
         .endproc
 
-    label4: adc $d020           ;comment after label and command. Prev line was empty                             
+    label4: aDC $d020           ;comment after label and command. Prev line was empty
 
         .BYTe   65
         .Addr   $1234
@@ -73,9 +72,11 @@ label5  .byte   123
 label6  .byte   "Directive               lda #$00 ;after label"
 label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
+
 alengthyLabelWithMnemonicBehind
-        lsr     $d019
+        lSR     $d019
         ;following 4 lines are empty with different combinations of whitespace
+
 
 
 

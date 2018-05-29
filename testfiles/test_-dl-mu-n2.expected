@@ -17,24 +17,22 @@ label11 dec     $d021
           sta     $d020           ;comment after command
           sta     $d021
 
-        .PROC       efgh 
+        .PROC       efgh
+            ;isolated comment in the middle of line. no empty line before .proc
+            ;the following line is empty
 
-                ;isolated comment in the middle of line. no empty line before .proc
-                ;the following line is empty
-
-                ;comment after comment ; blabla ; ajkajkajk
+            ;comment after comment ; blabla ; ajkajkajk
             inx
-          label0: ;Comment after label0
+          label0:                   ;Comment after label0
             iny
             dec     $d020
             lda     label0
 anotheroversizedlabel:
- lda label10  ;comment after command after overszdlabel
+            lda     label10         ;comment after command after overszdlabel
 againoversized:
-                     ;comment after overszdlabel
-            .BYTE   123,128,3,4,5,6,7,8,10, 20; a list of data
+            ;comment after overszdlabel
+            .BYTE   123,128,3,4,5,6,7,8,10, 20 ; a list of data
             .BYTE   1,4,5,78, 10, 2,3,4
-                                          
 
             .WORD   1,2,1000, 10000,0,1,5,100,20000,1
             .WORD   1000, 1,5,10, 100,5000, 0,0,0,0,0,0
@@ -51,29 +49,20 @@ againoversized:
         iny
         sta     $d020
       label1:
-      
 
-      
 
-      
 
-      
 
-      
 
         ;there were 5 empty lines before
 label8
 label2  ;comment after label. Following line is empty
 
-
       .PROC       dfkdjkfd
-        label3: lda#$00
+        label3: lda #$00
         .ENDPROC
 
-        
-
-      label4: adc$d020          ;comment after label and command. Prev line was empty
-                                
+      label4: adc $d020         ;comment after label and command. Prev line was empty
 
         .BYTE   65
         .ADDR   $1234
@@ -85,12 +74,9 @@ label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
 
 alengthyLabelWithMnemonicBehind
- lsr$d019
+        lsr     $d019
         ;following 4 lines are empty with different combinations of whitespace
 
-        
 
-        
 
-        
 

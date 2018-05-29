@@ -1,7 +1,7 @@
-.FEATURElabels_without_colons
+.FEATURE labels_without_colons
 .BSS
-.DEFINEamacro 1234
-.DEFINEalist 123 456 678\
+.DEFINE amacro 1234
+.DEFINE alist 123 456 678\
         891 101112 141516\
         123
 
@@ -9,88 +9,74 @@ var     = 100
 var2    = $1000
 var3    = $500
 var4    = $1234
-label10 inc$d020
-label11 dec$d021
+label10 inc $d020
+label11 dec $d021
 
-        .PROCabcd                   ;the line before was not empty
-            lda#$00
-            sta$d020                ;comment after command
-            sta$d021
+        .PROC abcd                  ;the line before was not empty
+            lda #$00
+            sta $d020               ;comment after command
+            sta $d021
 
-            .PROCefgh 
+            .PROC efgh
+                ;isolated comment in the middle of line. no empty line before .proc
+                ;the following line is empty
 
-                        ;isolated comment in the middle of line. no empty line before .proc
-                        ;the following line is empty
-
-                        ;comment after comment ; blabla ; ajkajkajk
+                ;comment after comment ; blabla ; ajkajkajk
                 inx
-            label0:     ;Comment after label0
+            label0:                     ;Comment after label0
                 iny
-                dec$d020
-                ldalabel0
+                dec $d020
+                lda label0
 anotheroversizedlabel:
- ldalabel10       ;comment after command after overszdlabel
+                lda label10             ;comment after command after overszdlabel
 againoversized:
-                         ;comment after overszdlabel
-                .BYTE123,   128,3,  4,  5,  6,  7,  8,  10, 20; a list of data
-                .BYTE1, 4,  5,  78, 10, 2,  3,  4
-                                                        
+                ;comment after overszdlabel
+                .BYTE 123,  128,3,  4,  5,  6,  7,  8,  10, 20 ; a list of data
+                .BYTE 1,4,  5,  78, 10, 2,  3,  4
 
-                .WORD1, 2,  1000,   10000,  0,  1,  5,  100,20000,  1
-                .WORD1000,  1,  5,  10, 100,5000,   0,  0,  0,  0,  0,  0
+                .WORD 1,2,  1000,   10000,  0,  1,  5,  100,20000,  1
+                .WORD 1000, 1,  5,  10, 100,5000,   0,  0,  0,  0,  0,  0
             .ENDPROC                ;comment after directive
 
-            .ASCIIZ"cdfd"
-            ldalabel1
+            .ASCIIZ "cdfd"
+            lda label1
         .ENDPROC
 
-        lda#$00
-        lda#$00                 ;there is no empty line after .endProc
-        sta$d020                ; comment after command at beginning of line
+        lda #$00
+        lda #$00                ;there is no empty line after .endProc
+        sta $d020               ; comment after command at beginning of line
         inx
         iny
-        sta$d020
+        sta $d020
     label1:
-    
 
-    
 
-    
 
-    
 
-    
 
         ;there were 5 empty lines before
 label8
 label2  ;comment after label. Following line is empty
 
-
-        .PROCdfkdjkfd
-        label3: lda#$00
+        .PROC dfkdjkfd
+        label3: lda #$00
         .ENDPROC
 
-        
+    label4: adc $d020           ;comment after label and command. Prev line was empty
 
-    label4: adc$d020            ;comment after label and command. Prev line was empty
-                                
-
-        .BYTE65
-        .ADDR$1234
-        .BYTE33
-        .RES4,  2
-label5  .BYTE123
-label6  .BYTE"Directive               lda #$00 ;after label"
+        .BYTE 65
+        .ADDR $1234
+        .BYTE 33
+        .RES 4, 2
+label5  .BYTE 123
+label6  .BYTE "Directive               lda #$00 ;after label"
 label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
 
 alengthyLabelWithMnemonicBehind
- lsr$d019
+        lsr $d019
         ;following 4 lines are empty with different combinations of whitespace
 
-        
 
-        
 
-        
 
