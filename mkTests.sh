@@ -37,7 +37,7 @@ do
     if [ -f $dir/"$f_base".expected ]; then
         rm -f $dir/"$f_base".diff
         
-        df=$(diff -y --left-column $dir/"$f_base".expected $f)
+        df=$(diff -yt --left-column $dir/"$f_base".expected $f)
         if [[ $? != 0 ]]; then
             printf "$df\n"  > $dir/"$f_base".diff
             
