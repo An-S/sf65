@@ -23,7 +23,7 @@ do
     ./sf65 -du -ml -s1 $f $dir/"$f_base"_-du-ml-s1.out 1> /dev/null
     ./sf65 -du -ml -o16 $f $dir/"$f_base"_-du-ml-o16.out 1> /dev/null
     ./sf65 -du -ml -c40 $f $dir/"$f_base"_-du-ml-c40.out 1> /dev/null
-    ./sf65 -du -ml -n2 $f $dir/"$f_base"_-dl-mu-n2.out 1> /dev/null
+    ./sf65 -dl -mu -n2 $f $dir/"$f_base"_-dl-mu-n2.out 1> /dev/null
 done
 
 echo "-----------------"
