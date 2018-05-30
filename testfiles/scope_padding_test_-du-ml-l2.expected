@@ -12,4 +12,3 @@ alabel:
         .ENDPROC
 
         ;a comment directly after .endproc
-

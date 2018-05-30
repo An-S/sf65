@@ -57,10 +57,8 @@ againoversized:
 
 
 
-
         ;there were 5 empty lines before
 label8
-
 label2
         ;comment after label. Following line is empty
 
@@ -86,6 +84,3 @@ alengthyLabelInItsOwnLine
 alengthyLabelWithMnemonicBehind
         lsr     $d019
         ;following 4 lines are empty with different combinations of whitespace
-
-
-

@@ -98,7 +98,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
 
         // Check, if p2 already at end of line
         // Then additional cr is not needed
-        if ( allocation > p2 - p1 ) {
+        if ( /*allocation >= p2 - p1*/ *p2 && *p2 != '\n' ) {
             // Test if user requested linebreak after oversized labels on cmdline
             if ( CMDOptions -> oversized_labels_own_line ) {
                 // Label is considered oversized if is is longer than
