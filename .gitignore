@@ -246,3 +246,5 @@ testfiles/*.err
 testfiles/*.diff
 testfiles/*.out
 testfiles/*.log
+*.save.*
+*.save

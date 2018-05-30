@@ -1,15 +1,15 @@
-        lda     #$12
-        lda     #$12
-        lda     #<start
-        lda     #<$1234
-        lda     (zp),y
-        lda     (zp,x)
-        inc     $d012
-        inx
-        rts
-        inc     abcd,x
-        inc     abcd,x
-        inc     abcd,y
-        inc     abcd,y
-        lsr     a
-        bne     label
+        LDA     #$12
+        LDA     #$12
+        LDA     #<start
+        LDA     #<$1234
+        LDA     (zp),y
+        LDA     (zp,x)
+        INC     $d012
+        INX
+        RTS
+        INC     abcd,x
+        INC     abcd,x
+        INC     abcd,y
+        INC     abcd,y
+        LSR     a
+        BNE     label

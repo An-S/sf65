@@ -12,12 +12,12 @@ var4    = $1234
 label10 inc     $d020
 label11 dec     $d021
 
-      .PROC       abcd            ;the line before was not empty
+        .PROC       abcd            ;the line before was not empty
           lda     #$00
           sta     $d020           ;comment after command
           sta     $d021
 
-        .PROC       efgh
+          .PROC       efgh
             ;isolated comment in the middle of line. no empty line before .proc
             ;the following line is empty
 
@@ -72,11 +72,9 @@ label5  .BYTE   123
 label6  .BYTE   "Directive               lda #$00 ;after label"
 label7  ;my 2nd comment after label
 alengthyLabelInItsOwnLine
-
 alengthyLabelWithMnemonicBehind
         lsr     $d019
         ;following 4 lines are empty with different combinations of whitespace
-
 
 
 
