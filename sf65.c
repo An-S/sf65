@@ -306,17 +306,15 @@ int main ( int argc, char *argv[] ) {
 
             if ( ParserData -> first_expression ) {
 
+                if ( ! ( ParserData -> flags & LEVEL_IN  ||
+                         ParserData -> flags & LEVEL_OUT ) ) {
+                    sf65_ClearParserFlag ( ParserData, SF65_LEVEL_CHANGED );
+                }
 
                 // If parser requested additional linefeed on parsing prev line, then insert
                 // the requested additional linefeed. However, if there is already an
                 // empty line in the input, additional linefeed is suppressed
                 conditionallyInsertAdditionalLinefeed ( ParserData );
-
-                if ( ! ( ParserData -> flags & LEVEL_IN  ||
-                         ParserData -> flags & LEVEL_OUT ) ) {
-
-                    sf65_ClearParserFlag ( ParserData, SF65_LEVEL_CHANGED );
-                }
             }
 
 // Add filling spaces for alignment but not for a comma delimiter
