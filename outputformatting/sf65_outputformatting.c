@@ -343,9 +343,9 @@ void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
                 ParserData -> additional_linefeed &&
                 ! ( ParserData -> flags & LEVEL_OUT ) ) {
             sf65_fputc ( '\n', output );
+            sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+            checkedEmptyLine = false;
         }
-        sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
-        checkedEmptyLine = false;
     } else {
         if ( ParserData -> additional_linefeed ) {
             checkedEmptyLine = true;
