@@ -252,10 +252,11 @@ int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65
 
 sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
     NOT_NULL ( pData, SF65_NULLPTR ) {
-        sf65_ClearParserFlags (
+        /*sf65_ClearParserFlags (
             pData, SF65_INSTANT_ADDITIONAL_LINEFEED, SF65_ADDITIONAL_LINEFEED,
             SF65_NOT_A_PARSERFLAG
         );
+        */
 
         switch ( lf_type ) {
 
@@ -342,10 +343,9 @@ void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
                 ParserData -> additional_linefeed &&
                 ! ( ParserData -> flags & LEVEL_OUT ) ) {
             sf65_fputc ( '\n', output );
+            sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+            checkedEmptyLine = false;
         }
-
-        sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
-        checkedEmptyLine = false;
     } else {
         if ( ParserData -> additional_linefeed ) {
             checkedEmptyLine = true;

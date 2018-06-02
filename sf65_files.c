@@ -52,7 +52,7 @@ FILE *sf65_openInputFile ( char * filename ) {
         sf65_fprintf ( stdout, "Trying to open input file: \"%s\"\n", filename );
 
         // This call includes error checking
-        input = sf65_openFile ( filename, "rb" );
+        input = sf65_openFile ( filename, "r" );
 
         return input;
     }

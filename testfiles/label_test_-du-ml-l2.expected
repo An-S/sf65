@@ -17,6 +17,8 @@ label3:
             .SCOPE      fghij
             label5:
             .ENDSCOPE
+
+            amacro
         .ENDSCOPE
 
 anoversizedlabel

@@ -1,13 +1,36 @@
-        lda     #$00
+        LDA     #$00
 
-      .PROC       firstProc
+      .proc       firstProc
 
-        .PROC       secondProc
-          .PROC       thirdProc
-            .ENDPROC
-          .ENDPROC
+        .proc       secondProc      ;prev line was empty
+          .proc       thirdProc
+            .endproc
+          .endproc
 
 alabel:   ;a label with one empty line after .endproc
-        .ENDPROC
+        .endproc
 
         ;a comment directly after .endproc
+
+        LDA     #$00
+
+      .proc       secondProc      ;prev line was empty
+        .proc       thirdProc
+          .endproc
+        .endproc
+
+alabel: ;a label without empty line after .endproc
+
+        LDA     #$00
+
+      .proc       secondProc
+label
+
+        .proc       thirdProc
+label
+          .endproc
+
+label
+        .endproc
+
+alabel: ;a label without empty line after .endproc
