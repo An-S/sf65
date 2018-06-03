@@ -356,13 +356,16 @@ void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
 void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf65Options_t * CMDOptions ) {
 
     if ( ParserData -> flags & LEVEL_IN ) {
-        ParserData -> current_level++;
-        ParserData -> request = CMDOptions -> start_mnemonic - 4;
+        //ParserData -> current_level++;
+        sf65_SetParserFlag ( ParserData, SF65_INDENT_REQUEST );
+        ParserData -> request = CMDOptions -> start_mnemonic - CMDOptions -> nesting_space;
     }
 
     if ( ParserData -> flags & LEVEL_OUT ) {
-        if ( ParserData -> current_level > 0 )
-            ParserData -> current_level--;
+        if ( ParserData -> current_level > 0 ) {
+            //ParserData -> current_level--;
+            sf65_SetParserFlag ( ParserData, SF65_UNINDENT_REQUEST );
+        }
         ParserData -> request = CMDOptions -> start_mnemonic;
     }
 
@@ -372,8 +375,9 @@ void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf
 
     // Unindent by one level
     if ( ParserData -> flags & LEVEL_MINUS )
-        if ( ParserData -> request > CMDOptions -> nesting_space )
+        if ( ParserData -> request > CMDOptions -> nesting_space ) {
             ParserData -> request -= CMDOptions -> nesting_space;
+        }
 }
 
 /*

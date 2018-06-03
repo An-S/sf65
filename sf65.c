@@ -369,7 +369,14 @@ int main ( int argc, char *argv[] ) {
             }
 
         }
-
+        if ( sf65_GetParserFlag ( ParserData, SF65_INDENT_REQUEST ) ) {
+            sf65_ClearParserFlag ( ParserData, SF65_INDENT_REQUEST );
+            ++ParserData -> current_level;
+        }
+        if ( sf65_GetParserFlag ( ParserData, SF65_UNINDENT_REQUEST ) ) {
+            sf65_ClearParserFlag ( ParserData, SF65_UNINDENT_REQUEST );
+            --ParserData -> current_level;
+        }
         ++line;
     } while ( !feof ( input ) );
     sf65_printfUserInfo ( "\n" );

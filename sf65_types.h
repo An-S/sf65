@@ -120,6 +120,8 @@ typedef struct {
     PF(beginning_of_line, BEGINNING_OF_LINE)\
     PF(additional_linefeed, ADDITIONAL_LINEFEED)\
     PF(level_changed, LEVEL_CHANGED)\
+    PF(indent_request, INDENT_REQUEST)\
+    PF(unindent_request, UNINDENT_REQUEST)\
     PF(instant_additional_linefeed, INSTANT_ADDITIONAL_LINEFEED)\
     PF(force_separating_space, FORCE_SEPARATING_SPACE)\
     PF(line_continuation, LINE_CONTINUATION)
