@@ -1,9 +1,9 @@
         lda     #$00
 
-        .PROC       firstProc
+        .PROC   firstProc
 
-            .PROC       secondProc      ;prev line was empty
-                .PROC       thirdProc
+            .PROC   secondProc      ;prev line was empty
+                .PROC   thirdProc
                 .ENDPROC
             .ENDPROC
 
@@ -15,8 +15,8 @@ alabel:
 
         lda     #$00
 
-        .PROC       secondProc      ;prev line was empty
-            .PROC       thirdProc
+        .PROC   secondProc      ;prev line was empty
+            .PROC   thirdProc
             .ENDPROC
         .ENDPROC
 
@@ -25,10 +25,10 @@ alabel:
 
         lda     #$00
 
-        .PROC       secondProc
+        .PROC   secondProc
 label
 
-            .PROC       thirdProc
+            .PROC   thirdProc
 label
             .ENDPROC
 

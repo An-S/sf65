@@ -358,7 +358,8 @@ void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf
     if ( ParserData -> flags & LEVEL_IN ) {
         //ParserData -> current_level++;
         sf65_SetParserFlag ( ParserData, SF65_INDENT_REQUEST );
-        ParserData -> request = CMDOptions -> start_mnemonic - CMDOptions -> nesting_space;
+        ParserData -> request =
+            CMDOptions -> start_mnemonic;
     }
 
     if ( ParserData -> flags & LEVEL_OUT ) {
@@ -366,7 +367,8 @@ void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf
             //ParserData -> current_level--;
             sf65_SetParserFlag ( ParserData, SF65_UNINDENT_REQUEST );
         }
-        ParserData -> request = CMDOptions -> start_mnemonic;
+        ParserData -> request = CMDOptions -> start_mnemonic -
+                                CMDOptions -> nesting_space;
     }
 
     if ( ParserData -> flags & ALIGN_MNEMONIC ) {
