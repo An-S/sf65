@@ -6,11 +6,11 @@ label1
     label2:
         anothermacroname
 label3:
-        .SCOPE      abcde
+        .SCOPE  abcde
         label4:
             lda     #$00
             sta     $d020
-            .SCOPE      fghij
+            .SCOPE  fghij
             label5:
             .ENDSCOPE
             amacro

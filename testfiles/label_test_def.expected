@@ -7,12 +7,12 @@ label1
         anothermacroname
 label3:
 
-        .scope      abcde
+        .scope  abcde
         label4:
             lda     #$00
             sta     $d020
 
-            .scope      fghij
+            .scope  fghij
             label5:
             .endscope
 
