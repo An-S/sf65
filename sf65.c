@@ -123,9 +123,9 @@ sf65ParsingData_t *OldParserData = NULL;//&_sf65ParsingData;
 
 void sf65_CloseFiles ( void ) {
     sf65_CloseErrLog();
-    fclose ( input );
-    fclose ( output );
-    fclose ( logoutput );
+    sf65_CloseFile ( input );
+    sf65_CloseFile ( output );
+    sf65_CloseFile ( logoutput );
 }
 
 char *sf65_GetStartOfExpressionString ( char *p ) {

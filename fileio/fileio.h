@@ -47,4 +47,6 @@ char *sf65_fgets ( FILE *file, char *buf, size_t sz );
 size_t sf65_fputnl ( FILE * file );
 size_t sf65_fputnspc ( FILE * file, int n );
 size_t sf65_fputspc ( FILE * file );
+void sf65_CloseFile ( FILE *file );
+
 #endif

@@ -65,8 +65,7 @@ FILE *sf65_OpenErrLog ( char *basefilename ) {
 }
 
 sf65ErrCode_t sf65_CloseErrLog ( void ) {
-    if ( errLog ) {
-        fclose ( errLog );
-    }
+    sf65_CloseFile ( errLog );
+
     return SF65_NOERR;
 }

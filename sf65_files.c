@@ -185,3 +185,10 @@ size_t sf65_fputnspc ( FILE * file, int n ) {
 size_t sf65_fputspc ( FILE * file ) {
     return sf65_fputnspc ( file, 1 );
 }
+
+
+void sf65_CloseFile ( FILE *file ) {
+    if ( file ) {
+        fclose ( file );
+    }
+}
