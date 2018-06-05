@@ -1,6 +1,9 @@
 #!/bin/bash
 
 dir=testfiles
+n=0
+m=0
+i=0
 
 echo "Processing files:"
 echo "-----------------"
@@ -19,7 +22,7 @@ do
     ./sf65 -du -ml -l2 $f $dir/"$f_base"_-du-ml-l2.out 1> /dev/null
     ./sf65 -du -ml -e0 $f $dir/"$f_base"_-du-ml-e0.out 1> /dev/null
     ./sf65 -du -ml -e1 $f $dir/"$f_base"_-du-ml-e1.out 1> /dev/null
-    ./sf65 -du -ml -m12 $f $dir/"$f_base"_-du-ml-m16.out 1> /dev/null
+    ./sf65 -du -ml -m16 $f $dir/"$f_base"_-du-ml-m16.out 1> /dev/null
     ./sf65 -du -ml -s1 $f $dir/"$f_base"_-du-ml-s1.out 1> /dev/null
     ./sf65 -du -ml -o16 $f $dir/"$f_base"_-du-ml-o16.out 1> /dev/null
     ./sf65 -du -ml -c40 $f $dir/"$f_base"_-du-ml-c40.out 1> /dev/null

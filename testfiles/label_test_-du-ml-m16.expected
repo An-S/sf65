@@ -11,11 +11,11 @@ label3:
                 label4:
                     lda #$00
                     sta $d020
-    
-                    .SCOPE  fghij
+
+                    .SCOPE fghij
                     label5:
                     .ENDSCOPE
-    
+
                     amacro
                 .ENDSCOPE
 

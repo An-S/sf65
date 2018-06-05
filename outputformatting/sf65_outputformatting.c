@@ -156,11 +156,12 @@ sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
 
 int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs ) {
     int new = sf65_GetOutputXPositionInLine ( pData );
+    int current_column = sf65_GetCurrentColumnCounter ( pData );
 
     /*
     ** If already exceeded space...
     */
-    if ( sf65_GetCurrentColumnCounter ( pData ) > new ) {
+    if ( current_column >= new && current_column ) {
         // If force is true, a single space is always written to output
         if ( sf65_GetParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE ) ) {
             sf65_fputspc ( output );
@@ -180,7 +181,7 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs
 
             if ( tabs == 0 ) {
                 // Calculate number of spaces to output
-                int n = new - sf65_GetCurrentColumnCounter ( pData );
+                int n = new - current_column;
 
                 // Use spaces instead of tabs
                 // Write number of spaces calculated from the
