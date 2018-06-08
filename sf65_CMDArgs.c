@@ -187,26 +187,36 @@ void validateCMDLineSwitches ( sf65Options_t *CMDOptions ) {
     }
 }
 
-// Detect an option specified by '-' and returns pointer to first character after
-// '-'
-// Converts all chars after '-' to lowercase, if any
+sf65CMDSwitchPresence_t stripSwitchCharacter ( char **arg ) {
+    if ( **arg == '-' ) {
+        ++*arg;
+        return sf65_CMDSwitchPresent;
+    }
+    return sf65_CMDSwitchNotPresent;
+}
+
+// Gets entry from argv array with index argc. Changes case if switch character is present
 char *getOpt ( int argc, char ** argv ) {
-    char *arg = argv[argc];
+    //protect from accidently given NULL ptr
+    NOT_NULL ( argv, NULL ) {
+        char *arg = argv[argc];
 
-    if ( arg[0] != '-' ) {
-        fprintf ( stderr, "Bad argument\n" );
-        exit ( 1 );
+        // Assert, that arg is not NULL ptr (must point to argv entry)
+        assert ( arg );
+        // Assert, that *arg points to non empty string
+        assert ( *arg );
+
+        //change only to lowercase if switch character is present
+        //This way, filename parameters are protected from case switching
+        if ( *arg == '-' ) {
+            // Missing Option after switch character
+            if ( !* ( arg + 1 ) ) {
+                return NULL;
+            }
+            sf65_ChangeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
+        }
+        return arg;//NULL; // No arg specified after '-'
     }
-
-    ++arg;
-
-    if ( *arg ) {
-        sf65_ChangeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
-
-        return arg;//skipWhiteSpace ( arg );
-
-    }
-    return NULL; // No arg specified after '-'
 }
 
 void showCMDOptionsHelp ( void ) {
@@ -250,12 +260,51 @@ void showCMDOptionsHelp ( void ) {
     fprintf ( stderr, "\n" );
     fprintf ( stderr, "Accepts any assembler file where ; means comment\n" );
     fprintf ( stderr, "[label] mnemonic [operand] ; comment\n" );
-    exit ( 1 );
+    sf65_fputnl ( stderr );
+    sf65_fputnl ( stderr );
 }
 
+char *sf65_setInFilename ( sf65Options_t *cmdopt, char *fname ) {
+    NOT_NULL ( cmdopt, NULL ); NOT_NULL ( fname, NULL ) {
+        return cmdopt -> infilename = fname;
+    }
+}
+
+
+char *sf65_setOutFilename ( sf65Options_t *cmdopt, char *fname ) {
+    NOT_NULL ( cmdopt, NULL ); NOT_NULL ( fname, NULL ) {
+        return cmdopt -> outfilename = fname;
+    }
+}
+
+
+/*
+ * The format to call sf65 is one of the three cases:
+ *
+ * ./sf65 -x -y -z [infile] [outfile]
+ * ./sf65 -x -y -z [infile]
+ * ./sf65 -x -y -z
+ *
+ * -x -y -z is a sequence of command line options which is not necessarily a sequence
+ * of three
+ *
+ * After the command line options switches the filenames for the infile and/or outfile
+ * may be given.
+ * However, filenames given before argc-2 will be considered as error
+ *
+ * It must be detected, if
+ * 1.) none filename is present
+ * 2.) one filename is present
+ * 3.) two filenames are present
+ */
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
+    char predefinedInFilename[]  = "in.src";
+    char predefinedOutFilename[]  = "out.src";
+
     int cmdArgIdx;
     char *currentOptPtr;
+    int filenamePositions[2] = {};
+    int filenameCount = 0;
 
     // Enforce that user gives at least in and oufilename as args
     if ( argc < 3 ) {
@@ -270,16 +319,39 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     for ( cmdArgIdx = 1; cmdArgIdx < argc - 2; ++cmdArgIdx ) {
         // Detect switch character '-' and return pointer to char directly following '-'
         currentOptPtr = getOpt ( cmdArgIdx, argv );
-
-        // Detect forgotton option after switch character
         if ( !currentOptPtr ) {
-            sf65_pError ( "Missing option after switch!" );
+            // If no option specified after '-', output err msg and indicate
+            // position of arg neglecting arg 0 (filename of executable)
+            // That's why "cmdArgIdx - 1"
+            sf65_pError ( "Missing option after switch at arg: %d", cmdArgIdx - 1 );
             exit ( 1 );
         }
 
-        // Determine which options have been given on command line and set variables
-        // in CMDOptions struct accordingly
-        detectCMDLineSwitches ( CMDOptions, currentOptPtr );
+        // If switch character '-' is present, inc arg pointer to succeeding char
+        // Return value indicates presence of switch
+        switch ( stripSwitchCharacter ( &currentOptPtr ) ) {
+        case sf65_CMDSwitchPresent:
+            // Determine which options have been given on command line and set variables
+            // in CMDOptions struct accordingly
+            detectCMDLineSwitches ( CMDOptions, currentOptPtr );
+            break;
+        case sf65_CMDSwitchNotPresent:
+            if ( cmdArgIdx < argc - 2 ) {
+                sf65_pError ( "In/out filenames should be given as last two parameters" );
+                exit ( 1 );
+            }
+            //if ( filenameCount < 2 ) {
+
+            // Assert that there are not more than 2 filenames present
+            // which should always be true if above condition fails
+            assert ( filenameCount < 2 );
+            filenamePositions[filenameCount++] = cmdArgIdx;
+            break;
+        default:
+            // Should not come here
+            assert ( false );
+            break;
+        }
     }
 
 
@@ -289,16 +361,23 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
     validateCMDLineSwitches ( CMDOptions );
 
-    if ( cmdArgIdx < argc ) {
-        CMDOptions -> infilename = argv[cmdArgIdx];
-    } else {
-        CMDOptions -> infilename = "test.src";
-    }
+    switch ( filenameCount ) {
+    case 0:
+        sf65_printfUserInfo ( "Neither input nor output file given. Using default filenames\n" );
+        sf65_setInFilename ( CMDOptions, predefinedInFilename );
+        sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
+        break;
+    case 1:
+        sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
+        sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
+        sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
 
-    if ( cmdArgIdx + 1 < argc ) {
-        CMDOptions -> outfilename = argv[cmdArgIdx + 1];
-    } else {
-        CMDOptions -> outfilename = "test.out";
+        break;
+    case 2:
+        sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
+        sf65_setOutFilename ( CMDOptions, argv[filenamePositions[1]] );
+    default:
+        assert ( false ); //Should not come here, because max 2 files may be specified
     }
 
     return cmdArgIdx;
