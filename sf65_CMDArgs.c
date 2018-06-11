@@ -323,7 +323,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             // If no option specified after '-', output err msg and indicate
             // position of arg neglecting arg 0 (filename of executable)
             // That's why "cmdArgIdx - 1"
-            sf65_pError ( "Missing option after switch at arg: %d", cmdArgIdx - 1 );
+            sf65_pError ( "Missing option after switch at arg: %d\n", cmdArgIdx - 1 );
             exit ( 1 );
         }
 
@@ -337,7 +337,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
             break;
         case sf65_CMDSwitchNotPresent:
             if ( cmdArgIdx < argc - 2 ) {
-                sf65_pError ( "In/out filenames should be given as last two parameters" );
+                sf65_pError ( "In/out filenames should be given as last two parameters\n" );
                 exit ( 1 );
             }
             //if ( filenameCount < 2 ) {
