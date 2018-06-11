@@ -281,9 +281,9 @@ char *sf65_setOutFilename ( sf65Options_t *cmdopt, char *fname ) {
 /*
  * The format to call sf65 is one of the three cases:
  *
- * ./sf65 -x -y -z [infile] [outfile]
- * ./sf65 -x -y -z [infile]
- * ./sf65 -x -y -z
+ * ./sf65 -x -y -z [infile] [outfile]  //argc = 6
+ * ./sf65 -x -y -z [infile] //argc = 5
+ * ./sf65 -x -y -z // argc = 4
  *
  * -x -y -z is a sequence of command line options which is not necessarily a sequence
  * of three
@@ -298,8 +298,8 @@ char *sf65_setOutFilename ( sf65Options_t *cmdopt, char *fname ) {
  * 3.) two filenames are present
  */
 int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
-    char predefinedInFilename[]  = "in.src";
-    char predefinedOutFilename[]  = "out.src";
+    static char predefinedInFilename[]  = "in.src";
+    static char predefinedOutFilename[]  = "out.src";
 
     int cmdArgIdx;
     char *currentOptPtr;
@@ -316,7 +316,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     /*
      * Process arguments
      */
-    for ( cmdArgIdx = 1; cmdArgIdx < argc - 2; ++cmdArgIdx ) {
+    for ( cmdArgIdx = 1; cmdArgIdx < argc; ++cmdArgIdx ) {
         // Detect switch character '-' and return pointer to char directly following '-'
         currentOptPtr = getOpt ( cmdArgIdx, argv );
         if ( !currentOptPtr ) {
@@ -376,6 +376,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     case 2:
         sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
         sf65_setOutFilename ( CMDOptions, argv[filenamePositions[1]] );
+        break;
     default:
         assert ( false ); //Should not come here, because max 2 files may be specified
     }
