@@ -1,5 +1,7 @@
 #include "sf65.h"
 
+void showCMDOptionsHelp ( void );
+
 bool checkRange ( int val, int min, int max ) {
     if ( val < min ) return false;
     if ( val > max ) return false;
@@ -78,6 +80,9 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
 
     // If come here, option after switch character was given
     switch ( cmdSwitchCh ) {
+    case 'h':
+        showCMDOptionsHelp();
+        exit ( 1 );
     case 'e':   /* sf65Options -> pad lines */
         CMDOptions -> pad_directives = cmdNumArg;
 
@@ -226,7 +231,7 @@ void showCMDOptionsHelp ( void ) {
     fprintf ( stderr, "For more information about the changes since forking, see release notes.\n" );
     fprintf ( stderr, "\n" );
     fprintf ( stderr, "Usage:\n" );
-    fprintf ( stderr, "    pretty6502 [args] input.asm output.asm\n" );
+    fprintf ( stderr, "    [./]sf65 [args] [input.asm] [output.asm]\n" );
     fprintf ( stderr, "\n" );
     fprintf ( stderr, "DON'T USE SAME OUTPUT FILE AS INPUT, though it's possible,\n" );
     fprintf ( stderr, "you can DAMAGE YOUR SOURCE if this program has bugs.\n" );
@@ -236,8 +241,8 @@ void showCMDOptionsHelp ( void ) {
     fprintf ( stderr, "              label: mnemonic operand comment\n" );
     fprintf ( stderr, "    -s1       Code in three columns\n" );
     fprintf ( stderr, "              label: mnemonic+operand comment\n" );
-    fprintf ( stderr, "    -p0       Processor unknown\n" );
-    fprintf ( stderr, "    -p1       Processor 6502 + DASM syntax (default)\n" );
+    /*fprintf ( stderr, "    -p0       Processor unknown\n" );
+    fprintf ( stderr, "    -p1       Processor 6502 + DASM syntax (default)\n" );*/
     fprintf ( stderr, "    -m8       Start of mnemonic column (default)\n" );
     fprintf ( stderr, "    -o16      Start of operand column (default)\n" );
     fprintf ( stderr, "    -c32      Start of comment column (default)\n" );
@@ -248,12 +253,14 @@ void showCMDOptionsHelp ( void ) {
     fprintf ( stderr, "              to mnemonic (default)\n" );
     fprintf ( stderr, "    -n4       Nesting spacing (can be any number\n" );
     fprintf ( stderr, "              of spaces or multiple of tab size)\n" );
-    fprintf ( stderr, "    -l        Puts labels in its own line\n" );
+    fprintf ( stderr, "    -l0       Do not put labels in own line\n" );
+    fprintf ( stderr, "    -l[1]     Put oversized labels in own line\n" );
+    fprintf ( stderr, "    -l2       Put all labels in own line\n" );
     fprintf ( stderr, "    -dl       Change directives to lowercase\n" );
     fprintf ( stderr, "    -du       Change directives to uppercase\n" );
     fprintf ( stderr, "    -ml       Change mnemonics to lowercase\n" );
     fprintf ( stderr, "    -mu       Change mnemonics to uppercase\n" );
-    fprintf ( stderr, "    -e1       Pad sectioning directives with empty lines\n" );
+    fprintf ( stderr, "    -e0|1     Pad sectioning directives with empty lines\n" );
     fprintf ( stderr, "\n" );
     fprintf ( stderr, "Assumes all your labels are at start of line and there is space\n" );
     fprintf ( stderr, "before mnemonic.\n" );
@@ -305,11 +312,6 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
     char *currentOptPtr;
     int filenamePositions[2] = {};
     int filenameCount = 0;
-
-    // Enforce that user gives at least in and oufilename as args
-    if ( argc < 3 ) {
-        showCMDOptionsHelp();
-    }
 
     setCMDOptionsDefaults ( CMDOptions );
 
