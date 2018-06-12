@@ -208,8 +208,11 @@ char *getOpt ( int argc, char ** argv ) {
 
         // Assert, that arg is not NULL ptr (must point to argv entry)
         assert ( arg );
+
         // Assert, that *arg points to non empty string
-        assert ( *arg );
+        // -> Remark: User can pass empty string by using "". Therefore the
+        // assertion must be replaced by runtime checks
+        // assert ( *arg );
 
         //change only to lowercase if switch character is present
         //This way, filename parameters are protected from case switching
@@ -236,6 +239,8 @@ void showCMDOptionsHelp ( void ) {
     fprintf ( stderr, "DON'T USE SAME OUTPUT FILE AS INPUT, though it's possible,\n" );
     fprintf ( stderr, "you can DAMAGE YOUR SOURCE if this program has bugs.\n" );
     fprintf ( stderr, "\n" );
+    fprintf ( stderr, "You can specify '-' for input and/or output file\n\n" );
+
     fprintf ( stderr, "Arguments:\n" );
     fprintf ( stderr, "    -s0       Code in four columns (default)\n" );
     fprintf ( stderr, "              label: mnemonic operand comment\n" );
@@ -317,11 +322,30 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
 
     /*
      * Process arguments
+     *
+     * quoted filenames are handled differently in windows and linux
+     *
+     * windows:
+     *
+     * quoting with double quotes lead to arguments passed without quotes
+     * quoting with single quotes passes the arguments inclusive quotes
+     * quoting of empty string leads to omitted argument
+     *
+     *
+     * linux:
+     *
+     * quoting with double quotes lead to arguments passed without quotes
+     * quoting with single quotes -~-
+     * quoting of empty string leads to -~-
      */
     for ( cmdArgIdx = 1; cmdArgIdx < argc; ++cmdArgIdx ) {
         // Detect switch character '-' and return pointer to char directly following '-'
         currentOptPtr = getOpt ( cmdArgIdx, argv );
-        if ( !currentOptPtr ) {
+
+        // Test, if option is given after '-' switch character.
+        // However, if cmdArgIdx > argc-2, single '-' is allowed to specify
+        // stdin /stdout
+        if ( !*currentOptPtr && cmdArgIdx < argc - 2 ) {
             // If no option specified after '-', output err msg and indicate
             // position of arg neglecting arg 0 (filename of executable)
             // That's why "cmdArgIdx - 1"
@@ -333,9 +357,22 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
         // Return value indicates presence of switch
         switch ( stripSwitchCharacter ( &currentOptPtr ) ) {
         case sf65_CMDSwitchPresent:
-            // Determine which options have been given on command line and set variables
-            // in CMDOptions struct accordingly
-            detectCMDLineSwitches ( CMDOptions, currentOptPtr );
+            if ( !*currentOptPtr && cmdArgIdx >= argc - 2 ) {
+                if ( cmdArgIdx < argc - 2 ) {
+                    sf65_pError ( "'-' for stdin/stdout can be given only for last two parameters\n" );
+                    exit ( 1 );
+                }
+                //if ( filenameCount < 2 ) {
+
+                // Assert that there are not more than 2 filenames present
+                // which should always be true if above condition fails
+                assert ( filenameCount < 2 );
+                filenamePositions[filenameCount++] = cmdArgIdx;
+            } else {
+                // Determine which options have been given on command line and set variables
+                // in CMDOptions struct accordingly
+                detectCMDLineSwitches ( CMDOptions, currentOptPtr );
+            }
             break;
         case sf65_CMDSwitchNotPresent:
             if ( cmdArgIdx < argc - 2 ) {
@@ -371,13 +408,29 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
         break;
     case 1:
         sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
-        sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
+        if ( *argv[filenamePositions[0]] ) {
+            sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
+        } else {
+            sf65_setInFilename ( CMDOptions, predefinedInFilename );
+        }
         sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
 
         break;
     case 2:
-        sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
-        sf65_setOutFilename ( CMDOptions, argv[filenamePositions[1]] );
+        if ( *argv[filenamePositions[0]] ) {
+            sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
+        } else {
+            sf65_printfUserInfo ( "No input file given. Using Default filename\n" );
+
+            sf65_setInFilename ( CMDOptions, predefinedInFilename );
+        }
+        if ( *argv[filenamePositions[1]] ) {
+            sf65_setOutFilename ( CMDOptions, argv[filenamePositions[1]] );
+        } else {
+            sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
+
+            sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
+        }
         break;
     default:
         assert ( false ); //Should not come here, because max 2 files may be specified
