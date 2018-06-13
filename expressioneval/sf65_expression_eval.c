@@ -47,6 +47,7 @@ char *sf65_EvaluateExpression ( sf65ParsingData_t *ParserData, sf65Options_t *CM
             sf65_SetPaddingSpaceFlag ( ParserData );
             break;
         default:
+            sf65_SetPaddingSpaceFlag ( ParserData );
             break;
         }
 

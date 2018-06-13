@@ -48,6 +48,10 @@ char *sf65_addReplaceFileExt ( char * filename, char * ext ) {
 FILE *sf65_openInputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *input = NULL;
+        if ( strlen ( filename ) == 1 && *filename == '-' ) {
+            sf65_fprintf ( stdout, "Reading from stdin\n" );
+            return stdin;
+        }
 
         sf65_fprintf ( stdout, "Trying to open input file: \"%s\"\n", filename );
 
@@ -65,6 +69,10 @@ FILE *sf65_openInputFile ( char * filename ) {
 FILE *sf65_openOutputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *output = NULL;
+        if ( strlen ( filename ) == 1 && *filename == '-' ) {
+            sf65_fprintf ( stdout, "Writing to stdout\n" );
+            return stdout;
+        }
 
         sf65_fprintf ( stdout, "Trying to open output file: \"%s\"\n", filename );
 

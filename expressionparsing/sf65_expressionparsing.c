@@ -72,16 +72,10 @@ int check_opcode ( char *p1, char *p2 ) {
 
     for ( c = 0; directives_dasm[c].directive != NULL; c++ ) {
         length = strlen ( directives_dasm[c].directive );
-        if ( ( *p1 == '.' &&
-                length == p2 - p1 - 1 &&
-                sf65_Memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) == 0
-             ) ||
-                ( length == p2 - p1     &&
-                  sf65_Memcmpcase ( p1,     directives_dasm[c].directive, p2 - p1 )     == 0
-                )
-           ) {
-
-            return c + 1;
+        if ( *p1 == '.' && length == p2 - p1 - 1 ) {
+            if ( !sf65_Memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) ) {
+                return c + 1;
+            }
         }
     }
 

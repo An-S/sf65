@@ -218,8 +218,8 @@ char *getOpt ( int argc, char ** argv ) {
         //This way, filename parameters are protected from case switching
         if ( *arg == '-' ) {
             // Missing Option after switch character
-            if ( !* ( arg + 1 ) ) {
-                return NULL;
+            if ( ! * ( arg + 1 ) ) {
+                return arg;//NULL;
             }
             sf65_ChangeCase ( arg, strchr ( arg, '\0' ), SF65_LOWERC );
         }
@@ -345,7 +345,7 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
         // Test, if option is given after '-' switch character.
         // However, if cmdArgIdx > argc-2, single '-' is allowed to specify
         // stdin /stdout
-        if ( !*currentOptPtr && cmdArgIdx < argc - 2 ) {
+        if ( !* ( currentOptPtr + 1 ) && cmdArgIdx < argc - 2 ) {
             // If no option specified after '-', output err msg and indicate
             // position of arg neglecting arg 0 (filename of executable)
             // That's why "cmdArgIdx - 1"
