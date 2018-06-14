@@ -83,6 +83,7 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
     switch ( cmdSwitchCh ) {
     case 'v':
         ++CMDOptions -> verbosity;
+        break;
     case 'h':
         showCMDOptionsHelp();
         exit ( 1 );
