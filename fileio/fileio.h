@@ -40,13 +40,30 @@ char *sf65_addReplaceFileExt ( char *filename, char *ext );
  */
 int sf65_printfUserInfo ( const char *format, ... );
 
-size_t sf65_fwrite ( char *startPtr, char *endPtr, FILE *file );
-size_t sf65_fwriteCountChars ( char *startPtr, size_t count, FILE *file );
-size_t sf65_fputc ( char ch, FILE *file );
-char *sf65_fgets ( FILE *file, char *buf, size_t sz );
+/*
+ * Get verbosity level from command line options and compare to min verbosity.
+ * If at least min verbosity, then print. Otherwise do not print.
+ */
+int sf65_printfVerbose ( int min_verbosity, sf65Options_t *cmdOpt, const char * format, ... );
+
+/*
+ * Print only, if condition is true.
+ */
+int sf65_conditionalPrintf ( bool cond, const char * format, ... );
+
+/*
+ * Print only, if condition is true. The same as previous function, but pass va_list
+ * instead of ...
+ */
+int sf65_conditionalVPrintf ( bool cond, const char * format, va_list va );
+
+size_t sf65_fwrite ( char * startPtr, char * endPtr, FILE * file );
+size_t sf65_fwriteCountChars ( char * startPtr, size_t count, FILE * file );
+size_t sf65_fputc ( char ch, FILE * file );
+char *sf65_fgets ( FILE * file, char * buf, size_t sz );
 size_t sf65_fputnl ( FILE * file );
 size_t sf65_fputnspc ( FILE * file, int n );
 size_t sf65_fputspc ( FILE * file );
-void sf65_CloseFile ( FILE *file );
+void sf65_CloseFile ( FILE * file );
 
 #endif

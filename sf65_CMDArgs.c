@@ -43,6 +43,7 @@ int getIntArg ( char* arg ) {
 
 void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
     CMDOptions -> style = 0;
+    CMDOptions -> verbosity = 0;
     CMDOptions -> processor = 1;
     CMDOptions -> start_mnemonic = 8;
     CMDOptions -> start_operand = 16;
@@ -80,6 +81,8 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
 
     // If come here, option after switch character was given
     switch ( cmdSwitchCh ) {
+    case 'v':
+        ++CMDOptions -> verbosity;
     case 'h':
         showCMDOptionsHelp();
         exit ( 1 );
@@ -368,6 +371,13 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
                 // which should always be true if above condition fails
                 assert ( filenameCount < 2 );
                 filenamePositions[filenameCount++] = cmdArgIdx;
+
+                // If output is beeing redirected to stdout, set verbosity to 0
+                // to prevent mixing diagnostic output and output of formatted
+                // source
+                if ( filenameCount > 1 ) {
+                    CMDOptions -> verbosity = 0;
+                }
             } else {
                 // Determine which options have been given on command line and set variables
                 // in CMDOptions struct accordingly

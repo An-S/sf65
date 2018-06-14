@@ -199,11 +199,11 @@ int main ( int argc, char *argv[] ) {
     // Try to open output file. Procedure exits in case of error.
     // No further err checking necessary
     output = sf65_openOutputFile ( CMDOptions -> outfilename );
-    logoutput = sf65_openLogFile ( CMDOptions -> outfilename );
-    sf65_OpenErrLog ( CMDOptions -> outfilename );
+    logoutput = sf65_openLogFile ( CMDOptions -> infilename );
+    sf65_OpenErrLog ( CMDOptions -> infilename );
 
     // Start with debug output (Line number of 0)
-    sf65_printfUserInfo ( "%4d:", line );
+    sf65_printfVerbose ( 1, CMDOptions, "%4d:", line );
 
     sf65_GetParserDataPointers ( &ParserData, &OldParserData );
 
@@ -223,8 +223,8 @@ int main ( int argc, char *argv[] ) {
         }
 
         // Output linebuf so we see if there's a line which causes parser to lockup
-        sf65_printfUserInfo ( "%04d:__", line );
-        sf65_printfUserInfo ( "%s", ParserData -> linebuf );
+        sf65_printfVerbose ( 1, CMDOptions, "%04d:__", line );
+        sf65_printfVerbose ( 1, CMDOptions, "%s", ParserData -> linebuf );
         sf65_fprintf ( logoutput, "%04d:__", line );
         sf65_fprintf ( logoutput, ParserData -> linebuf );
         sf65_fprintf ( logoutput, "%04d:__", line );
@@ -246,8 +246,8 @@ int main ( int argc, char *argv[] ) {
         }
 
         // Output linebuf so we see if there's a line which causes parser to lockup
-        sf65_printfUserInfo ( "%04d:__", line );
-        sf65_printfUserInfo ( "%s", ParserData -> linebuf );
+        sf65_printfVerbose ( 1, CMDOptions, "%04d:__", line );
+        sf65_printfVerbose ( 1, CMDOptions, "%s", ParserData -> linebuf );
 
         // Must be inserted after call to conditionallyInsertAdditionalLinefeed(...), because
         // this function needs ADDITIONAL_LINEFEED flag from prev line

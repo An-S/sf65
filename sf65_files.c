@@ -99,6 +99,29 @@ FILE *sf65_openLogFile ( char * basefilename ) {
     return NULL;
 }
 
+int sf65_conditionalVPrintf ( bool cond, const char * format, va_list va ) {
+    if ( cond ) {
+        NOT_NULL ( format, -1 ) {
+            int printfErr;
+
+            printfErr = vprintf ( format, va );
+
+            return printfErr;
+        }
+    }
+    return 0;
+}
+
+int sf65_conditionalPrintf ( bool cond, const char * format, ... ) {
+    va_list va;
+    int printfErr;
+
+    va_start ( va, format );
+    printfErr = sf65_conditionalVPrintf ( cond, format, va );
+    va_end ( va );
+    return printfErr;
+}
+
 int sf65_fprintf ( FILE * file, const char * format, ... ) {
     NOT_NULL ( file, -1 ); NOT_NULL ( format, -1 ) {
         va_list va;
@@ -119,6 +142,17 @@ int sf65_printfUserInfo ( const char * format, ... ) {
 
     va_start ( va, format );
     printfErr = vprintf ( format, va );
+    va_end ( va );
+
+    return printfErr;
+}
+
+int sf65_printfVerbose ( int min_verbosity, sf65Options_t *cmdOpt, const char * format, ... ) {
+    va_list va;
+    int printfErr;
+
+    va_start ( va, format );
+    printfErr = sf65_conditionalVPrintf ( cmdOpt -> verbosity >= min_verbosity, format, va );
     va_end ( va );
 
     return printfErr;
