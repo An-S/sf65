@@ -1,6 +1,26 @@
 #ifndef __SF65CMDL_H__
 #define __SF65CMDL_H__
 
+#define SF65_CMDLERRLIST ER(NOERR), ER(ERROR), ER(NULLPTR), ER(INVALIDARGERR)
+
+#define ER(x) SF65_CMDERR_##x
+typedef enum {
+    SF65_ERRLIST
+} sf65CMDErrCode_t;
+#undef ER
+
+#define SF65_CMDOPTLIST \
+    CO(n, sf65OptNestingLevel),\
+    CO(m, sf65OptMnemonic),\
+    CO(d, sf65OptDirective),\
+    CO(c, sf65OptComment),\
+    CO(p, sf65OptProcessor),\
+    CO(h, sf65OptHelp),\
+    CO(t, sf65OptTabs),\
+    CO(a, sf65OptAlign),\
+    CO(l, sf65OptLabelPlacement),\
+    CO(e, sf65OptScopePadding)
+
 /*
  * Struct to hold values of command line arguments given to sf65
  */
@@ -37,5 +57,7 @@ typedef enum {
  */
 int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
 
+typedef sf65CMDErrCode_t
+sf65OptionsModifierFnc_t ( sf65Options_t *, int param_min, int param_max );
 
 #endif

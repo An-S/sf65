@@ -46,8 +46,8 @@
       <File Name="mathfunctions/sf65_math.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="ErrorHandling">
-      <File Name="errorhandling/sf65_errorhandling.h"/>
       <File Name="errorhandling/sf65_error.c"/>
+      <File Name="errorhandling/sf65_errorhandling.h"/>
     </VirtualDirectory>
     <VirtualDirectory Name="OutputFormatting">
       <File Name="outputformatting/sf65_outputformatting.h"/>
