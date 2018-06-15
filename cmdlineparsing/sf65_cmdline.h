@@ -9,17 +9,18 @@ typedef enum {
 } sf65CMDErrCode_t;
 #undef ER
 
+// Format: command line switch character, callbackFnc, argmin, argmax
 #define SF65_CMDOPTLIST \
-    CO(n, sf65OptNestingLevel),\
-    CO(m, sf65OptMnemonic),\
-    CO(d, sf65OptDirective),\
-    CO(c, sf65OptComment),\
-    CO(p, sf65OptProcessor),\
-    CO(h, sf65OptHelp),\
-    CO(t, sf65OptTabs),\
-    CO(a, sf65OptAlign),\
-    CO(l, sf65OptLabelPlacement),\
-    CO(e, sf65OptScopePadding)
+    CO(n, sf65OptNestingLevel,  0, -1 )\
+    CO(m, sf65OptMnemonic,      0, -1 )\
+    CO(d, sf65OptDirective,     0, -1 )\
+    CO(c, sf65OptComment,       0, -1 )\
+    CO(p, sf65OptProcessor,     0,  0 )\
+    CO(h, sf65OptHelp,          0,  0 )\
+    CO(t, sf65OptTabs,          0,  8 )\
+    CO(a, sf65OptAlign,         0,  1 )\
+    CO(l, sf65OptLabelPlacement,0,  2 )\
+    CO(e, sf65OptScopePadding,  0,  1 )
 
 /*
  * Struct to hold values of command line arguments given to sf65
@@ -41,11 +42,14 @@ typedef struct {
     int pad_directives;     // determine whether certain directives should be padded with empty lines
 
     int verbosity;
+
+    char locallabelch;
     char *infilename;       // filename of the unformatted source
     char *outfilename;      // filename of the formatted source
 } sf65Options_t;
 
 extern sf65Options_t *CMDOptions;
+
 
 typedef enum {
     sf65_CMDSwitchPresent, sf65_CMDSwitchNotPresent

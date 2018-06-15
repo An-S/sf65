@@ -1,5 +1,12 @@
 #include "sf65.h"
 
+
+
+#   define CO(x,y,v,w) sf65CMDErrCode_t y(sf65Options_t *opt, int a, int b){ return 0;}
+SF65_CMDOPTLIST
+#   undef CO
+
+
 void showCMDOptionsHelp ( void );
 
 bool checkRange ( int val, int min, int max ) {
@@ -58,6 +65,8 @@ void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
     CMDOptions -> directives_case = 0;
     CMDOptions -> pad_directives = 1;
 
+    CMDOptions -> locallabelch = '@';
+
     // Default to stdin
     CMDOptions -> infilename = "-";
     // Default to stdout
@@ -65,6 +74,23 @@ void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
 }
 
 void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
+
+#   define CO(w,x,y,z) #w
+    char switches[] = SF65_CMDOPTLIST;
+#   undef CO
+
+#   define CO(w,x,y,z) x,
+    sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
+#   undef CO
+
+#   define CO(w,x,y,z) y,
+    int optMinList[] = {SF65_CMDOPTLIST - 1};
+#   undef CO
+
+#   define CO(w,x,y,z) z,
+    int optMaxList[] = {SF65_CMDOPTLIST - 1};
+#   undef CO
+
     int cmdNumArg;
     bool cmdNumArgIs0Or1;
     char cmdSwitchCh;
@@ -79,6 +105,8 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
         cmdNumArgIs0Or1 = false;
     }
 
+    //optidx = strchr ( switches, cmdSwitchCh )-switches;
+    //modifierFncList[optidx)(CMDOptions,
     // If come here, option after switch character was given
     switch ( cmdSwitchCh ) {
     case 'v':
