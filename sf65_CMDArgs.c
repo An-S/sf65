@@ -1,22 +1,82 @@
 #include "sf65.h"
 
 
+void showCMDOptionsHelp ( void );
 
-#   define CO(x,y,v,w) sf65CMDErrCode_t y(sf65Options_t *opt, int a, int b){ return 0;}
+#   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, int arg);
 SF65_CMDOPTLIST
 #   undef CO
 
+sf65CMDErrCode_t sf65_OptVerbosity ( sf65Options_t *CMDOptions, int numarg ) {
+    ++CMDOptions -> verbosity;
+    return SF65_CMDERR_NOERR;
+}
 
-void showCMDOptionsHelp ( void );
+sf65CMDErrCode_t sf65_OptStyle ( sf65Options_t *CMDOptions, int numarg ) {
+    CMDOptions -> style = numarg;
+    return SF65_CMDERR_NOERR;
+}
 
-bool checkRange ( int val, int min, int max ) {
+sf65CMDErrCode_t sf65_OptNestingLevel ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptMnemonic ( sf65Options_t *CMDOptions, int numarg ) {
+    /*if ( *currentOptPtr == 'l' ) {
+        CMDOptions -> mnemonics_case = 1;
+    } else if ( *currentOptPtr == 'u' ) {
+        CMDOptions -> mnemonics_case = 2;
+    } else {
+        CMDOptions -> start_mnemonic = cmdNumArg;
+    }*/
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptDirective ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptComment ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptProcessor ( sf65Options_t *CMDOptions, int numarg ) {
+    CMDOptions -> processor = numarg;
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptHelp ( sf65Options_t *CMDOptions, int numarg ) {
+    showCMDOptionsHelp();
+    exit ( 1 );
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptTabs ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptAlign ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptScopePadding ( sf65Options_t *CMDOptions, int numarg ) {
+    CMDOptions -> pad_directives = numarg;
+    return SF65_CMDERR_NOERR;
+}
+
+sf65CMDErrCode_t sf65_OptLabelPlacement ( sf65Options_t *CMDOptions, int numarg ) {
+    return SF65_CMDERR_NOERR;
+}
+
+
+bool sf65_checkRange ( int val, int min, int max ) {
     if ( val < min ) return false;
     if ( val > max ) return false;
     return true;
 }
 
 bool checkIf0Or1 ( int val ) {
-    return checkRange ( val, 0, 1 );
+    return sf65_checkRange ( val, 0, 1 );
 }
 
 bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
@@ -48,7 +108,15 @@ int getIntArg ( char* arg ) {
     return num;
 }
 
+//#define WITH(astruct) if (!typeof(astruct) ptr = astruct) { assert(false);}else
+
+//#define WLET(member, value) ptr -> member = value
+
 void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
+    /*WITH ( CMDOptions ) {
+        WLET ( style, 0 );
+    }*/
+
     CMDOptions -> style = 0;
     CMDOptions -> verbosity = 0;
     CMDOptions -> processor = 1;
@@ -73,13 +141,21 @@ void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
     CMDOptions -> outfilename = "-";
 }
 
-void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
+char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg ) {
+    arg -> optCh = *arg -> currentPtr++;
+    return arg -> optCh;
+}
 
+void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char * currentOptPtr ) {
+    sf65CMDArg_t cmdarg;
+
+    // Include the '\0' in the switches list to be able to detect options without optCh
+    // which consists of '-', only
 #   define CO(w,x,y,z) #w
-    char switches[] = SF65_CMDOPTLIST;
+    char switches[] = SF65_CMDOPTLIST "\0";
 #   undef CO
 
-#   define CO(w,x,y,z) x,
+#   define CO(w,x,y,z) sf65_Opt##x,
     sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
 #   undef CO
 
@@ -95,42 +171,70 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
     bool cmdNumArgIs0Or1;
     char cmdSwitchCh;
 
-    cmdSwitchCh = *currentOptPtr++;
+    sf65_CMDOpt_ReadNextCh ( &cmdarg );
+
+    cmdSwitchCh = cmdarg.optCh = *currentOptPtr++;
 
     if ( isdigit ( *currentOptPtr ) ) {
-        cmdNumArg = getIntArg ( currentOptPtr );
+        cmdarg.numArg = cmdNumArg = getIntArg ( currentOptPtr );
         cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
     } else {
-        cmdNumArg = -1;
+        cmdarg.numArg = cmdNumArg = -1;
         cmdNumArgIs0Or1 = false;
     }
 
-    //optidx = strchr ( switches, cmdSwitchCh )-switches;
-    //modifierFncList[optidx)(CMDOptions,
-    // If come here, option after switch character was given
+    // If optCh not found, strchr returns NULL and then the expression becomes negative
+    cmdarg.optIdx = strchr ( switches, cmdarg.optCh ) - switches;
+
+    // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
+    if ( cmdarg.optIdx < 0 ) {
+        // Indicate invalid command line option
+        cmdarg.optIdx = -1;
+    }
+
+    if ( cmdarg.optIdx >= 0 ) {
+        // Assert that list of valid cmd options do not contain one option more than one time
+        assert ( cmdarg.optIdx == strrchr ( switches, cmdarg.optCh ) - switches );
+
+        // Check range of numeric parameter for cmd option and exit if range exceeded
+        conditionallyFailWthMsg (
+            sf65_checkRange ( cmdarg.numArg, optMinList[cmdarg.optIdx],
+                              optMaxList[cmdarg.optIdx]
+                            ) ,
+            "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg.optCh,
+            optMinList[cmdarg.optIdx], optMaxList[cmdarg.optIdx], cmdarg.numArg
+        );
+        // assert non NULL function pointer
+        assert ( modifierFncList[cmdarg.optIdx] );
+        // call function to set members in CMDOptions struct
+        modifierFncList[cmdarg.optIdx] ( CMDOptions, cmdarg.numArg );
+    }
+
+//modifierFncList[optidx)(CMDOptions,
+// If come here, option after switch character was given
     switch ( cmdSwitchCh ) {
-    case 'v':
-        ++CMDOptions -> verbosity;
-        break;
-    case 'h':
-        showCMDOptionsHelp();
-        exit ( 1 );
-    case 'e':   /* sf65Options -> pad lines */
-        CMDOptions -> pad_directives = cmdNumArg;
+        /*case 'v':
+            ++CMDOptions -> verbosity;
+            break;
+        case 'h':
+            showCMDOptionsHelp();
+            exit ( 1 );
+        case 'e':
+            CMDOptions -> pad_directives = cmdNumArg;
 
-        conditionallyFailWthMsg (
-            cmdNumArgIs0Or1,
-            "Bad sf65Options -> pad directives: %d\n", cmdNumArg
-        );
-        break;
-    case 's':   /* sf65Options -> Style */
-        CMDOptions -> style = cmdNumArg;
+            conditionallyFailWthMsg (
+                cmdNumArgIs0Or1,
+                "Bad sf65Options -> pad directives: %d\n", cmdNumArg
+            );
+            break;
+        case 's':   // sf65Options -> Style
+            CMDOptions -> style = cmdNumArg;
 
-        conditionallyFailWthMsg (
-            cmdNumArgIs0Or1,
-            "Bad sf65Options -> style code: %d\n", cmdNumArg
-        );
-        break;
+            conditionallyFailWthMsg (
+                cmdNumArgIs0Or1,
+                "Bad sf65Options -> style code: %d\n", cmdNumArg
+            );
+            break;*/
     case 'p':   /* Processor */
         CMDOptions -> processor = cmdNumArg;
 
@@ -174,7 +278,7 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
             CMDOptions -> oversized_labels_own_line = cmdNumArg;
 
             conditionallyFailWthMsg (
-                checkRange ( cmdNumArg, 0, 2 ) ,
+                sf65_checkRange ( cmdNumArg, 0, 2 ) ,
                 "Bad label line placement: %d\n", cmdNumArg
             );
 
@@ -204,7 +308,7 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char *currentOptPtr ) {
  * checks some constraints on given arguments to cmd line switches
  * f.e. start_mnemonic should not be greater than start_operand and such...
  */
-void validateCMDLineSwitches ( sf65Options_t *CMDOptions ) {
+void validateCMDLineSwitches ( sf65Options_t * CMDOptions ) {
     if ( CMDOptions -> style == 1 ) {
         conditionallyFailWthMsg (
             CMDOptions -> start_mnemonic <= CMDOptions -> start_comment,
@@ -308,14 +412,14 @@ void showCMDOptionsHelp ( void ) {
     sf65_fputnl ( stderr );
 }
 
-char *sf65_setInFilename ( sf65Options_t *cmdopt, char *fname ) {
+char *sf65_setInFilename ( sf65Options_t * cmdopt, char * fname ) {
     NOT_NULL ( cmdopt, NULL ); NOT_NULL ( fname, NULL ) {
         return cmdopt -> infilename = fname;
     }
 }
 
 
-char *sf65_setOutFilename ( sf65Options_t *cmdopt, char *fname ) {
+char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname ) {
     NOT_NULL ( cmdopt, NULL ); NOT_NULL ( fname, NULL ) {
         return cmdopt -> outfilename = fname;
     }
@@ -341,7 +445,7 @@ char *sf65_setOutFilename ( sf65Options_t *cmdopt, char *fname ) {
  * 2.) one filename is present
  * 3.) two filenames are present
  */
-int processCMDArgs ( int argc, char** argv, sf65Options_t *CMDOptions ) {
+int processCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
     static char predefinedInFilename[]  = "in.src";
     static char predefinedOutFilename[]  = "out.src";
 
