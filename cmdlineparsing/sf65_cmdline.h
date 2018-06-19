@@ -74,6 +74,6 @@ extern sf65Options_t *CMDOptions;
 int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
 
 typedef sf65CMDErrCode_t
-sf65OptionsModifierFnc_t ( sf65Options_t *, int arg );
+sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t *arg );
 
 #endif

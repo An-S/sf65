@@ -3,68 +3,68 @@
 
 void showCMDOptionsHelp ( void );
 
-#   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, int arg);
+#   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, sf65CMDArg_t *cmdarg );
 SF65_CMDOPTLIST
 #   undef CO
 
-sf65CMDErrCode_t sf65_OptVerbosity ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptVerbosity ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     ++CMDOptions -> verbosity;
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptStyle ( sf65Options_t *CMDOptions, int numarg ) {
-    CMDOptions -> style = numarg;
+sf65CMDErrCode_t sf65_OptStyle ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
+    CMDOptions -> style = cmdarg -> numArg;
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptNestingLevel ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptNestingLevel ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptMnemonic ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptMnemonic ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     /*if ( *currentOptPtr == 'l' ) {
         CMDOptions -> mnemonics_case = 1;
     } else if ( *currentOptPtr == 'u' ) {
         CMDOptions -> mnemonics_case = 2;
     } else {
-        CMDOptions -> start_mnemonic = cmdNumArg;
+        CMDOptions -> start_mnemonic = cmdcmdarg -> numArg;
     }*/
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptDirective ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptDirective ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptComment ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptComment ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptProcessor ( sf65Options_t *CMDOptions, int numarg ) {
-    CMDOptions -> processor = numarg;
+sf65CMDErrCode_t sf65_OptProcessor ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
+    CMDOptions -> processor = cmdarg -> numArg;
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptHelp ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptHelp ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     showCMDOptionsHelp();
     exit ( 1 );
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptTabs ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptTabs ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptAlign ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptAlign ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptScopePadding ( sf65Options_t *CMDOptions, int numarg ) {
-    CMDOptions -> pad_directives = numarg;
+sf65CMDErrCode_t sf65_OptScopePadding ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
+    CMDOptions -> pad_directives = cmdarg -> numArg;
     return SF65_CMDERR_NOERR;
 }
 
-sf65CMDErrCode_t sf65_OptLabelPlacement ( sf65Options_t *CMDOptions, int numarg ) {
+sf65CMDErrCode_t sf65_OptLabelPlacement ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     return SF65_CMDERR_NOERR;
 }
 
@@ -147,7 +147,7 @@ char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg ) {
 }
 
 void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char * currentOptPtr ) {
-    sf65CMDArg_t cmdarg;
+    sf65CMDArg_t *cmdarg = & ( sf65CMDArg_t ) {};
 
     // Include the '\0' in the switches list to be able to detect options without optCh
     // which consists of '-', only
@@ -171,43 +171,43 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char * currentOptPtr ) 
     bool cmdNumArgIs0Or1;
     char cmdSwitchCh;
 
-    sf65_CMDOpt_ReadNextCh ( &cmdarg );
+    sf65_CMDOpt_ReadNextCh ( cmdarg );
 
-    cmdSwitchCh = cmdarg.optCh = *currentOptPtr++;
+    cmdSwitchCh = cmdarg->optCh;// = *currentOptPtr++;
 
     if ( isdigit ( *currentOptPtr ) ) {
-        cmdarg.numArg = cmdNumArg = getIntArg ( currentOptPtr );
+        cmdarg -> numArg = cmdNumArg = getIntArg ( currentOptPtr );
         cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
     } else {
-        cmdarg.numArg = cmdNumArg = -1;
+        cmdarg -> numArg = cmdNumArg = -1;
         cmdNumArgIs0Or1 = false;
     }
 
     // If optCh not found, strchr returns NULL and then the expression becomes negative
-    cmdarg.optIdx = strchr ( switches, cmdarg.optCh ) - switches;
+    cmdarg -> optIdx = strchr ( switches, cmdarg -> optCh ) - switches;
 
     // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
-    if ( cmdarg.optIdx < 0 ) {
+    if ( cmdarg -> optIdx < 0 ) {
         // Indicate invalid command line option
-        cmdarg.optIdx = -1;
+        cmdarg -> optIdx = -1;
     }
 
-    if ( cmdarg.optIdx >= 0 ) {
+    if ( cmdarg -> optIdx >= 0 ) {
         // Assert that list of valid cmd options do not contain one option more than one time
-        assert ( cmdarg.optIdx == strrchr ( switches, cmdarg.optCh ) - switches );
+        assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
 
         // Check range of numeric parameter for cmd option and exit if range exceeded
         conditionallyFailWthMsg (
-            sf65_checkRange ( cmdarg.numArg, optMinList[cmdarg.optIdx],
-                              optMaxList[cmdarg.optIdx]
+            sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
+                              optMaxList[cmdarg -> optIdx]
                             ) ,
-            "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg.optCh,
-            optMinList[cmdarg.optIdx], optMaxList[cmdarg.optIdx], cmdarg.numArg
+            "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg -> optCh,
+            optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
         );
         // assert non NULL function pointer
-        assert ( modifierFncList[cmdarg.optIdx] );
+        assert ( modifierFncList[cmdarg -> optIdx] );
         // call function to set members in CMDOptions struct
-        modifierFncList[cmdarg.optIdx] ( CMDOptions, cmdarg.numArg );
+        modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
     }
 
 //modifierFncList[optidx)(CMDOptions,
