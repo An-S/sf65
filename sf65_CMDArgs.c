@@ -142,165 +142,201 @@ void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
 }
 
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg ) {
-    arg -> optCh = *arg -> currentPtr++;
+    arg -> optCh = *arg -> currentPtr;
+    ++arg -> currentPtr;
     return arg -> optCh;
 }
 
-void detectCMDLineSwitches ( sf65Options_t * CMDOptions, char * currentOptPtr ) {
-    sf65CMDArg_t *cmdarg = & ( sf65CMDArg_t ) {};
+sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **argv ) {
+    NOT_NULL ( arg, SF65_CMDERR_NULLPTR ); NOT_NULL ( argv, SF65_CMDERR_NULLPTR ) {
 
-    // Include the '\0' in the switches list to be able to detect options without optCh
-    // which consists of '-', only
+        // At least filename of executable is passed, so argc is min == 1
+        assert ( argc > 0 );
+
+        arg -> argv = argv;
+        // Retrieve argument only, if command line arguments were given
+        // (beside the filename of the executable)
+        arg -> currentPtr = argv[0];
+        arg -> argIdx = 0;
+        return SF65_CMDERR_NOERR;
+    }
+}
+
+sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg ) {
+    NOT_NULL ( arg, SF65_CMDERR_NULLPTR ) {
+        // Can get next argument only, if still arguments left
+        // argc is 1, when no arguments are given and argv[0] points to the filename of the executable
+        // So, this offset of one argument has to be subtracted from argc to get the limit
+        if ( arg -> argIdx < arg -> argc - 1 ) {
+            ++arg -> argIdx;
+            arg -> currentPtr = arg -> argv[arg->argIdx];
+        }
+
+    }
+}
+
+// When entering this function, it is assumed that currentOptPtr points to character after '-'
+// and that there was a '-' present
+void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) {
+    NOT_NULL ( CMDOptions, ); NOT_NULL ( cmdarg, ) {
+
+        // Define a list of allowed switches by concatenating a string using x macro
+        // stringification
 #   define CO(w,x,y,z) #w
-    char switches[] = SF65_CMDOPTLIST "\0";
+        char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
 #   undef CO
 
+        // Define an array of pointers to callback functions which are called for
+        // a set switch at the same array position as in the switches string
 #   define CO(w,x,y,z) sf65_Opt##x,
-    sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
+        sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
 #   undef CO
 
+        // Define min/max values for numeric command line parameters
 #   define CO(w,x,y,z) y,
-    int optMinList[] = {SF65_CMDOPTLIST - 1};
+        int optMinList[] = {SF65_CMDOPTLIST - 1};
 #   undef CO
 
 #   define CO(w,x,y,z) z,
-    int optMaxList[] = {SF65_CMDOPTLIST - 1};
+        int optMaxList[] = {SF65_CMDOPTLIST - 1};
 #   undef CO
 
-    int cmdNumArg;
-    bool cmdNumArgIs0Or1;
-    char cmdSwitchCh;
+        int cmdNumArg;
+        bool cmdNumArgIs0Or1;
+        char cmdSwitchCh;
 
-    sf65_CMDOpt_ReadNextCh ( cmdarg );
+        cmdSwitchCh = sf65_CMDOpt_ReadNextCh ( cmdarg );
 
-    cmdSwitchCh = cmdarg->optCh;// = *currentOptPtr++;
+        // = cmdarg->optCh;// = *currentOptPtr++;
 
-    if ( isdigit ( *currentOptPtr ) ) {
-        cmdarg -> numArg = cmdNumArg = getIntArg ( currentOptPtr );
-        cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
-    } else {
-        cmdarg -> numArg = cmdNumArg = -1;
-        cmdNumArgIs0Or1 = false;
-    }
+        if ( isdigit ( *cmdarg -> currentPtr ) ) {
+            cmdarg -> numArg = cmdNumArg = getIntArg ( cmdarg -> currentPtr );
+            cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
+        } else {
+            cmdarg -> numArg = cmdNumArg = -1;
+            cmdNumArgIs0Or1 = false;
+        }
 
-    // If optCh not found, strchr returns NULL and then the expression becomes negative
-    cmdarg -> optIdx = strchr ( switches, cmdarg -> optCh ) - switches;
+        // If optCh not found, strchr returns NULL and then the expression becomes negative
+        cmdarg -> optIdx = strchr ( switches, cmdarg -> optCh ) - switches;
 
-    // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
-    if ( cmdarg -> optIdx < 0 ) {
-        // Indicate invalid command line option
-        cmdarg -> optIdx = -1;
-    }
+        // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
+        if ( cmdarg -> optIdx < 0 ) {
+            // Indicate invalid command line option
+            cmdarg -> optIdx = -1;
+        }
 
-    if ( cmdarg -> optIdx >= 0 ) {
-        // Assert that list of valid cmd options do not contain one option more than one time
-        assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
+        if ( cmdarg -> optIdx >= 0 ) {
+            // Assert that list of valid cmd options do not contain one option more than one time
+            assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
 
-        // Check range of numeric parameter for cmd option and exit if range exceeded
-        conditionallyFailWthMsg (
-            sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
-                              optMaxList[cmdarg -> optIdx]
-                            ) ,
-            "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg -> optCh,
-            optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
-        );
-        // assert non NULL function pointer
-        assert ( modifierFncList[cmdarg -> optIdx] );
-        // call function to set members in CMDOptions struct
-        modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
-    }
+            // Check range of numeric parameter for cmd option and exit if range exceeded
+            conditionallyFailWthMsg (
+                sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
+                                  optMaxList[cmdarg -> optIdx]
+                                ) ,
+                "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg -> optCh,
+                optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
+            );
+            // assert non NULL function pointer
+            assert ( modifierFncList[cmdarg -> optIdx] );
+            // call function to set members in CMDOptions struct
+            modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
+        }
 
 //modifierFncList[optidx)(CMDOptions,
 // If come here, option after switch character was given
-    switch ( cmdSwitchCh ) {
-        /*case 'v':
-            ++CMDOptions -> verbosity;
-            break;
-        case 'h':
-            showCMDOptionsHelp();
-            exit ( 1 );
-        case 'e':
-            CMDOptions -> pad_directives = cmdNumArg;
+        switch ( cmdSwitchCh ) {
+            /*case 'v':
+                ++CMDOptions -> verbosity;
+                break;
+            case 'h':
+                showCMDOptionsHelp();
+                exit ( 1 );
+            case 'e':
+                CMDOptions -> pad_directives = cmdNumArg;
+
+                conditionallyFailWthMsg (
+                    cmdNumArgIs0Or1,
+                    "Bad sf65Options -> pad directives: %d\n", cmdNumArg
+                );
+                break;
+            case 's':   // sf65Options -> Style
+                CMDOptions -> style = cmdNumArg;
+
+                conditionallyFailWthMsg (
+                    cmdNumArgIs0Or1,
+                    "Bad sf65Options -> style code: %d\n", cmdNumArg
+                );
+                break;*/
+        case 'p':   /* Processor */
+            CMDOptions -> processor = cmdNumArg;
 
             conditionallyFailWthMsg (
                 cmdNumArgIs0Or1,
-                "Bad sf65Options -> pad directives: %d\n", cmdNumArg
+                "Bad sf65Options -> processor code: %d\n", cmdNumArg
             );
             break;
-        case 's':   // sf65Options -> Style
-            CMDOptions -> style = cmdNumArg;
-
+        case 'm':   /* Mnemonic start */
+            if ( *currentOptPtr == 'l' ) {
+                CMDOptions -> mnemonics_case = 1;
+            } else if ( *currentOptPtr == 'u' ) {
+                CMDOptions -> mnemonics_case = 2;
+            } else {
+                CMDOptions -> start_mnemonic = cmdNumArg;
+            }
+            break;
+        case 'o':   /* Operand start */
+            CMDOptions -> start_operand = cmdNumArg;
+            break;
+        case 'c':   /* Comment start */
+            CMDOptions -> start_comment = cmdNumArg;
+            break;
+        case 't':   /* Tab size */
+            CMDOptions -> tabs = cmdNumArg;
+            break;
+        case 'a':   /* Comment alignment */
+            CMDOptions -> align_comment = cmdNumArg;
             conditionallyFailWthMsg (
-                cmdNumArgIs0Or1,
-                "Bad sf65Options -> style code: %d\n", cmdNumArg
+                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
             );
-            break;*/
-    case 'p':   /* Processor */
-        CMDOptions -> processor = cmdNumArg;
 
-        conditionallyFailWthMsg (
-            cmdNumArgIs0Or1,
-            "Bad sf65Options -> processor code: %d\n", cmdNumArg
-        );
-        break;
-    case 'm':   /* Mnemonic start */
-        if ( *currentOptPtr == 'l' ) {
-            CMDOptions -> mnemonics_case = 1;
-        } else if ( *currentOptPtr == 'u' ) {
-            CMDOptions -> mnemonics_case = 2;
-        } else {
-            CMDOptions -> start_mnemonic = cmdNumArg;
-        }
-        break;
-    case 'o':   /* Operand start */
-        CMDOptions -> start_operand = cmdNumArg;
-        break;
-    case 'c':   /* Comment start */
-        CMDOptions -> start_comment = cmdNumArg;
-        break;
-    case 't':   /* Tab size */
-        CMDOptions -> tabs = cmdNumArg;
-        break;
-    case 'a':   /* Comment alignment */
-        CMDOptions -> align_comment = cmdNumArg;
-        conditionallyFailWthMsg (
-            cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
-        );
-
-        break;
-    case 'n':   /* Nesting space */
-        CMDOptions -> nesting_space = cmdNumArg;
-        break;
-    case 'l':   /* Labels in own line. l0 = labels in existing line
+            break;
+        case 'n':   /* Nesting space */
+            CMDOptions -> nesting_space = cmdNumArg;
+            break;
+        case 'l':   /* Labels in own line. l0 = labels in existing line
                            l1 = oversized labels own line
                            l2 = all labels own line*/
-        if ( strlen ( currentOptPtr ) > 0 ) {
-            CMDOptions -> oversized_labels_own_line = cmdNumArg;
+            if ( strlen ( currentOptPtr ) > 0 ) {
+                CMDOptions -> oversized_labels_own_line = cmdNumArg;
 
-            conditionallyFailWthMsg (
-                sf65_checkRange ( cmdNumArg, 0, 2 ) ,
-                "Bad label line placement: %d\n", cmdNumArg
-            );
+                conditionallyFailWthMsg (
+                    sf65_checkRange ( cmdNumArg, 0, 2 ) ,
+                    "Bad label line placement: %d\n", cmdNumArg
+                );
 
-            if ( CMDOptions -> oversized_labels_own_line == 2 ) {
+                if ( CMDOptions -> oversized_labels_own_line == 2 ) {
+                    CMDOptions -> labels_own_line = 1;
+                }
+            } else {
                 CMDOptions -> labels_own_line = 1;
             }
-        } else {
-            CMDOptions -> labels_own_line = 1;
+            break;
+        case 'd':   /* Directives */
+            if ( *currentOptPtr == 'l' ) {
+                CMDOptions -> directives_case = 1;
+            } else if ( *currentOptPtr == 'u' ) {
+                CMDOptions -> directives_case = 2;
+            } else {
+                sf65_pError ( "Unknown argument: %c%c\n", cmdSwitchCh, *currentOptPtr );
+            }
+            break;
+        default:    /* Other */
+            sf65_pError ( "Unknown argument: %c\n", cmdSwitchCh );
+            exit ( 1 );
         }
-        break;
-    case 'd':   /* Directives */
-        if ( *currentOptPtr == 'l' ) {
-            CMDOptions -> directives_case = 1;
-        } else if ( *currentOptPtr == 'u' ) {
-            CMDOptions -> directives_case = 2;
-        } else {
-            sf65_pError ( "Unknown argument: %c%c\n", cmdSwitchCh, *currentOptPtr );
-        }
-        break;
-    default:    /* Other */
-        sf65_pError ( "Unknown argument: %c\n", cmdSwitchCh );
-        exit ( 1 );
+
     }
 }
 
@@ -345,10 +381,8 @@ char *getOpt ( int argc, char ** argv ) {
         // Assert, that arg is not NULL ptr (must point to argv entry)
         assert ( arg );
 
-        // Assert, that *arg points to non empty string
         // -> Remark: User can pass empty string by using "". Therefore the
-        // assertion must be replaced by runtime checks
-        // assert ( *arg );
+        // assertion >>assert ( *arg );<< must be replaced by runtime checks
 
         //change only to lowercase if switch character is present
         //This way, filename parameters are protected from case switching
@@ -449,12 +483,15 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
     static char predefinedInFilename[]  = "in.src";
     static char predefinedOutFilename[]  = "out.src";
 
+    sf65CMDArg_t *cmdarg = & ( sf65CMDArg_t ) {};
+
     int cmdArgIdx;
     char *currentOptPtr;
     int filenamePositions[2] = {};
     int filenameCount = 0;
 
     setCMDOptionsDefaults ( CMDOptions );
+    sf65_CMDOpt_InitParser ( cmdarg, argv, argc );
 
     /*
      * Process arguments

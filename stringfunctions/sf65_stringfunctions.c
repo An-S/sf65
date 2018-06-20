@@ -29,7 +29,7 @@ char *sf65_ModifyChars ( char *p1, char *p2, int func ( int ) ) {
         ch = *p1;
         echoChar ( ch );
         *p1 = func ( ch );
-        p1++;
+        ++p1;
     }
     return p1;
 }

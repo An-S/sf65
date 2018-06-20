@@ -15,6 +15,12 @@ typedef enum {
 
 typedef struct {
     // Example: -l123, where '-' is the switchCh, 'l' is the optCh and 123 is the numArg
+
+    // Store a copy of the argv pointer to the original command line arguments list
+    char **argv;
+    int argc;
+    int argIdx;
+
     char *currentPtr; //Pointer to char ought to be read next
     int optIdx;     // Index into list of allowed cmd options
     char optCh;     // The char which determines a cmd option
