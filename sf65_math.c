@@ -1,5 +1,32 @@
 #include "sf65.h"
 
+int sf65_ConvertStrToInt ( char* arg ) {
+    long int num = -1;
+    char *endarg;
+
+    num = strtol ( arg, &endarg, 0 );
+
+    // There should be only numeric until end of arg. If not, return -1 to indicate error
+    if ( *endarg != '\0' ) {
+        return -1;
+    }
+
+    return num;
+}
+
+bool checkIf0Or1 ( int val ) {
+    return sf65_checkRange ( val, 0, 1 );
+}
+
+/*
+ * Checks whether val lies in range [min, max]
+ */
+bool sf65_checkRange ( int val, int min, int max ) {
+    if ( val < min ) return false;
+    if ( val > max ) return false;
+    return true;
+}
+
 /*
  * Returns -1,0,1 dependent on sign of argument
  */

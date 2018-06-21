@@ -6,159 +6,17 @@ void showCMDOptionsHelp ( void );
 #   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, sf65CMDArg_t *cmdarg );
 SF65_CMDOPTLIST
 #   undef CO
-
-sf65CMDErrCode_t sf65_OptVerbosity ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    ++CMDOptions -> verbosity;
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptStyle ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    CMDOptions -> style = cmdarg -> numArg;
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptNestingLevel ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptMnemonic ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    /*if ( *currentOptPtr == 'l' ) {
-        CMDOptions -> mnemonics_case = 1;
-    } else if ( *currentOptPtr == 'u' ) {
-        CMDOptions -> mnemonics_case = 2;
-    } else {
-        CMDOptions -> start_mnemonic = cmdcmdarg -> numArg;
-    }*/
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptDirective ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptComment ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptProcessor ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    CMDOptions -> processor = cmdarg -> numArg;
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptHelp ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    showCMDOptionsHelp();
-    exit ( 1 );
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptTabs ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptAlign ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptScopePadding ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    CMDOptions -> pad_directives = cmdarg -> numArg;
-    return SF65_CMDERR_NOERR;
-}
-
-sf65CMDErrCode_t sf65_OptLabelPlacement ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
-    return SF65_CMDERR_NOERR;
-}
-
-
-bool sf65_checkRange ( int val, int min, int max ) {
-    if ( val < min ) return false;
-    if ( val > max ) return false;
-    return true;
-}
-
-bool checkIf0Or1 ( int val ) {
-    return sf65_checkRange ( val, 0, 1 );
-}
-
-bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
-    va_list va;
-    va_start ( va, format );
-
-    if ( !succeed ) {
-        sf65_vpError ( format, va );
-        exit ( 1 );
-    }
-
-    va_end ( va );
-    return succeed;
-}
-
-/* Attempts to convert the string from arg into a decimal integer
- */
-int getIntArg ( char* arg ) {
-    long int num = -1;
-    char *endarg;
-
-    num = strtol ( arg, &endarg, 0 );
-
-    // There should be only numeric until end of arg. If not, return -1 to indicate error
-    if ( *endarg != '\0' ) {
-        return -1;
-    }
-
-    return num;
-}
-
 //#define WITH(astruct) if (!typeof(astruct) ptr = astruct) { assert(false);}else
 
 //#define WLET(member, value) ptr -> member = value
 
-void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
-    /*WITH ( CMDOptions ) {
-        WLET ( style, 0 );
-    }*/
 
-    CMDOptions -> style = 0;
-    CMDOptions -> verbosity = 0;
-    CMDOptions -> processor = 1;
-    CMDOptions -> start_mnemonic = 8;
-    CMDOptions -> start_operand = 16;
-    CMDOptions -> start_comment = 32;
-    CMDOptions -> start_directive = 0;//7;
-    CMDOptions -> tabs = 0;
-    CMDOptions -> align_comment = 1;
-    CMDOptions -> nesting_space = 4;
-    CMDOptions -> labels_own_line = 0;
-    CMDOptions -> oversized_labels_own_line = 1;
-    CMDOptions -> mnemonics_case = 0;
-    CMDOptions -> directives_case = 0;
-    CMDOptions -> pad_directives = 1;
-
-    CMDOptions -> locallabelch = '@';
-
-    // Default to stdin
-    CMDOptions -> infilename = "-";
-    // Default to stdout
-    CMDOptions -> outfilename = "-";
-}
 
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg ) {
-    arg -> optCh = *arg -> currentPtr;
-    ++arg -> currentPtr;
-    return arg -> optCh;
-}
-
-sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **argv ) {
-    NOT_NULL ( arg, SF65_CMDERR_NULLPTR ); NOT_NULL ( argv, SF65_CMDERR_NULLPTR ) {
-
-        // At least filename of executable is passed, so argc is min == 1
-        assert ( argc > 0 );
-
-        arg -> argv = argv;
-        // Retrieve argument only, if command line arguments were given
-        // (beside the filename of the executable)
-        arg -> currentPtr = argv[0];
-        arg -> argIdx = 0;
-        return SF65_CMDERR_NOERR;
+    NOT_NULL ( arg, 0 ) {
+        arg -> currentCh = *arg -> currentPtr;
+        ++arg -> currentPtr;
+        return arg -> currentCh;
     }
 }
 
@@ -168,11 +26,12 @@ sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg ) {
         // argc is 1, when no arguments are given and argv[0] points to the filename of the executable
         // So, this offset of one argument has to be subtracted from argc to get the limit
         if ( arg -> argIdx < arg -> argc - 1 ) {
-            ++arg -> argIdx;
-            arg -> currentPtr = arg -> argv[arg->argIdx];
+            arg -> currentPtr = arg -> argv[++arg->argIdx];
+            arg -> currentCh = *arg -> currentPtr;
+            arg -> hasOpt = arg -> currentCh == '-';
         }
-
     }
+
 }
 
 // When entering this function, it is assumed that currentOptPtr points to character after '-'
@@ -512,6 +371,14 @@ int processCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
      * quoting of empty string leads to -~-
      */
     for ( cmdArgIdx = 1; cmdArgIdx < argc; ++cmdArgIdx ) {
+        if ( sf65_CMDOpt_GetNextArg ( cmdarg ) != SF65_CMDERR_NOERR ) {
+            return -1;
+        }
+
+        if ( cmdarg -> hasOpt ) {
+            sf65_CMDOpt_ReadNextCh ( cmdarg );
+        }
+
         // Detect switch character '-' and return pointer to char directly following '-'
         currentOptPtr = getOpt ( cmdArgIdx, argv );
 

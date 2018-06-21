@@ -183,7 +183,10 @@ int main ( int argc, char *argv[] ) {
     atexit ( sf65_CloseFiles );
 
     // Parse command line options and set corresponding variables in CMDOptions struct
-    processCMDArgs ( argc, argv, CMDOptions );
+    if ( processCMDArgs ( argc, argv, CMDOptions ) < 0 ) {
+        sf65_pError ( "Error parsing cmd args\n" );
+        exit ( 1 );
+    }
 
     // Try to open input file. Procedure exits in case of error.
     // No further err checking necessary

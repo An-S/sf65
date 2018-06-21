@@ -10,7 +10,7 @@ typedef enum {
 #undef ER
 
 typedef enum {
-    sf65_CMDSwitchPresent, sf65_CMDSwitchNotPresent
+    sf65_CMDSwitchPresent = true, sf65_CMDSwitchNotPresent = false
 } sf65CMDSwitchPresence_t;
 
 typedef struct {
@@ -21,11 +21,12 @@ typedef struct {
     int argc;
     int argIdx;
 
+    char currentCh;
     char *currentPtr; //Pointer to char ought to be read next
     int optIdx;     // Index into list of allowed cmd options
     char optCh;     // The char which determines a cmd option
     int numArg;     // The numeric argument after an optCh
-    sf65CMDSwitchPresence_t hasSwitchCh; // Indicator if '-' is present before argument
+    sf65CMDSwitchPresence_t hasOpt; // Indicator if '-' is present before argument
 } sf65CMDArg_t;
 
 // Format: command line switch character, callbackFnc, argmin, argmax

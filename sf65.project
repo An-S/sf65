@@ -36,6 +36,8 @@
     <VirtualDirectory Name="CommandLineParsing">
       <File Name="sf65_CMDArgs.c"/>
       <File Name="cmdlineparsing/sf65_cmdline.h"/>
+      <File Name="cmdlineparsing/sf65_cmdParserInit.c"/>
+      <File Name="cmdlineparsing/sf65_OptCallbacks.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="FileIO">
       <File Name="fileio/fileio.h"/>

@@ -10,6 +10,24 @@ char *errStrings[] = {
 #undef ER
 
 /*
+ * Fails is succeed == false. Else does nothing.
+ * On fail, message is printed as specified by format then
+ * program is terminated with exit code 1
+ */
+bool conditionallyFailWthMsg ( bool succeed, char *format, ... ) {
+    va_list va;
+    va_start ( va, format );
+
+    if ( !succeed ) {
+        sf65_vpError ( format, va );
+        exit ( 1 );
+    }
+
+    va_end ( va );
+    return succeed;
+}
+
+/*
  * Prints a formatted string to stderr but take va_list object as second arg
  */
 void sf65_vpError ( char *format, va_list va ) {

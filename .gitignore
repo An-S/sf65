@@ -248,3 +248,6 @@ testfiles/*.out
 testfiles/*.log
 *.save.*
 *.save
+*.depend
+*.frm
+*.err
