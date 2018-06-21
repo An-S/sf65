@@ -1,6 +1,21 @@
 #include "sf65_cmdline.h"
 
-void setCMDOptionsDefaults ( sf65Options_t *CMDOptions ) {
+sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **argv ) {
+    CHECK_NULL ( arg, SF65_CMDERR_NULLPTR ); CHECK_NULL ( argv, SF65_CMDERR_NULLPTR ) {
+
+        // At least filename of executable is passed, so argc is min == 1
+        assert ( argc > 0 );
+
+        arg -> argv = argv;
+        // Retrieve argument only, if command line arguments were given
+        // (beside the filename of the executable)
+        arg -> currentPtr = argv[0];
+        arg -> argIdx = 0;
+        return SF65_CMDERR_NOERR;
+    }
+}
+
+void sf65_SetDefaultCMDOptions ( sf65Options_t *CMDOptions ) {
     /*WITH ( CMDOptions ) {
         WLET ( style, 0 );
     }*/

@@ -24,4 +24,6 @@ bool inRange ( const char *p, const char *first, int size );
  */
 int sf65_ConvertStrToInt ( char* arg );
 
+bool sf65_checkRange ( int val, int min, int max ) ;
+
 #endif

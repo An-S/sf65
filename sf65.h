@@ -12,9 +12,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );SF65_SETERR(SF65_NULLPTR);return errorCode;} else
-#define _SF65_STR(x) #x
-#define SF65_MKSTR(x) _SF65_STR(x)
+
 
 #include "sf65_types.h"
 #include "stringfunctions/sf65_stringfunctions.h"

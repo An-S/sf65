@@ -38,6 +38,10 @@
       <File Name="cmdlineparsing/sf65_cmdline.h"/>
       <File Name="cmdlineparsing/sf65_cmdParserInit.c"/>
       <File Name="cmdlineparsing/sf65_OptCallbacks.c"/>
+      <File Name="cmdlineparsing/sf65_cmdOptionsHelp.c"/>
+      <File Name="cmdlineparsing/sf65_cmdOptionsMatcher.c"/>
+      <File Name="cmdlineparsing/sf65_cmdParsing.c"/>
+      <File Name="cmdlineparsing/sf65_cmdFiles.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="FileIO">
       <File Name="fileio/fileio.h"/>
@@ -290,6 +294,7 @@
     </VirtualDirectory>
     <File Name="mkTests.sh"/>
     <File Name="sf65_helpers.c"/>
+    <File Name="sf65_macros.h"/>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

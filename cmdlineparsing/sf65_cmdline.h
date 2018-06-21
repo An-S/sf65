@@ -1,11 +1,16 @@
 #ifndef __SF65CMDL_H__
 #define __SF65CMDL_H__
 
-#define SF65_CMDLERRLIST ER(NOERR), ER(NULLPTR), ER(INVALIDARGERR)
+#include <stdbool.h>
+#include <sf65_macros.h>
+
+#define CHECK_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );return errorCode;} else
+
+#define SF65_CMDERRLIST ER(NOERR), ER(NULLPTR), ER(INVALIDARGERR)
 
 #define ER(x) SF65_CMDERR_##x
 typedef enum {
-    SF65_ERRLIST
+    SF65_CMDERRLIST
 } sf65CMDErrCode_t;
 #undef ER
 
@@ -72,7 +77,18 @@ typedef struct {
 
 extern sf65Options_t *CMDOptions;
 
+void showCMDOptionsHelp ( void );
 
+/*
+ * Inits parser. Retrieves first arg and stores state.
+ */
+sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **argv );
+
+/*
+ * Sets default values for variables holding the value parameters
+ * of the command line arguments
+ */
+void sf65_SetDefaultCMDOptions ( sf65Options_t *CMDOptions );
 
 /*
  * Procedure to process command line arguments given to sf65
