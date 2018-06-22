@@ -30,20 +30,15 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) 
         int optMaxList[] = {SF65_CMDOPTLIST - 1};
 #   undef CO
 
-        int cmdNumArg;
-        bool cmdNumArgIs0Or1;
-        char cmdSwitchCh;
-
-        cmdSwitchCh = sf65_CMDOpt_ReadNextCh ( cmdarg );
+        sf65_CMDOpt_ReadNextCh ( cmdarg );
 
         // = cmdarg->optCh;// = *currentOptPtr++;
 
         if ( isdigit ( *cmdarg -> currentPtr ) ) {
-            cmdarg -> numArg = cmdNumArg = sf65_ConvertStrToInt ( cmdarg -> currentPtr );
-            cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
+            cmdarg -> numArg = sf65_ConvertStrToInt ( cmdarg -> currentPtr );
+            //checkIf0Or1 ( cmdNumArg );
         } else {
-            cmdarg -> numArg = cmdNumArg = -1;
-            cmdNumArgIs0Or1 = false;
+            cmdarg -> numArg = -1;
         }
 
         // If optCh not found, strchr returns NULL and then the expression becomes negative

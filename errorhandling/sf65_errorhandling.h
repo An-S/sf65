@@ -37,5 +37,6 @@ sf65ErrCode_t sf65_GetLastError ( void );
 bool sf65_ErrorOccured ( void );
 FILE *sf65_OpenErrLog ( char *filename );
 sf65ErrCode_t sf65_CloseErrLog ( void );
+bool conditionallyFailWthMsg ( bool succeed, char *format, ... );
 
 #endif

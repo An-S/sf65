@@ -93,6 +93,7 @@ void sf65_SetDefaultCMDOptions ( sf65Options_t *CMDOptions );
 int sf65_ParseCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions );
 
 void validateCMDLineSwitches ( sf65Options_t * CMDOptions );
+void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg );
 
 char *sf65_setInFilename ( sf65Options_t * cmdopt, char * fname );
 char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname );
@@ -101,7 +102,7 @@ char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname );
  * Procedure to process command line arguments given to sf65
  * Fills given struct with values of command line options and/or default values
  */
-int processCMDArgs ( int argc, char **argv, sf65Options_t *CMDOptions );
+sf65CMDErrCode_t  sf65_ProcessCmdArgs ( sf65CMDArg_t *cmdarg );
 
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg );
 sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg );

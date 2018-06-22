@@ -31,7 +31,7 @@ int sf65_ParseCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
     sf65_SetDefaultCMDOptions ( CMDOptions );
     sf65_CMDOpt_InitParser ( cmdarg, argc, argv );
 
-
+    sf65_ProcessCmdArgs ( cmdarg );
 
 
     /*

@@ -11,6 +11,8 @@ sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **ar
         // (beside the filename of the executable)
         arg -> currentPtr = argv[0];
         arg -> argIdx = 0;
+        arg -> argc = argc;
+
         return SF65_CMDERR_NOERR;
     }
 }

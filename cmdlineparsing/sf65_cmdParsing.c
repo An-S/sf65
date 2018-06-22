@@ -2,8 +2,8 @@
 
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg ) {
     NOT_NULL ( arg, 0 ) {
-        arg -> currentCh = *arg -> currentPtr;
-        ++arg -> currentPtr;
+        arg -> currentCh = *++arg -> currentPtr;
+        //++arg -> currentPtr;
         return arg -> currentCh;
     }
 }
@@ -18,6 +18,8 @@ sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg ) {
             arg -> currentCh = *arg -> currentPtr;
             arg -> hasOpt = arg -> currentCh == '-';
         }
+
+        return SF65_CMDERR_NOERR;
     }
 
 }
