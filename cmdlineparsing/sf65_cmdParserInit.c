@@ -1,4 +1,4 @@
-#include "sf65_cmdline.h"
+#include "sf65.h"
 
 sf65CMDErrCode_t sf65_CMDOpt_InitParser ( sf65CMDArg_t *arg, int argc, char **argv ) {
     CHECK_NULL ( arg, SF65_CMDERR_NULLPTR ); CHECK_NULL ( argv, SF65_CMDERR_NULLPTR ) {

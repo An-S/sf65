@@ -183,7 +183,7 @@ int main ( int argc, char *argv[] ) {
     atexit ( sf65_CloseFiles );
 
     // Parse command line options and set corresponding variables in CMDOptions struct
-    if ( processCMDArgs ( argc, argv, CMDOptions ) < 0 ) {
+    if ( sf65_ParseCMDArgs ( argc, argv, CMDOptions ) < 0 ) {
         sf65_pError ( "Error parsing cmd args\n" );
         exit ( 1 );
     }

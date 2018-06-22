@@ -39,7 +39,7 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) 
         // = cmdarg->optCh;// = *currentOptPtr++;
 
         if ( isdigit ( *cmdarg -> currentPtr ) ) {
-            cmdarg -> numArg = cmdNumArg = getIntArg ( cmdarg -> currentPtr );
+            cmdarg -> numArg = cmdNumArg = sf65_ConvertStrToInt ( cmdarg -> currentPtr );
             cmdNumArgIs0Or1 = checkIf0Or1 ( cmdNumArg );
         } else {
             cmdarg -> numArg = cmdNumArg = -1;
@@ -72,99 +72,100 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) 
             // call function to set members in CMDOptions struct
             modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
         }
-
-//modifierFncList[optidx)(CMDOptions,
-// If come here, option after switch character was given
-        switch ( cmdSwitchCh ) {
-            /*case 'v':
-                ++CMDOptions -> verbosity;
-                break;
-            case 'h':
-                showCMDOptionsHelp();
-                exit ( 1 );
-            case 'e':
-                CMDOptions -> pad_directives = cmdNumArg;
-
-                conditionallyFailWthMsg (
-                    cmdNumArgIs0Or1,
-                    "Bad sf65Options -> pad directives: %d\n", cmdNumArg
-                );
-                break;
-            case 's':   // sf65Options -> Style
-                CMDOptions -> style = cmdNumArg;
-
-                conditionallyFailWthMsg (
-                    cmdNumArgIs0Or1,
-                    "Bad sf65Options -> style code: %d\n", cmdNumArg
-                );
-                break;*/
-        case 'p':   /* Processor */
-            CMDOptions -> processor = cmdNumArg;
-
-            conditionallyFailWthMsg (
-                cmdNumArgIs0Or1,
-                "Bad sf65Options -> processor code: %d\n", cmdNumArg
-            );
-            break;
-        case 'm':   /* Mnemonic start */
-            if ( *currentOptPtr == 'l' ) {
-                CMDOptions -> mnemonics_case = 1;
-            } else if ( *currentOptPtr == 'u' ) {
-                CMDOptions -> mnemonics_case = 2;
-            } else {
-                CMDOptions -> start_mnemonic = cmdNumArg;
-            }
-            break;
-        case 'o':   /* Operand start */
-            CMDOptions -> start_operand = cmdNumArg;
-            break;
-        case 'c':   /* Comment start */
-            CMDOptions -> start_comment = cmdNumArg;
-            break;
-        case 't':   /* Tab size */
-            CMDOptions -> tabs = cmdNumArg;
-            break;
-        case 'a':   /* Comment alignment */
-            CMDOptions -> align_comment = cmdNumArg;
-            conditionallyFailWthMsg (
-                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
-            );
-
-            break;
-        case 'n':   /* Nesting space */
-            CMDOptions -> nesting_space = cmdNumArg;
-            break;
-        case 'l':   /* Labels in own line. l0 = labels in existing line
-                           l1 = oversized labels own line
-                           l2 = all labels own line*/
-            if ( strlen ( currentOptPtr ) > 0 ) {
-                CMDOptions -> oversized_labels_own_line = cmdNumArg;
-
-                conditionallyFailWthMsg (
-                    sf65_checkRange ( cmdNumArg, 0, 2 ) ,
-                    "Bad label line placement: %d\n", cmdNumArg
-                );
-
-                if ( CMDOptions -> oversized_labels_own_line == 2 ) {
-                    CMDOptions -> labels_own_line = 1;
-                }
-            } else {
-                CMDOptions -> labels_own_line = 1;
-            }
-            break;
-        case 'd':   /* Directives */
-            if ( *currentOptPtr == 'l' ) {
-                CMDOptions -> directives_case = 1;
-            } else if ( *currentOptPtr == 'u' ) {
-                CMDOptions -> directives_case = 2;
-            } else {
-                sf65_pError ( "Unknown argument: %c%c\n", cmdSwitchCh, *currentOptPtr );
-            }
-            break;
-        default:    /* Other */
-            sf65_pError ( "Unknown argument: %c\n", cmdSwitchCh );
-            exit ( 1 );
-        }
+//
+////modifierFncList[optidx)(CMDOptions,
+//// If come here, option after switch character was given
+//        switch ( cmdSwitchCh ) {
+//            /*case 'v':
+//                ++CMDOptions -> verbosity;
+//                break;
+//            case 'h':
+//                showCMDOptionsHelp();
+//                exit ( 1 );
+//            case 'e':
+//                CMDOptions -> pad_directives = cmdNumArg;
+//
+//                conditionallyFailWthMsg (
+//                    cmdNumArgIs0Or1,
+//                    "Bad sf65Options -> pad directives: %d\n", cmdNumArg
+//                );
+//                break;
+//            case 's':   // sf65Options -> Style
+//                CMDOptions -> style = cmdNumArg;
+//
+//                conditionallyFailWthMsg (
+//                    cmdNumArgIs0Or1,
+//                    "Bad sf65Options -> style code: %d\n", cmdNumArg
+//                );
+//                break;*/
+//
+//        case 'p':   /* Processor */
+//            CMDOptions -> processor = cmdNumArg;
+//
+//            conditionallyFailWthMsg (
+//                cmdNumArgIs0Or1,
+//                "Bad sf65Options -> processor code: %d\n", cmdNumArg
+//            );
+//            break;
+//        case 'm':   /* Mnemonic start */
+//            if ( *currentOptPtr == 'l' ) {
+//                CMDOptions -> mnemonics_case = 1;
+//            } else if ( *currentOptPtr == 'u' ) {
+//                CMDOptions -> mnemonics_case = 2;
+//            } else {
+//                CMDOptions -> start_mnemonic = cmdNumArg;
+//            }
+//            break;
+//        case 'o':   /* Operand start */
+//            CMDOptions -> start_operand = cmdNumArg;
+//            break;
+//        case 'c':   /* Comment start */
+//            CMDOptions -> start_comment = cmdNumArg;
+//            break;
+//        case 't':   /* Tab size */
+//            CMDOptions -> tabs = cmdNumArg;
+//            break;
+//        case 'a':   /* Comment alignment */
+//            CMDOptions -> align_comment = cmdNumArg;
+//            conditionallyFailWthMsg (
+//                cmdNumArgIs0Or1, "Bad comment alignment: %d\n", cmdNumArg
+//            );
+//
+//            break;
+//        case 'n':   /* Nesting space */
+//            CMDOptions -> nesting_space = cmdNumArg;
+//            break;
+//        case 'l':   /* Labels in own line. l0 = labels in existing line
+//                           l1 = oversized labels own line
+//                           l2 = all labels own line*/
+//            if ( strlen ( currentOptPtr ) > 0 ) {
+//                CMDOptions -> oversized_labels_own_line = cmdNumArg;
+//
+//                conditionallyFailWthMsg (
+//                    sf65_checkRange ( cmdNumArg, 0, 2 ) ,
+//                    "Bad label line placement: %d\n", cmdNumArg
+//                );
+//
+//                if ( CMDOptions -> oversized_labels_own_line == 2 ) {
+//                    CMDOptions -> labels_own_line = 1;
+//                }
+//            } else {
+//                CMDOptions -> labels_own_line = 1;
+//            }
+//            break;
+//        case 'd':   /* Directives */
+//            if ( *currentOptPtr == 'l' ) {
+//                CMDOptions -> directives_case = 1;
+//            } else if ( *currentOptPtr == 'u' ) {
+//                CMDOptions -> directives_case = 2;
+//            } else {
+//                sf65_pError ( "Unknown argument: %c%c\n", cmdSwitchCh, *currentOptPtr );
+//            }
+//            break;
+//        default:    /* Other */
+//            sf65_pError ( "Unknown argument: %c\n", cmdSwitchCh );
+//            exit ( 1 );
+//        }
 
     }
 }

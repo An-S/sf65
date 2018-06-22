@@ -42,6 +42,7 @@
       <File Name="cmdlineparsing/sf65_cmdOptionsMatcher.c"/>
       <File Name="cmdlineparsing/sf65_cmdParsing.c"/>
       <File Name="cmdlineparsing/sf65_cmdFiles.c"/>
+      <File Name="cmdlineparsing/sf65_cmdProcessing.c"/>
     </VirtualDirectory>
     <VirtualDirectory Name="FileIO">
       <File Name="fileio/fileio.h"/>
