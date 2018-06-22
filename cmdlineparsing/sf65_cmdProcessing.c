@@ -19,7 +19,7 @@
      * quoting of empty string leads to -~-
      */
 
-sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65CMDArg_t *cmdarg ) {
+sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     static char predefinedInFilename[]  = "in.src";
     static char predefinedOutFilename[]  = "out.src";
 
@@ -29,13 +29,16 @@ sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65CMDArg_t *cmdarg ) {
 
         while ( cmdarg -> argIdx < cmdarg -> argc ) {
             if ( sf65_CMDOpt_GetNextArg ( cmdarg ) != SF65_CMDERR_NOERR ) {
-                return -1;
+                break;
             }
 
             if ( sf65_CMDSwitchNotPresent == cmdarg -> hasOpt ) {
                 // If no switch character '-' is present, argument must be
                 // filename or error. Therefore it is meaningless to continue
                 // reading chars one by one like in the else branch
+
+                // Reset option character for the next run
+                cmdarg -> optCh = '\0';
 
                 if ( cmdarg -> argIdx < cmdarg -> argc - 2 ) {
                     sf65_pError ( "In/out filenames should be given as last two parameters\n" );
@@ -48,46 +51,79 @@ sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65CMDArg_t *cmdarg ) {
                 filenamePositions[filenameCount++] = cmdarg -> argIdx;
             } else {
                 sf65_CMDOpt_ReadNextCh ( cmdarg );
+                cmdarg -> optCh = cmdarg -> currentCh;
 
                 // Should not read over end of cmd argument
                 //assert ( '0' != cmdarg -> currentCh );
 
-                // Test, if option is given after '-' switch character.
-                // However, if cmdArgIdx > argc-2, single '-' is allowed to specify
-                // stdin /stdout
-                if ( !cmdarg -> currentCh && cmdarg -> argIdx < cmdarg -> argc - 2 ) {
-                    // If no option specified after '-', output err msg and indicate
-                    // position of arg neglecting arg 0 (filename of executable)
-                    // That's why "cmdArgIdx - 1"
-                    sf65_pError ( "Missing option after switch at arg: %d\n", cmdarg -> argIdx - 1 );
-                    exit ( 1 );
-                }
-
-                if ( !*cmdarg -> currentPtr && cmdarg -> argIdx >= cmdarg -> argc - 2 ) {
-                    /*if ( cmdArgIdx < argc - 2 ) {
-                        sf65_pError ( "'-' for stdin/stdout can be given only for last two parameters\n" );
+                // Check on isolated switch character '-'
+                if ( !cmdarg -> currentCh ) {
+                    // Test, if option is given after '-' switch character.
+                    // However, if cmdArgIdx > argc-2, single '-' is allowed to specify
+                    // stdin /stdout
+                    if ( cmdarg -> argIdx < cmdarg -> argc - 2 ) {
+                        // If no option specified after '-', output err msg and indicate
+                        // position of arg neglecting arg 0 (filename of executable)
+                        // That's why "cmdArgIdx - 1"
+                        sf65_pError ( "Missing option after switch at arg: %d\n", cmdarg -> argIdx - 1 );
                         exit ( 1 );
-                    }*/
-                    //if ( filenameCount < 2 ) {
+                    } else {
+                        // Assert that there are not more than 2 filenames present
+                        // which should always be true if above condition fails
+                        assert ( filenameCount < 2 );
+                        filenamePositions[filenameCount++] = cmdarg -> argIdx;
 
-                    // Assert that there are not more than 2 filenames present
-                    // which should always be true if above condition fails
-                    assert ( filenameCount < 2 );
-                    filenamePositions[filenameCount++] = cmdarg -> argIdx;
-
-                    // If output is beeing redirected to stdout, set verbosity to 0
-                    // to prevent mixing diagnostic output and output of formatted
-                    // source
-                    if ( filenameCount > 1 ) {
-                        CMDOptions -> verbosity = 0;
+                        // If output is beeing redirected to stdout, set verbosity to 0
+                        // to prevent mixing diagnostic output and output of formatted
+                        // source
+                        if ( filenameCount > 1 ) {
+                            CMDOptions -> verbosity = 0;
+                        }
                     }
                 } else {
                     // Determine which options have been given on command line and set variables
-                    // in CMDOptions struct accordingly
+                    //d in CMDOptions struct accordingly
                     detectCMDLineSwitches ( CMDOptions, cmdarg );
                 }
             }
         }
+
+        switch ( filenameCount ) {
+        case 0:
+            sf65_printfUserInfo ( "Neither input nor output file given. Using default filenames\n" );
+            sf65_setInFilename ( CMDOptions, predefinedInFilename );
+            sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
+            break;
+        case 1:
+            sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
+            if ( *cmdarg -> argv[filenamePositions[0]] ) {
+                sf65_setInFilename ( CMDOptions, cmdarg -> argv[filenamePositions[0]] );
+            } else {
+                sf65_setInFilename ( CMDOptions, predefinedInFilename );
+            }
+            sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
+
+            break;
+        case 2:
+            if ( *cmdarg -> argv[filenamePositions[0]] ) {
+                sf65_setInFilename ( CMDOptions, cmdarg -> argv[filenamePositions[0]] );
+            } else {
+                sf65_printfUserInfo ( "No input file given. Using Default filename\n" );
+
+                sf65_setInFilename ( CMDOptions, predefinedInFilename );
+            }
+            if ( *cmdarg -> argv[filenamePositions[1]] ) {
+                sf65_setOutFilename ( CMDOptions, cmdarg -> argv[filenamePositions[1]] );
+            } else {
+                sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
+
+                sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
+            }
+            break;
+        default:
+            DO_NOT_REACH ( "Should not come here, because max 2 files may be specified\n" );
+        }
+
         return SF65_CMDERR_NOERR;
     }
 }

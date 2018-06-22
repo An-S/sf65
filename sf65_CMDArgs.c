@@ -20,18 +20,12 @@
  * 3.) two filenames are present
  */
 int sf65_ParseCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
-    static char predefinedInFilename[]  = "in.src";
-    static char predefinedOutFilename[]  = "out.src";
-
     sf65CMDArg_t *cmdarg = & ( sf65CMDArg_t ) {};
-
-    int filenamePositions[2] = {};
-    int filenameCount = 0;
 
     sf65_SetDefaultCMDOptions ( CMDOptions );
     sf65_CMDOpt_InitParser ( cmdarg, argc, argv );
 
-    sf65_ProcessCmdArgs ( cmdarg );
+    sf65_ProcessCmdArgs ( CMDOptions, cmdarg );
 
 
     /*
@@ -40,41 +34,7 @@ int sf65_ParseCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions ) {
 
     validateCMDLineSwitches ( CMDOptions );
 
-    switch ( filenameCount ) {
-    case 0:
-        sf65_printfUserInfo ( "Neither input nor output file given. Using default filenames\n" );
-        sf65_setInFilename ( CMDOptions, predefinedInFilename );
-        sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
-        break;
-    case 1:
-        sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
-        if ( *argv[filenamePositions[0]] ) {
-            sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
-        } else {
-            sf65_setInFilename ( CMDOptions, predefinedInFilename );
-        }
-        sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
 
-        break;
-    case 2:
-        if ( *argv[filenamePositions[0]] ) {
-            sf65_setInFilename ( CMDOptions, argv[filenamePositions[0]] );
-        } else {
-            sf65_printfUserInfo ( "No input file given. Using Default filename\n" );
-
-            sf65_setInFilename ( CMDOptions, predefinedInFilename );
-        }
-        if ( *argv[filenamePositions[1]] ) {
-            sf65_setOutFilename ( CMDOptions, argv[filenamePositions[1]] );
-        } else {
-            sf65_printfUserInfo ( "No output file given. Using Default filename\n" );
-
-            sf65_setOutFilename ( CMDOptions, predefinedOutFilename );
-        }
-        break;
-    default:
-        assert ( false ); //Should not come here, because max 2 files may be specified
-    }
 
     return cmdarg -> argIdx;
 }

@@ -17,6 +17,8 @@ sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg ) {
             arg -> currentPtr = arg -> argv[++arg->argIdx];
             arg -> currentCh = *arg -> currentPtr;
             arg -> hasOpt = arg -> currentCh == '-';
+        } else {
+            return SF65_CMDERR_NOMOREARGS;
         }
 
         return SF65_CMDERR_NOERR;

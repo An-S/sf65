@@ -6,7 +6,7 @@ SF65_CMDOPTLIST
 
 // When entering this function, it is assumed that currentOptPtr points to character after '-'
 // and that there was a '-' present
-void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) {
+void detectCMDLineSwitches ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     NOT_NULL ( CMDOptions, ); NOT_NULL ( cmdarg, ) {
 
         // Define a list of allowed switches by concatenating a string using x macro
@@ -30,11 +30,11 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) 
         int optMaxList[] = {SF65_CMDOPTLIST - 1};
 #   undef CO
 
-        sf65_CMDOpt_ReadNextCh ( cmdarg );
-
         // = cmdarg->optCh;// = *currentOptPtr++;
 
-        if ( isdigit ( *cmdarg -> currentPtr ) ) {
+        sf65_CMDOpt_ReadNextCh ( cmdarg );
+
+        if ( isdigit ( cmdarg -> currentCh ) ) {
             cmdarg -> numArg = sf65_ConvertStrToInt ( cmdarg -> currentPtr );
             //checkIf0Or1 ( cmdNumArg );
         } else {
@@ -47,27 +47,31 @@ void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg ) 
         // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
         if ( cmdarg -> optIdx < 0 ) {
             // Indicate invalid command line option
-            cmdarg -> optIdx = -1;
+            sf65_pError ( "Unknown option '%c'\n", cmdarg -> optCh );
+            exit ( 1 );
         }
 
-        if ( cmdarg -> optIdx >= 0 ) {
-            // Assert that list of valid cmd options do not contain one option more than one time
-            assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
+        // Check, that unknown options were catched successfully and we can continue
+        // with known options
+        assert ( cmdarg -> optIdx >= 0 );
 
-            // Check range of numeric parameter for cmd option and exit if range exceeded
-            conditionallyFailWthMsg (
-                sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
-                                  optMaxList[cmdarg -> optIdx]
-                                ) ,
-                "Numeric option parameter out of range: %c,[%d..%d] but given %d\n", cmdarg -> optCh,
-                optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
-            );
-            // assert non NULL function pointer
-            assert ( modifierFncList[cmdarg -> optIdx] );
-            // call function to set members in CMDOptions struct
-            modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
-        }
-//
+        // Assert that list of valid cmd options do not contain one option more than one time
+        assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
+        sf65_printfUserInfo ( "Detected switch '%c' with arg '%d'.\n", cmdarg -> optCh, cmdarg -> numArg );
+
+        // Check range of numeric parameter for cmd option and exit if range exceeded
+        conditionallyFailWthMsg (
+            sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
+                              optMaxList[cmdarg -> optIdx]
+                            ) ,
+            "Numeric option parameter out of range: %c in [%d..%d] but given %d\n", cmdarg -> optCh,
+            optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
+        );
+        // assert non NULL function pointer
+        assert ( modifierFncList[cmdarg -> optIdx] );
+        // call function to set members in CMDOptions struct
+        modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
+
 ////modifierFncList[optidx)(CMDOptions,
 //// If come here, option after switch character was given
 //        switch ( cmdSwitchCh ) {

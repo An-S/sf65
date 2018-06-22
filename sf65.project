@@ -296,6 +296,9 @@
     <File Name="mkTests.sh"/>
     <File Name="sf65_helpers.c"/>
     <File Name="sf65_macros.h"/>
+    <VirtualDirectory Name="Debugging">
+      <File Name="debugging/sf65_debugging.c"/>
+    </VirtualDirectory>
   </VirtualDirectory>
   <Settings Type="Executable">
     <GlobalSettings>

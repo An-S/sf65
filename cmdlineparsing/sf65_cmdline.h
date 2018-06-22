@@ -6,7 +6,7 @@
 
 #define CHECK_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );return errorCode;} else
 
-#define SF65_CMDERRLIST ER(NOERR), ER(NULLPTR), ER(INVALIDARGERR)
+#define SF65_CMDERRLIST ER(NOERR), ER(NULLPTR), ER(NOMOREARGS), ER(INVALIDARGERR)
 
 #define ER(x) SF65_CMDERR_##x
 typedef enum {
@@ -43,7 +43,7 @@ typedef struct {
     CO ( d, Directive,     0, -1 )\
     CO ( c, Comment,       0, -1 )\
     CO ( p, Processor,     0,  0 )\*/\
-    CO ( h, Help,          0,  0 ) \
+    CO ( h, Help,          -1,  -1 ) \
     /*CO ( t, Tabs,          0,  8 )\
     CO ( a, Align,         0,  1 )\
     CO ( l, LabelPlacement, 0,  2 )\*/\
@@ -102,12 +102,12 @@ char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname );
  * Procedure to process command line arguments given to sf65
  * Fills given struct with values of command line options and/or default values
  */
-sf65CMDErrCode_t  sf65_ProcessCmdArgs ( sf65CMDArg_t *cmdarg );
+sf65CMDErrCode_t  sf65_ProcessCmdArgs ( sf65Options_t *, sf65CMDArg_t * );
 
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg );
-sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t *arg );
+sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t * );
 
 typedef sf65CMDErrCode_t
-sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t *arg );
+sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t * );
 
 #endif
