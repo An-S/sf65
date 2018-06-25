@@ -12,13 +12,13 @@ void detectCMDLineSwitches ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
         // Define a list of allowed switches by concatenating a string using x macro
         // stringification
 #   define CO(w,x,y,z) #w
-        char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
+        static char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
 #   undef CO
 
         // Define an array of pointers to callback functions which are called for
         // a set switch at the same array position as in the switches string
 #   define CO(w,x,y,z) sf65_Opt##x,
-        sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
+        static sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
 #   undef CO
 
         // Define min/max values for numeric command line parameters
@@ -42,7 +42,7 @@ void detectCMDLineSwitches ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
         }
 
         // If optCh not found, strchr returns NULL and then the expression becomes negative
-        cmdarg -> optIdx = strchr ( switches, cmdarg -> optCh ) - switches;
+        cmdarg -> optIdx = sf65_LocateCharInCStr ( switches, cmdarg -> optCh );
 
         // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
         if ( cmdarg -> optIdx < 0 ) {
