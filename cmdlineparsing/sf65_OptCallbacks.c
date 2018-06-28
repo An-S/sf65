@@ -1,5 +1,10 @@
 #include "sf65.h"
 
+sf65CMDErrCode_t sf65_OptLocalLabelCh ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
+    CMDOptions -> locallabelch = cmdarg -> currentCh;
+    return SF65_CMDERR_NOERR;
+}
+
 sf65CMDErrCode_t sf65_OptVerbosity ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     ++CMDOptions -> verbosity;
     return SF65_CMDERR_NOERR;

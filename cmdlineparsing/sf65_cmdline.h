@@ -25,8 +25,10 @@ typedef struct {
 
     // Store a copy of the argv pointer to the original command line arguments list
     char **argv;
+    // Store a pointer to the current argv entry
     char *arg;
     int argc;
+    // The index of the currently processed cmd arg
     int argIdx;
 
     char currentCh;
@@ -42,16 +44,17 @@ typedef struct {
     CO ( v, Verbosity,    -1, -1 )\
     CO ( s, Style,         0,  1 )\
     CO ( n, NestingLevel,  0, 12 )\
-    CO ( m, Mnemonic,      -1, 20 )\
-    CO ( d, Directive,     -1, 20 )\
+    CO ( m, Mnemonic,     -1, 20 )\
+    CO ( d, Directive,    -1, 20 )\
     CO ( c, Comment,       0, 40 )\
     CO ( p, Processor,     0,  1 )\
     CO ( o, Operand,       0, 40 )\
-    CO ( h, Help,          -1,  -1 )\
+    CO ( h, Help,         -1, -1 )\
     CO ( t, Tabs,          0,  8 )\
     CO ( a, Align,         0,  1 )\
-    CO ( l, LabelPlacement, 0,  2 )\
-    CO ( e, ScopePadding,  0,  1 )
+    CO ( l, LabelPlacement,0,  2 )\
+    CO ( e, ScopePadding,  0,  1 )\
+    CO ( i, LocalLabelCh, -1, -1 )
 
 /*
  * Struct to hold values of command line arguments given to sf65
@@ -82,14 +85,14 @@ typedef struct {
 extern sf65Options_t *CMDOptions;
 
 typedef sf65CMDErrCode_t
-sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t * );
+sf65CMDOptionCallbackFnc_t ( sf65Options_t *, sf65CMDArg_t * );
 
-typedef struct {
+typedef struct sf65CMDOptionsList_tag {
     const char *switches;
-    sf65OptionsModifierFnc_t **optModifierFncList;
+    sf65CMDOptionCallbackFnc_t **optCallbackFncList;
     int *llimits;
-    int *hlimits;
-} gfgfgfg_t;
+    int *ulimits;
+} sf65CMDOptionsList_t;
 
 
 void showCMDOptionsHelp ( void );
@@ -114,8 +117,7 @@ void validateCMDLineSwitches ( sf65Options_t * CMDOptions );
  */
 void sf65_DetectMatchingOption ( sf65Options_t *CMDOptions,
                                  sf65CMDArg_t *cmdarg,
-                                 const char *switches,
-                                 sf65OptionsModifierFnc_t **fncList );
+                                 sf65CMDOptionsList_t *optlist );
 char *sf65_setInFilename ( sf65Options_t * cmdopt, char * fname );
 char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname );
 

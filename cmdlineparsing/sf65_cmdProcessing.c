@@ -26,17 +26,38 @@ SF65_CMDOPTLIST
 sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     static char predefinedInFilename[]  = "in.src";
     static char predefinedOutFilename[]  = "out.src";
-    // Define a list of allowed switches by concatenating a string using x macro
-    // stringification
-#   define CO(w,x,y,z) #w
-    static char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
-#   undef CO
 
     // Define an array of pointers to callback functions which are called for
     // a set switch at the same array position as in the switches string
-#   define CO(w,x,y,z) sf65_Opt##x,
-    static sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
-#   undef CO
+    sf65CMDOptionCallbackFnc_t *cmdOptCallbackFunctions[] = {
+#       define CO(w,x,y,z) sf65_Opt##x,
+        SF65_CMDOPTLIST NULL
+#       undef CO
+    };
+
+    int cmdOptLLimits[] = {
+#       define CO(w,x,y,z) y,
+        SF65_CMDOPTLIST 0
+#       undef CO
+    };
+
+    int cmdOptULimits[] = {
+#       define CO(w,x,y,z) z,
+        SF65_CMDOPTLIST 0
+#       undef CO
+    };
+
+    sf65CMDOptionsList_t CMDOptionsList = {
+        // Define a list of allowed switches by concatenating a string using x macro
+        // stringification
+#       define CO(w,x,y,z) #w
+        SF65_CMDOPTLIST,  // '\0' is appended automatically
+#       undef CO
+
+        cmdOptCallbackFunctions,
+        cmdOptLLimits,
+        cmdOptULimits
+    };
 
     NOT_NULL ( cmdarg, SF65_CMDERR_NULLPTR ) {
         int filenamePositions[2] = {};
@@ -99,7 +120,7 @@ sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65Options_t *CMDOptions, sf65CMDArg_t *
                     // Determine which options have been given on command line and set variables
                     //d in CMDOptions struct accordingly
                     sf65_DetectMatchingOption ( CMDOptions, cmdarg,
-                                                switches, modifierFncList );
+                                                &CMDOptionsList );
                 }
             }
         }

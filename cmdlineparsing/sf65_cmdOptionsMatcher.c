@@ -1,37 +1,11 @@
 #include "sf65.h"
 
-#   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, sf65CMDArg_t *cmdarg );
-SF65_CMDOPTLIST
-#   undef CO
-
 // When entering this function, it is assumed that currentOptPtr points to character after '-'
 // and that there was a '-' present
 void sf65_DetectMatchingOption ( sf65Options_t *CMDOptions,
                                  sf65CMDArg_t *cmdarg,
-                                 const char *switches,
-                                 sf65OptionsModifierFnc_t **fncList ) {
+                                 sf65CMDOptionsList_t *optlist ) {
     NOT_NULL ( CMDOptions, ); NOT_NULL ( cmdarg, ) {
-
-        // Define a list of allowed switches by concatenating a string using x macro
-        // stringification
-#   define CO(w,x,y,z) #w
-        static char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
-#   undef CO
-
-        // Define an array of pointers to callback functions which are called for
-        // a set switch at the same array position as in the switches string
-#   define CO(w,x,y,z) sf65_Opt##x,
-        static sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
-#   undef CO
-
-        // Define min/max values for numeric command line parameters
-#   define CO(w,x,y,z) y,
-        int optMinList[] = {SF65_CMDOPTLIST - 1};
-#   undef CO
-
-#   define CO(w,x,y,z) z,
-        int optMaxList[] = {SF65_CMDOPTLIST - 1};
-#   undef CO
 
         // = cmdarg->optCh;// = *currentOptPtr++;
 
@@ -45,7 +19,7 @@ void sf65_DetectMatchingOption ( sf65Options_t *CMDOptions,
         }
 
         // If optCh not found, strchr returns NULL and then the expression becomes negative
-        cmdarg -> optIdx = sf65_LocateCharInCStr ( switches, cmdarg -> optCh );
+        cmdarg -> optIdx = sf65_LocateCharInCStr ( optlist -> switches, cmdarg -> optCh );
 
         // This if clause checks indirectly the NULL return value of strchr, if optCh was not found
         if ( cmdarg -> optIdx < 0 ) {
@@ -59,21 +33,21 @@ void sf65_DetectMatchingOption ( sf65Options_t *CMDOptions,
         assert ( cmdarg -> optIdx >= 0 );
 
         // Assert that list of valid cmd options do not contain one option more than one time
-        assert ( cmdarg -> optIdx == strrchr ( switches, cmdarg -> optCh ) - switches );
+        assert ( cmdarg -> optIdx == strrchr ( optlist -> switches, cmdarg -> optCh ) - optlist -> switches );
         sf65_printfUserInfo ( "Detected switch '%c' with arg '%d'.\n", cmdarg -> optCh, cmdarg -> numArg );
 
         // Check range of numeric parameter for cmd option and exit if range exceeded
         conditionallyFailWthMsg (
-            sf65_checkRange ( cmdarg -> numArg, optMinList[cmdarg -> optIdx],
-                              optMaxList[cmdarg -> optIdx]
+            sf65_checkRange ( cmdarg -> numArg, optlist -> llimits[cmdarg -> optIdx],
+                              optlist -> ulimits[cmdarg -> optIdx]
                             ) ,
             "Numeric option parameter out of range: %c in [%d..%d] but given %d\n", cmdarg -> optCh,
-            optMinList[cmdarg -> optIdx], optMaxList[cmdarg -> optIdx], cmdarg -> numArg
+            optlist -> llimits[cmdarg -> optIdx], optlist -> ulimits[cmdarg -> optIdx], cmdarg -> numArg
         );
         // assert non NULL function pointer
-        assert ( modifierFncList[cmdarg -> optIdx] );
+        assert ( optlist -> optCallbackFncList[cmdarg -> optIdx] );
         // call function to set members in CMDOptions struct
-        modifierFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
+        optlist -> optCallbackFncList[cmdarg -> optIdx] ( CMDOptions, cmdarg );
     }
 }
 
