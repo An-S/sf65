@@ -13,7 +13,7 @@ label3:
                     sta $d020
 
                     .SCOPE fghij
-                    label5:
+                    @label5:
                     .ENDSCOPE
 
                     amacro

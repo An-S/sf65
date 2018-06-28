@@ -139,7 +139,8 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
     }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
-    if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' || *p1 == CMDOptions -> locallabelch ) {
+    if ( *p1 == '.' || isalpha ( *p1 ) ||
+            *p1 == '_' || *p1 == CMDOptions -> locallabelch ) {
         // p1 points to start of codeword, p2 be moved to end of word
         c = detectOpcode ( p1, p2, CMDOptions -> processor, &pData -> request, &pData -> flags );
 
