@@ -19,9 +19,24 @@
      * quoting of empty string leads to -~-
      */
 
+#   define CO(x,y,v,w) sf65CMDErrCode_t sf65_Opt##y(sf65Options_t *opt, sf65CMDArg_t *cmdarg );
+SF65_CMDOPTLIST
+#   undef CO
+
 sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65Options_t *CMDOptions, sf65CMDArg_t *cmdarg ) {
     static char predefinedInFilename[]  = "in.src";
     static char predefinedOutFilename[]  = "out.src";
+    // Define a list of allowed switches by concatenating a string using x macro
+    // stringification
+#   define CO(w,x,y,z) #w
+    static char switches[] = SF65_CMDOPTLIST ; // '\0' is appended automatically
+#   undef CO
+
+    // Define an array of pointers to callback functions which are called for
+    // a set switch at the same array position as in the switches string
+#   define CO(w,x,y,z) sf65_Opt##x,
+    static sf65OptionsModifierFnc_t *modifierFncList[] = {SF65_CMDOPTLIST NULL};
+#   undef CO
 
     NOT_NULL ( cmdarg, SF65_CMDERR_NULLPTR ) {
         int filenamePositions[2] = {};
@@ -83,7 +98,8 @@ sf65CMDErrCode_t sf65_ProcessCmdArgs ( sf65Options_t *CMDOptions, sf65CMDArg_t *
                 } else {
                     // Determine which options have been given on command line and set variables
                     //d in CMDOptions struct accordingly
-                    detectCMDLineSwitches ( CMDOptions, cmdarg );
+                    sf65_DetectMatchingOption ( CMDOptions, cmdarg,
+                                                switches, modifierFncList );
                 }
             }
         }

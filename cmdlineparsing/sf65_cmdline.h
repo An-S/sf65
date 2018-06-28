@@ -18,11 +18,14 @@ typedef enum {
     sf65_CMDSwitchPresent = true, sf65_CMDSwitchNotPresent = false
 } sf65CMDSwitchPresence_t;
 
+
+
 typedef struct {
     // Example: -l123, where '-' is the switchCh, 'l' is the optCh and 123 is the numArg
 
     // Store a copy of the argv pointer to the original command line arguments list
     char **argv;
+    char *arg;
     int argc;
     int argIdx;
 
@@ -38,15 +41,16 @@ typedef struct {
 #define SF65_CMDOPTLIST \
     CO ( v, Verbosity,    -1, -1 )\
     CO ( s, Style,         0,  1 )\
-    /*CO ( n, NestingLevel,  0, -1 )\
-    CO ( m, Mnemonic,      0, -1 )\
-    CO ( d, Directive,     0, -1 )\
-    CO ( c, Comment,       0, -1 )\
-    CO ( p, Processor,     0,  0 )\*/\
-    CO ( h, Help,          -1,  -1 ) \
-    /*CO ( t, Tabs,          0,  8 )\
+    CO ( n, NestingLevel,  0, 12 )\
+    CO ( m, Mnemonic,      -1, 20 )\
+    CO ( d, Directive,     -1, 20 )\
+    CO ( c, Comment,       0, 40 )\
+    CO ( p, Processor,     0,  1 )\
+    CO ( o, Operand,       0, 40 )\
+    CO ( h, Help,          -1,  -1 )\
+    CO ( t, Tabs,          0,  8 )\
     CO ( a, Align,         0,  1 )\
-    CO ( l, LabelPlacement, 0,  2 )\*/\
+    CO ( l, LabelPlacement, 0,  2 )\
     CO ( e, ScopePadding,  0,  1 )
 
 /*
@@ -77,6 +81,17 @@ typedef struct {
 
 extern sf65Options_t *CMDOptions;
 
+typedef sf65CMDErrCode_t
+sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t * );
+
+typedef struct {
+    const char *switches;
+    sf65OptionsModifierFnc_t **optModifierFncList;
+    int *llimits;
+    int *hlimits;
+} gfgfgfg_t;
+
+
 void showCMDOptionsHelp ( void );
 
 /*
@@ -93,8 +108,14 @@ void sf65_SetDefaultCMDOptions ( sf65Options_t *CMDOptions );
 int sf65_ParseCMDArgs ( int argc, char** argv, sf65Options_t * CMDOptions );
 
 void validateCMDLineSwitches ( sf65Options_t * CMDOptions );
-void detectCMDLineSwitches ( sf65Options_t * CMDOptions, sf65CMDArg_t *cmdarg );
 
+/* This function compares a given cmd switch with a list of allowed switches
+ * and then calls the according callback function to act upon a set switch.
+ */
+void sf65_DetectMatchingOption ( sf65Options_t *CMDOptions,
+                                 sf65CMDArg_t *cmdarg,
+                                 const char *switches,
+                                 sf65OptionsModifierFnc_t **fncList );
 char *sf65_setInFilename ( sf65Options_t * cmdopt, char * fname );
 char *sf65_setOutFilename ( sf65Options_t * cmdopt, char * fname );
 
@@ -107,7 +128,5 @@ sf65CMDErrCode_t  sf65_ProcessCmdArgs ( sf65Options_t *, sf65CMDArg_t * );
 char sf65_CMDOpt_ReadNextCh ( sf65CMDArg_t *arg );
 sf65CMDErrCode_t sf65_CMDOpt_GetNextArg ( sf65CMDArg_t * );
 
-typedef sf65CMDErrCode_t
-sf65OptionsModifierFnc_t ( sf65Options_t *, sf65CMDArg_t * );
 
 #endif
