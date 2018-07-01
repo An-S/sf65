@@ -29,20 +29,7 @@ long_line_column=72
 
 [files]
 current_page=0
-FILE_NAME_0=288;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test.txt;0;4
-FILE_NAME_1=43;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-dl-ml.expected;0;4
-FILE_NAME_2=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_def.expected;0;4
-FILE_NAME_3=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-dl-mu.expected;0;4
-FILE_NAME_4=392;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-dl-mu-n2.expected;0;4
-FILE_NAME_5=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml.expected;0;4
-FILE_NAME_6=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-c40.expected;0;4
-FILE_NAME_7=398;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-e0.expected;0;4
-FILE_NAME_8=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-e1.expected;0;4
-FILE_NAME_9=378;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-l0.expected;0;4
-FILE_NAME_10=119;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-l1.expected;0;4
-FILE_NAME_11=417;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-l2.expected;0;4
-FILE_NAME_12=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-ml-o16.expected;0;4
-FILE_NAME_13=402;None;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftestfiles%2Flabel_test_-du-mu.expected;0;4
+FILE_NAME_0=762;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2FDokumente%2FProgrammieren%2Fcpp%2FEigeneCPPProgramme%2Fc%2B%2BBook%2FA3K15S333_TrafficLight%2Fthreadtest.cpp;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
@@ -65,4 +52,7 @@ CFT_01_WD=
 CFT_02_LB=_Lint
 CFT_02_CM=cppcheck --language=c --enable=warning,style --template=gcc "%f"
 CFT_02_WD=
-filetypes=C;
+filetypes=C;C++;
+C++FT_01_LB=_Build
+C++FT_01_CM=g++ -std=c++14 -Wall -pthread -lpthread -o "%e" "%f"
+C++FT_01_WD=
