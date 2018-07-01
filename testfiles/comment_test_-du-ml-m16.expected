@@ -1,0 +1,9 @@
+;comment at beginning of line
+                ;comment in the middle of line
+                lda #$00        ;comment after mnemonic
+                ;comment at beginning of line
+                ;comment in the middle of line
+                ;comment in the middle of line
+                ;comment in the middle of line
+                ;comment in the middle of line
+.FEATURE        labels_without_colons ;comment after directive

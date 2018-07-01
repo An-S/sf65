@@ -48,11 +48,15 @@ char *sf65_addReplaceFileExt ( char * filename, char * ext ) {
 FILE *sf65_openInputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *input = NULL;
+        if ( strlen ( filename ) == 1 && *filename == '-' ) {
+            sf65_fprintf ( stdout, "Reading from stdin\n" );
+            return stdin;
+        }
 
-        sf65_fprintf ( stdout, "Trying to open input file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open input file: \"%s\"\n", filename );
 
         // This call includes error checking
-        input = sf65_openFile ( filename, "rb" );
+        input = sf65_openFile ( filename, "r" );
 
         return input;
     }
@@ -65,8 +69,12 @@ FILE *sf65_openInputFile ( char * filename ) {
 FILE *sf65_openOutputFile ( char * filename ) {
     NOT_NULL ( filename, NULL ) {
         FILE *output = NULL;
+        if ( strlen ( filename ) == 1 && *filename == '-' ) {
+            sf65_fprintf ( stdout, "Writing to stdout\n" );
+            return stdout;
+        }
 
-        sf65_fprintf ( stdout, "Trying to open output file: \"%s\"", filename );
+        sf65_fprintf ( stdout, "Trying to open output file: \"%s\"\n", filename );
 
         // This call includes error checking
         output = sf65_openFile ( filename, "w" );
@@ -80,7 +88,7 @@ FILE *sf65_openLogFile ( char * basefilename ) {
         FILE *output = NULL;
         char *logfilename = sf65_addReplaceFileExt ( basefilename, "log" );
 
-        sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"", logfilename );
+        sf65_fprintf ( stdout, "Trying to open logfile: \"%s\"\n", logfilename );
 
 
         // This call includes error checking
@@ -89,6 +97,29 @@ FILE *sf65_openLogFile ( char * basefilename ) {
         return output;
     }
     return NULL;
+}
+
+int sf65_conditionalVPrintf ( bool cond, const char * format, va_list va ) {
+    if ( cond ) {
+        NOT_NULL ( format, -1 ) {
+            int printfErr;
+
+            printfErr = vprintf ( format, va );
+
+            return printfErr;
+        }
+    }
+    return 0;
+}
+
+int sf65_conditionalPrintf ( bool cond, const char * format, ... ) {
+    va_list va;
+    int printfErr;
+
+    va_start ( va, format );
+    printfErr = sf65_conditionalVPrintf ( cond, format, va );
+    va_end ( va );
+    return printfErr;
 }
 
 int sf65_fprintf ( FILE * file, const char * format, ... ) {
@@ -111,6 +142,17 @@ int sf65_printfUserInfo ( const char * format, ... ) {
 
     va_start ( va, format );
     printfErr = vprintf ( format, va );
+    va_end ( va );
+
+    return printfErr;
+}
+
+int sf65_printfVerbose ( int min_verbosity, sf65Options_t *cmdOpt, const char * format, ... ) {
+    va_list va;
+    int printfErr;
+
+    va_start ( va, format );
+    printfErr = sf65_conditionalVPrintf ( cmdOpt -> verbosity >= min_verbosity, format, va );
     va_end ( va );
 
     return printfErr;
@@ -184,4 +226,11 @@ size_t sf65_fputnspc ( FILE * file, int n ) {
 
 size_t sf65_fputspc ( FILE * file ) {
     return sf65_fputnspc ( file, 1 );
+}
+
+
+void sf65_CloseFile ( FILE *file ) {
+    if ( file ) {
+        fclose ( file );
+    }
 }

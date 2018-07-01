@@ -32,4 +32,6 @@ char *sf65_ChangeCase ( char *p1, char *p2, sf65Case_t _case );
  */
 sf65StrEq_t sf65_Memcmpcase ( char *p1, char *p2, int size );
 
+int sf65_LocateCharInCStr ( const char *str, const char ch );
+
 #endif

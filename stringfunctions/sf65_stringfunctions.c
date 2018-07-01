@@ -1,5 +1,16 @@
 #include "sf65.h"
 
+int sf65_LocateCharInCStr ( const char *str, const char ch ) {
+    char *tmp = strchr ( str, ch );
+    int pos;
+    if ( tmp ) {
+        pos = tmp - str;
+    } else {
+        pos = -1;
+    }
+    return pos;
+}
+
 /*
  * Reads characters from input string until a non white-space character or line-end or '\0'
  * is found. Returns pointer to first non-whitespace char or '\n' or '\0'
@@ -29,7 +40,7 @@ char *sf65_ModifyChars ( char *p1, char *p2, int func ( int ) ) {
         ch = *p1;
         echoChar ( ch );
         *p1 = func ( ch );
-        p1++;
+        ++p1;
     }
     return p1;
 }

@@ -28,9 +28,8 @@ long_line_behaviour=1
 long_line_column=72
 
 [files]
-current_page=1
-FILE_NAME_0=0;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Ftest_strcspn.c;0;4
-FILE_NAME_1=1178;C;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2Fsrc%2Fpretty6502%2Fva_arg_test.c;0;4
+current_page=0
+FILE_NAME_0=762;C++;0;EUTF-8;0;1;0;%2Fhome%2Fmc78%2FDokumente%2FProgrammieren%2Fcpp%2FEigeneCPPProgramme%2Fc%2B%2BBook%2FA3K15S333_TrafficLight%2Fthreadtest.cpp;0;4
 
 [prjorg]
 source_patterns=*.c;*.C;*.cpp;*.cxx;*.c++;*.cc;*.m;
@@ -53,4 +52,7 @@ CFT_01_WD=
 CFT_02_LB=_Lint
 CFT_02_CM=cppcheck --language=c --enable=warning,style --template=gcc "%f"
 CFT_02_WD=
-filetypes=C;
+filetypes=C;C++;
+C++FT_01_LB=_Build
+C++FT_01_CM=g++ -std=c++14 -Wall -pthread -lpthread -o "%e" "%f"
+C++FT_01_WD=

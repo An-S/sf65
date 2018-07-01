@@ -10,9 +10,10 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <assert.h>
+#include <stdint.h>
+#include <stdarg.h>
 
-#define NOT_NULL(arg, errorCode) if(!(arg)){assert( (arg) != NULL );return errorCode;} else
-
+#include "sf65_macros.h"
 #include "sf65_types.h"
 #include "stringfunctions/sf65_stringfunctions.h"
 #include "errorhandling/sf65_errorhandling.h"

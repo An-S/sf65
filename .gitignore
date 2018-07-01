@@ -241,3 +241,13 @@ testfiles/test_-du-ml-s1.log
 testfiles/test_-du-mu
 testfiles/test_-du-mu.log
 testfiles/test.txt
+testfiles/test.err
+testfiles/*.err
+testfiles/*.diff
+testfiles/*.out
+testfiles/*.log
+*.save.*
+*.save
+*.depend
+*.frm
+*.err

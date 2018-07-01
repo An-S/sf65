@@ -12,14 +12,18 @@ void sf65_InitializeParser ( sf65ParsingData_t *ParserData ) {
     ParserData -> prev_comment_final_location = 0;
     ParserData -> current_level = 0;
 
-    ParserData -> prev_expr.exprType = SF65_OTHEREXPR;
+    ParserData -> current_expr.exprType = SF65_OTHEREXPR;
 }
 
 void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
     sf65ErrCode_t currentErr = SF65_NOERR;
 
     // Reset determined expression type
-    pData -> current_expr.exprType = pData -> prev_expr.exprType = SF65_OTHEREXPR;
+    if ( pData -> current_expr.exprType != SF65_EMPTYLINE ) {
+        pData -> current_expr.exprType = pData -> prev -> current_expr.exprType = SF65_OTHEREXPR;
+    } else {
+        pData -> current_expr.exprType = SF65_OTHEREXPR;
+    }
 
     // Start with column at left
     sf65_ResetCurrentColumnCounter ( pData );
@@ -29,8 +33,8 @@ void sf65_StartParsingNewLine ( sf65ParsingData_t *pData ) {
         sf65_ClearParserFlags (
             pData,
             SF65_LABEL_DETECTED,
-            SF65_ADDITIONAL_LINEFEED,
             SF65_FORCE_SEPARATING_SPACE,
+            //SF65_LEVEL_CHANGED,
             SF65_NOT_A_PARSERFLAG
         );
     assert ( currentErr == SF65_NOERR );
@@ -68,16 +72,10 @@ int check_opcode ( char *p1, char *p2 ) {
 
     for ( c = 0; directives_dasm[c].directive != NULL; c++ ) {
         length = strlen ( directives_dasm[c].directive );
-        if ( ( *p1 == '.' &&
-                length == p2 - p1 - 1 &&
-                sf65_Memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) == 0
-             ) ||
-                ( length == p2 - p1     &&
-                  sf65_Memcmpcase ( p1,     directives_dasm[c].directive, p2 - p1 )     == 0
-                )
-           ) {
-
-            return c + 1;
+        if ( *p1 == '.' && length == p2 - p1 - 1 ) {
+            if ( !sf65_Memcmpcase ( p1 + 1, directives_dasm[c].directive, p2 - p1 - 1 ) ) {
+                return c + 1;
+            }
         }
     }
 
@@ -141,7 +139,8 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
     }
 
     // Mnemonics start with a-z, directives start with . and labels start with '_' or a-z or @
-    if ( *p1 == '.' || isalpha ( *p1 ) || *p1 == '_' ) {
+    if ( *p1 == '.' || isalpha ( *p1 ) ||
+            *p1 == '_' || *p1 == CMDOptions -> locallabelch ) {
         // p1 points to start of codeword, p2 be moved to end of word
         c = detectOpcode ( p1, p2, CMDOptions -> processor, &pData -> request, &pData -> flags );
 
@@ -157,7 +156,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->index = c;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
@@ -212,16 +211,19 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
             expr->exprType = SF65_COMMASEP;
             pData -> request = 0;
             break;
+        case '\0':
         case '\n':
             if ( pData -> first_expression ) {
                 expr->exprType = SF65_EMPTYLINE;
+            } else {
+                expr->exprType = SF65_OTHEREXPR;
             }
             break;
         case '=':
             expr->exprType = SF65_ASSIGNMENT;
             break;
         default:
-            switch ( pData -> prev_expr.exprType ) {
+            switch ( pData -> prev -> current_expr.exprType ) {
             case SF65_DIRECTIVE:
                 expr->exprType = SF65_OPERAND;
                 break;
@@ -232,7 +234,7 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
                 break;
             default:
                 if ( *p1 == '\\' && *p2 == '\n' ) {
-                    pData -> line_continuation = 1;
+                    sf65_SetParserFlag ( pData, SF65_LINE_CONTINUATION );
                 }
                 expr->exprType = SF65_OTHEREXPR;
                 break;
@@ -245,17 +247,12 @@ sf65Expression_t *sf65DetermineExpression ( char *p1, char *p2, sf65ParsingData_
 bool isExpressionCharacter ( char ch ) {
     bool flag;
 
-    if ( ch == '.' || ch == '_' ) {
+    // Finds out, if ch is in {'.', '_'}
+    if ( strchr ( "._", ch ) ) {
         flag = true;
     } else {
-        flag = ( ch != ';' &&
-                 ch != '\'' && ch != '"' &&
-                 ch != '#' &&
-                 ch != '$' &&
-                 ch != '%' &&
-                 ch != ',' &&
-                 ch != '\\' &&
-                 ch != '=' );
+        // Finds out, if ch is not in the following set of characters ":;'\"#$%,\\=()"
+        flag = strchr ( ":;'\"#$%,\\=()", ch ) == NULL;
     }
     return flag;
 }

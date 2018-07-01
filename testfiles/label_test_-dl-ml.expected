@@ -1,0 +1,25 @@
+label0
+label6  lda     #$00
+label7: dec     $d020
+label1
+        macroname
+    label2:
+        anothermacroname
+label3:
+
+        .scope  abcde
+        label4:
+            lda     #$00
+            sta     $d020
+
+            .scope  fghij
+            @label5:
+            .endscope
+
+            amacro
+        .endscope
+
+anoversizedlabel
+        inc     $d020
+anotheroversizedlabel:
+        dec     $d020

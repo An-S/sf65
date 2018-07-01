@@ -17,4 +17,14 @@ int sgn ( int x );
  */
 bool inRange ( const char *p, const char *first, int size );
 
+/*
+ * Takes a pointer to a char array and attempts to convert
+ * the string to a corresponding numeric representation.
+ * If conversion fails, -1 is returned.
+ */
+int sf65_ConvertStrToInt ( char* arg );
+
+bool sf65_checkRange ( int val, int min, int max ) ;
+bool checkIf0Or1 ( int val );
+
 #endif

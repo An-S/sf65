@@ -26,11 +26,14 @@ int sf65_IncOutputXPositionInLine ( sf65ParsingData_t *pData, int add ) {
 
 int sf65_IncOutputXPositionByNestingLevel ( sf65ParsingData_t * pData, int nestingSpace ) {
     NOT_NULL ( pData, -1 ) {
-
-        pData->request +=
-            pData -> current_level *
-            nestingSpace;
-        return pData->request;
+        if ( ! ( pData->current_expr.exprType == SF65_EMPTYLINE ) ) {
+            pData->request +=
+                pData -> current_level *
+                nestingSpace;
+            return pData->request;
+        } else {
+            return 0;
+        }
     }
     return -1;
 }
@@ -76,11 +79,10 @@ sf65ErrCode_t sf65_SetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum
 #   undef PF
         default:
             assert ( flag < SF65_NOT_A_PARSERFLAG );
-            return SF65_INVALIDARGERR;
+            return SF65_SETERR ( SF65_INVALIDARGERR );
         }
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
 }
 
 unsigned int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
@@ -90,6 +92,7 @@ unsigned int sf65_GetParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_
             SF65_PARSERFLAGS
 #   undef PF
         default:
+            SF65_SETERR ( SF65_INVALIDARGERR );
             assert ( flag < SF65_NOT_A_PARSERFLAG );
             break;
         }
@@ -103,28 +106,27 @@ sf65ErrCode_t sf65_SetParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnu
         va_start ( va, flag1 );
 
         while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            assert ( flag1 < SF65_NOT_A_PARSERFLAG );
             sf65_SetParserFlag ( pData, flag1 );
             flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
         }
         va_end ( va );
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
 }
 
 sf65ErrCode_t sf65_ClearParserFlag ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag ) {
     NOT_NULL ( pData, SF65_NULLPTR ) {
         switch ( flag ) {
-#       define PF(x,y) case SF65_##y: pData -> x=0;
+#       define PF(x,y) case SF65_##y: pData -> x=0; break;
             SF65_PARSERFLAGS
 #       undef PF
         default:
-            assert ( flag < SF65_NOT_A_PARSERFLAG );
-            return SF65_NOT_A_PARSERFLAG;
+            assert ( flag < SF65_PARSERFLAGCNT );
+            return SF65_SETERR ( SF65_INVALIDARGERR );
         }
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
 }
 
 sf65ErrCode_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsEnum_t flag1, ... ) {
@@ -133,13 +135,13 @@ sf65ErrCode_t sf65_ClearParserFlags ( sf65ParsingData_t *pData, sf65ParserFlagsE
         va_start ( va, flag1 );
 
         while ( flag1 != SF65_NOT_A_PARSERFLAG ) {
+            assert ( flag1 < SF65_PARSERFLAGCNT );
             sf65_ClearParserFlag ( pData, flag1 );
             flag1 = va_arg ( va, sf65ParserFlagsEnum_t );
         }
         va_end ( va );
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
 }
 
 sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
@@ -148,76 +150,18 @@ sf65ErrCode_t sf65_ResetParserFlags ( sf65ParsingData_t * pData ) {
 
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
+    return SF65_SETERR ( SF65_NULLPTR );
 }
 
-/*
-** Request space in line
-*  Return number of spaces actually written
-*/
-int request_space ( FILE * output, int * current, int new, int force, int tabs ) {
-
-    /*
-    ** If already exceeded space...
-    */
-    if ( *current > new ) {
-
-        // If force is true, a single space is always written to output
-        if ( force ) {
-            fputc ( ' ', output );
-            ( *current ) ++;
-
-            return 1;
-        }
-        return 0;
-    }
-
-    // From here on, *current < new
-
-    /*
-    ** Advance one step at a time
-    */
-    if ( new ) {
-        // Write spaces to output, only if new != 0
-        // Assume, new is non negative
-
-        while ( *current < new ) {
-            if ( tabs == 0 ) {
-                // Use spaces instead of tabs
-
-                int i = 0;
-
-                // Write number of spaces calculated from the
-                // difference between *current and new
-                for ( ; i < new - *current; ++i ) {
-                    fputc ( ' ', output );
-                }
-
-                // Update the current_column variable to the new x position
-                *current = new;
-                return i;
-            } else {
-                // Use tabs, not spaces. Assume tab has a width of <<tabs>>
-                fputc ( '\t', output );
-
-                // Quantize current output column to value of <<tabs>>
-                *current = ( *current + tabs ) / tabs * tabs;
-            }
-        }
-
-        return 0;
-    }
-
-    return 0;
-}
 
 int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs ) {
     int new = sf65_GetOutputXPositionInLine ( pData );
+    int current_column = sf65_GetCurrentColumnCounter ( pData );
 
     /*
     ** If already exceeded space...
     */
-    if ( sf65_GetCurrentColumnCounter ( pData ) > new ) {
+    if ( current_column >= new && current_column ) {
         // If force is true, a single space is always written to output
         if ( sf65_GetParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE ) ) {
             sf65_fputspc ( output );
@@ -237,7 +181,7 @@ int sf65_PadOutputWithSpaces ( FILE * output, sf65ParsingData_t *pData, int tabs
 
             if ( tabs == 0 ) {
                 // Calculate number of spaces to output
-                int n = new - sf65_GetCurrentColumnCounter ( pData );
+                int n = new - current_column;
 
                 // Use spaces instead of tabs
                 // Write number of spaces calculated from the
@@ -309,10 +253,11 @@ int getCommentSpacing ( char * p /*linestart*/, char * p1 /*commentstart*/, sf65
 
 sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_t lf_type ) {
     NOT_NULL ( pData, SF65_NULLPTR ) {
-        sf65_ClearParserFlags (
+        /*sf65_ClearParserFlags (
             pData, SF65_INSTANT_ADDITIONAL_LINEFEED, SF65_ADDITIONAL_LINEFEED,
             SF65_NOT_A_PARSERFLAG
         );
+        */
 
         switch ( lf_type ) {
 
@@ -328,7 +273,7 @@ sf65ErrCode_t sf65_SetLinefeedType ( sf65ParsingData_t *pData, sf65LinefeedEnum_
             assert ( lf_type < SF65_NOT_A_LF_CONST );
 
             if ( lf_type >= SF65_NOT_A_LF_CONST ) {
-                return SF65_INVALIDARGERR;
+                return SF65_SETERR ( SF65_INVALIDARGERR );
             }
             break;
         }
@@ -353,13 +298,12 @@ sf65ErrCode_t sf65_ResetLinefeedFlag ( sf65ParsingData_t *pData, sf65LinefeedEnu
             assert ( lf_type < SF65_NOT_A_LF_CONST );
 
             if ( lf_type >= SF65_NOT_A_LF_CONST ) {
-                return SF65_INVALIDARGERR;
+                return SF65_SETERR ( SF65_INVALIDARGERR );
             }
             break;
         }
         return SF65_NOERR;
     }
-    return SF65_NULLPTR;
 }
 
 sf65ErrCode_t sf65_SetPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
@@ -370,38 +314,62 @@ sf65ErrCode_t sf65_ClearPaddingSpaceFlag ( sf65ParsingData_t *pData ) {
     return sf65_ClearParserFlag ( pData, SF65_FORCE_SEPARATING_SPACE );
 }
 
+// Insert padding line if,
+// - there was no empty line, before
+// - there was no changing of level, before
+// - the command line option is set
 void conditionallyAddPaddingLineBeforeSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
-    if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN ) {
-        if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE ) {
+    if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_IN &&
+            ! ( sf65_GetParserFlag ( ParserData -> prev, SF65_LEVEL_CHANGED ) ) ) {
+        if ( ParserData -> prev -> current_expr.exprType != SF65_EMPTYLINE ) {
+            //sf65_SetLinefeedType ( ParserData, SF65_INSTANT_ADD_LF );
             sf65_fputc ( '\n', output );
+            //ParserData -> prev -> currentExprcurrentExpr.exprType = SF65_EMPTYLINE;
         }
     }
 }
 
 void conditionallyAddPaddingLineAfterSection ( sf65Options_t * CMDOptions, sf65ParsingData_t * ParserData ) {
     if ( CMDOptions -> pad_directives && ParserData -> flags & LEVEL_OUT ) {
-        ParserData -> additional_linefeed = true;
+        //ParserData -> additional_linefeed = true;
+        sf65_SetLinefeedType ( ParserData, SF65_ADD_LF );
     }
 }
 
 void conditionallyInsertAdditionalLinefeed ( sf65ParsingData_t * ParserData ) {
-    if ( ParserData -> prev_expr.exprType != SF65_EMPTYLINE &&
-            ParserData -> additional_linefeed ) {
-        sf65_fputc ( '\n', output );
+    static bool checkedEmptyLine = false;
+
+    if ( checkedEmptyLine ) {
+        if ( ParserData -> current_expr.exprType != SF65_EMPTYLINE &&
+                ParserData -> additional_linefeed &&
+                ! ( ParserData -> flags & LEVEL_OUT ) ) {
+            sf65_fputc ( '\n', output );
+            sf65_ResetLinefeedFlag ( ParserData, SF65_ADD_LF );
+            checkedEmptyLine = false;
+        }
+    } else {
+        if ( ParserData -> additional_linefeed ) {
+            checkedEmptyLine = true;
+        }
     }
 }
 
 void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf65Options_t * CMDOptions ) {
 
     if ( ParserData -> flags & LEVEL_IN ) {
-        ParserData -> current_level++;
-        ParserData -> request = CMDOptions -> start_mnemonic - 4;
+        //ParserData -> current_level++;
+        sf65_SetParserFlag ( ParserData, SF65_INDENT_REQUEST );
+        ParserData -> request =
+            CMDOptions -> start_mnemonic;
     }
 
     if ( ParserData -> flags & LEVEL_OUT ) {
-        if ( ParserData -> current_level > 0 )
-            ParserData -> current_level--;
-        ParserData -> request = CMDOptions -> start_mnemonic;
+        if ( ParserData -> current_level > 0 ) {
+            //ParserData -> current_level--;
+            sf65_SetParserFlag ( ParserData, SF65_UNINDENT_REQUEST );
+        }
+        ParserData -> request = CMDOptions -> start_mnemonic -
+                                CMDOptions -> nesting_space;
     }
 
     if ( ParserData -> flags & ALIGN_MNEMONIC ) {
@@ -410,8 +378,9 @@ void sf65_correctOutputColumnForFlags ( sf65ParsingData_t * ParserData, const sf
 
     // Unindent by one level
     if ( ParserData -> flags & LEVEL_MINUS )
-        if ( ParserData -> request > CMDOptions -> nesting_space )
+        if ( ParserData -> request > CMDOptions -> nesting_space ) {
             ParserData -> request -= CMDOptions -> nesting_space;
+        }
 }
 
 /*
@@ -444,6 +413,6 @@ void sf65_PlaceOperandInLine ( char * p1, char * p2, sf65Options_t * CMDOptions,
         ParserData -> request = 0;
     } else {
         ParserData -> request = CMDOptions -> start_operand;
-        sf65_SetPaddingSpaceFlag ( ParserData );
     }
+    sf65_SetPaddingSpaceFlag ( ParserData );
 }
