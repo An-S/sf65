@@ -27,9 +27,6 @@ cyan     = 3
          jsr draw
          jsr waitkey
          jmp clrscr
-
-;---------------------------------------
-
 .proc draw
          jsr drawsquare
          jsr movecursor
@@ -44,9 +41,6 @@ cyan     = 3
          bcc draw
          jmp drawsquare
 .endproc
-
-;---------------------------------------
-
 .proc drawsquare
          ldx   #cyan
 
@@ -58,8 +52,6 @@ cyan     = 3
          lda #ch_square
          jmp cputc
 .endproc
-;---------------------------------------
-
 .proc cputc
          ldy scrcol
          sta ( scrptr),y
@@ -67,14 +59,10 @@ cyan     = 3
          sta (colptr ), y
 rts
 .endproc
-
-;---------------------------------------
 .proc movecursor
          lda #ch_right
          jmp chrout
 .endproc
-;---------------------------------------
-
 .proc waitkey
          jsr get
          beq waitkey
