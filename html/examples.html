@@ -1,0 +1,54 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+ <meta http-equiv="Content-Type" content="text/html;charset=ISO-8859-1"> 
+<html lang="en-us">
+<head>
+<title align="center">
+sf65 - A source formatter for 6502 assembly, examples
+</title>
+</head>
+
+<body>
+<h1 align="center"> - sf65 examples - </h1>
+    <hr/ width="50%", align="center">
+
+    <p>
+    These examples demonstrate the capabilities of sf65. 
+    A simple source served as a base. It displays a screen with
+    magenta on the left and cyan on the right.
+    The source code has been distorted a little bit to emphasize the
+    effect of the source formatter.
+    </p>
+    
+    <small>
+    <object 
+        width="900" height="500"
+        type="text/plain"
+        data="code/examplesrc.s"
+        border="0"
+        style="overflow: hidden;">
+    </object>
+    </small>
+    
+    <h2 align="center"> Setting output column for mnemonics</h2>
+    <p>
+    This example shows how the -m flag affects the output of the mnemonics.
+    It is notes that the -m flag does not change the output column of the 
+    operands. This is specified by the -o flag.
+    The numerical argument after -m was varied from 8 to 16 in steps of two.
+    The sources have been truncated at column 20 to be able to display the 
+    formatted sources side by side for the different parameters.
+    </p>
+    
+    <small>
+    <object 
+        width="900" height="500"
+        type="text/plain"
+        data="code/example_m_variation.s"
+        border="0"
+        style="overflow: hidden;">
+    </object>
+    
+    </small>
+</body>
+</html>
